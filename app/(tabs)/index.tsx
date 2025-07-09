@@ -21,7 +21,7 @@ import { useRecommendations } from '@/hooks/useRecommendations';
 
 const { width } = Dimensions.get('window');
 
-const BUDGET_OPTIONS = [10, 20, 30, 50];
+const BUDGET_OPTIONS = [5, 10, 20, 30];
 
 export default function HomeScreen() {
   const router = useRouter();
