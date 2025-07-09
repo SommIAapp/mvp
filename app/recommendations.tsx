@@ -15,7 +15,6 @@ import { Button } from '@/components/Button';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useRecommendations, type WineRecommendation } from '@/hooks/useRecommendations';
 
-
 export default function RecommendationsScreen() {
   const router = useRouter();
   const { dish, budget, recommendations: recommendationsParam, fromHistory } = useLocalSearchParams<{ 
@@ -28,7 +27,6 @@ export default function RecommendationsScreen() {
   const [recommendations, setRecommendations] = useState<WineRecommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedWine, setSelectedWine] = useState<WineRecommendation | null>(null);
 
   useEffect(() => {
     loadRecommendations();
@@ -87,8 +85,8 @@ export default function RecommendationsScreen() {
   const getWineColorIndicator = (color: string) => {
     switch (color) {
       case 'rouge': return Colors.rouge;
-      case 'blanc': return Colors.blanc;
-      case 'rose': return Colors.rose;
+      case 'blanc': return '#F5F5DC';
+      case 'rose': return '#FFB6C1';
       case 'sparkling': return Colors.secondary;
       default: return Colors.textSecondary;
     }
@@ -109,6 +107,17 @@ export default function RecommendationsScreen() {
         <Text style={styles.ratingText}>{rating}/100</Text>
       </View>
     );
+  };
+
+  const handleWinePress = (wine: WineRecommendation) => {
+    router.push({
+      pathname: '/wine-detail',
+      params: {
+        wine: JSON.stringify(wine),
+        dish: dish,
+        budget: budget || '',
+      },
+    });
   };
 
   if (loading) {
@@ -148,7 +157,7 @@ export default function RecommendationsScreen() {
           <TouchableOpacity
             key={wine.id}
             style={styles.wineCard}
-            onPress={() => setSelectedWine(wine)}
+            onPress={() => handleWinePress(wine)}
             activeOpacity={0.8}
           >
             <View style={styles.cardHeader}>
@@ -182,14 +191,15 @@ export default function RecommendationsScreen() {
               </View>
 
               <Text style={styles.reasoning} numberOfLines={2}>
-                {wine.reasoning}
+                {wine.reasoning.length > 80 
+                  ? wine.reasoning.substring(0, 80) + '...' 
+                  : wine.reasoning
+                }
               </Text>
             </View>
           </TouchableOpacity>
         ))}
       </ScrollView>
-
-      {/* Wine Detail Modal would go here */}
     </View>
   );
 }
@@ -251,6 +261,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
+    position: 'relative',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -269,11 +280,14 @@ const styles = StyleSheet.create({
     color: Colors.accent,
   },
   colorIndicator: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
     borderWidth: 1,
     borderColor: Colors.textLight,
+    position: 'absolute',
+    top: 0,
+    right: 0,
   },
   wineImagePlaceholder: {
     width: 60,
