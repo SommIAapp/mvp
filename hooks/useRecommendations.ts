@@ -43,22 +43,11 @@ export function useRecommendations() {
     setError(null);
 
     try {
-      // Create unique request body with timestamp to avoid cache
-      const requestBody = {
-        dish_description: dishDescription,
-        user_budget: budget,
-        user_id: user?.id,
-        timestamp: timestamp || Date.now(),
-        cache_buster: Math.random().toString(36).substring(7)
-      };
-      
-      console.log('📤 getRecommendations - Request body:', requestBody);
-      
       // First, update popular dishes count
       await updatePopularDish(dishDescription);
 
-      // Get wine recommendations based on dish and budget
-      const wines = await fetchWineRecommendations(dishDescription, budget, requestBody);
+      // Get wine recommendations from Edge Function
+      const wines = await fetchWineRecommendationsFromAPI(dishDescription, budget);
       
       console.log('🍷 getRecommendations - Fetched wines:', wines);
 
@@ -81,6 +70,153 @@ export function useRecommendations() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchWineRecommendationsFromAPI = async (
+    dishDescription: string,
+    budget?: number
+  ): Promise<WineRecommendation[]> => {
+    console.log('🔍 fetchWineRecommendationsFromAPI - Starting API call');
+    
+    // Get current session for authorization
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError || !session?.access_token) {
+      console.error('❌ fetchWineRecommendationsFromAPI - Session error:', sessionError);
+      throw new Error('Session non valide');
+    }
+
+    // Prepare API call
+    const apiUrl = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/wine-recommendations`;
+    const requestBody = {
+      dish_description: dishDescription,
+      user_budget: budget || null,
+    };
+    
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session.access_token}`,
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    };
+    
+    console.log('🌐 fetchWineRecommendationsFromAPI - API URL:', apiUrl);
+    console.log('📋 fetchWineRecommendationsFromAPI - Request body:', requestBody);
+    console.log('📋 fetchWineRecommendationsFromAPI - Headers:', headers);
+    
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(requestBody)
+      });
+      
+      console.log('📡 fetchWineRecommendationsFromAPI - Response status:', response.status);
+      console.log('📡 fetchWineRecommendationsFromAPI - Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ fetchWineRecommendationsFromAPI - API error:', errorText);
+        throw new Error(`API Error: ${response.status} - ${errorText}`);
+      }
+      
+      const apiResult = await response.json();
+      console.log('✅ fetchWineRecommendationsFromAPI - API Result:', apiResult);
+      
+      // Check if we got the new algorithm response
+      if (apiResult.algorithm) {
+        console.log('🎉 fetchWineRecommendationsFromAPI - Algorithm version:', apiResult.algorithm);
+        if (apiResult.algorithm === 'SOMMIA Smart v2.0') {
+          console.log('✅ Using NEW algorithm v2.0!');
+        }
+      }
+      
+      // Return the recommendations array
+      const recommendations = apiResult.recommendations || apiResult;
+      
+      if (!Array.isArray(recommendations) || recommendations.length === 0) {
+        throw new Error('Aucune recommandation reçue de l\'API');
+      }
+      
+      console.log('🍷 fetchWineRecommendationsFromAPI - Final recommendations count:', recommendations.length);
+      recommendations.forEach((rec, index) => {
+        console.log(`🍷 Recommendation ${index + 1}:`, {
+          name: rec.name,
+          producer: rec.producer,
+          price: rec.price,
+          category: rec.category
+        });
+      });
+      
+      return recommendations;
+      
+    } catch (apiError) {
+      console.error('💥 fetchWineRecommendationsFromAPI - API call failed:', apiError);
+      
+      // Fallback to database if API fails
+      console.log('🗄️ fetchWineRecommendationsFromAPI - Falling back to database');
+      return await fetchWineRecommendationsFromDatabase(dishDescription, budget);
+    }
+  };
+
+  const fetchWineRecommendationsFromDatabase = async (
+    dishDescription: string,
+    budget?: number
+  ): Promise<WineRecommendation[]> => {
+    console.log('🗄️ fetchWineRecommendationsFromDatabase - Using database fallback');
+    
+    let query = supabase
+      .from('wines')
+      .select('*')
+      .not('price_estimate', 'is', null)
+      .order('global_wine_score', { ascending: false });
+
+    // Apply budget filter if provided
+    if (budget) {
+      console.log('💰 fetchWineRecommendationsFromDatabase - Applying budget filter:', budget);
+      query = query.lte('price_estimate', budget);
+    }
+
+    const { data: wines, error } = await query.limit(50);
+    
+    console.log('🗄️ fetchWineRecommendationsFromDatabase - Database query result:', {
+      winesCount: wines?.length || 0,
+      error: error?.message
+    });
+
+    if (error) throw error;
+    if (!wines || wines.length === 0) {
+      throw new Error('Aucun vin trouvé pour ces critères');
+    }
+
+    // Transform database wines to recommendation format
+    const recommendations = wines.slice(0, 3).map((wine, index) => {
+      const category = getCategoryFromPrice(wine.price_estimate || 0);
+      const color = mapWineColor(wine.color);
+      
+      const recommendation = {
+        id: wine.id,
+        name: wine.name,
+        producer: wine.producer || 'Producteur inconnu',
+        region: wine.region || 'Région inconnue',
+        price: wine.price_estimate || 0,
+        rating: wine.global_wine_score || 80,
+        category,
+        color,
+        reasoning: generateReasoning(dishDescription, wine, category),
+        grapeVarieties: wine.grape_varieties || [],
+        foodPairings: wine.food_pairings || [],
+        vintage: wine.vintage || undefined,
+        appellation: wine.appellation || undefined,
+      };
+      
+      console.log(`🍷 fetchWineRecommendationsFromDatabase - Recommendation ${index + 1}:`, recommendation);
+      return recommendation;
+    });
+    
+    console.log('✅ fetchWineRecommendationsFromDatabase - Final recommendations:', recommendations);
+    return recommendations;
   };
 
   const logRecommendationAnalytics = async (
@@ -121,7 +257,6 @@ export function useRecommendations() {
     wines: WineRecommendation[]
   ) => {
     try {
-
       const { error } = await supabase
         .from('recommendations')
         .insert({
@@ -140,116 +275,6 @@ export function useRecommendations() {
       console.error('❌ Save recommendation error:', error);
       throw error; // Propagate error to make it visible
     }
-  };
-
-  const fetchWineRecommendations = async (
-    dishDescription: string,
-    budget?: number,
-    requestBody?: any
-  ): Promise<WineRecommendation[]> => {
-    console.log('🔍 fetchWineRecommendations - Starting fetch with:', {
-      dishDescription,
-      budget,
-      requestBody
-    });
-    
-    // Prepare API call with no-cache headers
-    const apiUrl = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/wine-recommendations`;
-    const headers = {
-      'Content-Type': 'application/json',
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0',
-    };
-    
-    console.log('🌐 fetchWineRecommendations - API URL:', apiUrl);
-    console.log('📋 fetchWineRecommendations - Headers:', headers);
-    
-    try {
-      // Make API call to Edge Function (if it exists)
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(requestBody || {
-          dish_description: dishDescription,
-          user_budget: budget,
-          timestamp: Date.now()
-        })
-      });
-      
-      console.log('📡 fetchWineRecommendations - API Response status:', response.status);
-      console.log('📡 fetchWineRecommendations - API Response headers:', Object.fromEntries(response.headers.entries()));
-      
-      if (response.ok) {
-        const apiResult = await response.json();
-        console.log('✅ fetchWineRecommendations - API Result:', apiResult);
-        
-        if (apiResult && apiResult.length > 0) {
-          console.log('🎉 fetchWineRecommendations - Using API recommendations');
-          return apiResult;
-        }
-      } else {
-        console.log('⚠️ fetchWineRecommendations - API call failed, falling back to database');
-      }
-    } catch (apiError) {
-      console.log('⚠️ fetchWineRecommendations - API error, falling back to database:', apiError);
-    }
-    
-    // Fallback to database query
-    console.log('🗄️ fetchWineRecommendations - Using database fallback');
-    
-    let query = supabase
-      .from('wines')
-      .select('*')
-      .not('price_estimate', 'is', null)
-      .order('global_wine_score', { ascending: false });
-
-    // Apply budget filter if provided
-    if (budget) {
-      console.log('💰 fetchWineRecommendations - Applying budget filter:', budget);
-      query = query.lte('price_estimate', budget);
-    }
-
-    const { data: wines, error } = await query.limit(50);
-    
-    console.log('🗄️ fetchWineRecommendations - Database query result:', {
-      winesCount: wines?.length || 0,
-      error: error?.message
-    });
-
-    if (error) throw error;
-    if (!wines || wines.length === 0) {
-      throw new Error('Aucun vin trouvé pour ces critères');
-    }
-
-    // Transform database wines to recommendation format
-    const recommendations = wines.slice(0, 3).map((wine, index) => {
-      const category = getCategoryFromPrice(wine.price_estimate || 0);
-      const color = mapWineColor(wine.color);
-      
-      const recommendation = {
-        id: wine.id,
-        name: wine.name,
-        producer: wine.producer || 'Producteur inconnu',
-        region: wine.region || 'Région inconnue',
-        price: wine.price_estimate || 0,
-        rating: wine.global_wine_score || 80,
-        category,
-        color,
-        reasoning: generateReasoning(dishDescription, wine, category),
-        grapeVarieties: wine.grape_varieties || [],
-        foodPairings: wine.food_pairings || [],
-        vintage: wine.vintage || undefined,
-        appellation: wine.appellation || undefined,
-      };
-      
-      console.log(`🍷 fetchWineRecommendations - Recommendation ${index + 1}:`, recommendation);
-      return recommendation;
-    });
-    
-    console.log('✅ fetchWineRecommendations - Final recommendations:', recommendations);
-
-    return recommendations;
   };
 
   const updatePopularDish = async (dishName: string) => {
@@ -275,27 +300,6 @@ export function useRecommendations() {
       await supabase
         .from('popular_dishes')
         .insert({ dish_name: dishName, count_searches: 1 });
-    }
-  };
-
-  const saveRecommendation = async (
-    userId: string,
-    dishDescription: string,
-    budget: number | undefined,
-    wines: WineRecommendation[]
-  ) => {
-    // This function is deprecated - use saveRecommendationToHistory instead
-    const { error } = await supabase
-      .from('recommendations')
-      .insert({
-        user_id: userId,
-        dish_description: dishDescription,
-        user_budget: budget || null,
-        recommended_wines: wines,
-      });
-
-    if (error) {
-      console.error('Error saving recommendation:', error);
     }
   };
 
