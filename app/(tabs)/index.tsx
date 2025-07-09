@@ -7,10 +7,12 @@ import {
   TouchableOpacity,
   Alert,
   Dimensions,
-  Image
+  Image,
+  Platform
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Camera, User } from 'lucide-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
@@ -31,6 +33,48 @@ export default function HomeScreen() {
   const [budget, setBudget] = useState<number | null>(null);
   const [recommendationLoading, setRecommendationLoading] = useState(false);
 
+  // Debug function to clear all cache
+  const handleClearCache = async () => {
+    try {
+      console.log('🧹 Clearing all cache...');
+      
+      // Clear AsyncStorage
+      await AsyncStorage.clear();
+      console.log('✅ AsyncStorage cleared');
+      
+      // Clear any React Query cache if present
+      if (global.queryClient) {
+        global.queryClient.clear();
+        console.log('✅ React Query cache cleared');
+      }
+      
+      // Clear any other potential caches
+      if (Platform.OS === 'web') {
+        // Clear browser cache
+        if ('caches' in window) {
+          const cacheNames = await caches.keys();
+          await Promise.all(
+            cacheNames.map(cacheName => caches.delete(cacheName))
+          );
+          console.log('✅ Browser cache cleared');
+        }
+        
+        // Clear localStorage
+        localStorage.clear();
+        console.log('✅ LocalStorage cleared');
+        
+        // Clear sessionStorage
+        sessionStorage.clear();
+        console.log('✅ SessionStorage cleared');
+      }
+      
+      Alert.alert('Cache Cleared!', 'All cache has been cleared successfully.');
+    } catch (error) {
+      console.error('❌ Error clearing cache:', error);
+      Alert.alert('Error', 'Failed to clear cache: ' + error.message);
+    }
+  };
+
   // Show loading spinner while profile is being loaded
   if (loading) {
     return (
@@ -42,6 +86,8 @@ export default function HomeScreen() {
 
   const handleGetRecommendations = async () => {
     console.log('🎯 handleGetRecommendations - Starting recommendation request');
+    console.log('📝 handleGetRecommendations - Dish description:', dishDescription);
+    console.log('💰 handleGetRecommendations - Budget:', budget);
     console.log('👤 handleGetRecommendations - Current user:', user);
     console.log('📋 handleGetRecommendations - Current profile:', profile);
     
@@ -86,19 +132,36 @@ export default function HomeScreen() {
     setRecommendationLoading(true);
 
     try {
+      // Add timestamp to avoid cache
+      const timestamp = Date.now();
+      console.log('⏰ handleGetRecommendations - Request timestamp:', timestamp);
+      
       console.log('🤖 handleGetRecommendations - Calling AI recommendation service');
       console.log('📝 handleGetRecommendations - Request params:', {
         dishDescription,
         budget,
-        userId: user?.id
+        userId: user?.id,
+        timestamp
       });
       
       const recommendations = await getRecommendations(
         dishDescription,
-        budget || undefined
+        budget || undefined,
+        timestamp
       );
 
       console.log('✅ handleGetRecommendations - Recommendations received:', recommendations);
+      console.log('📊 handleGetRecommendations - Recommendations count:', recommendations?.length || 0);
+      
+      if (recommendations && recommendations.length > 0) {
+        console.log('🍷 handleGetRecommendations - First recommendation details:', {
+          id: recommendations[0].id,
+          name: recommendations[0].name,
+          producer: recommendations[0].producer,
+          price: recommendations[0].price,
+          category: recommendations[0].category
+        });
+      }
 
       // Update usage count for free users
       if (profile?.subscription_plan !== 'premium') {
@@ -240,6 +303,14 @@ export default function HomeScreen() {
             fullWidth
             loading={recommendationLoading}
           />
+          
+          {/* Debug button - temporary */}
+          <TouchableOpacity 
+            style={styles.debugButton}
+            onPress={handleClearCache}
+          >
+            <Text style={styles.debugText}>🧹 Clear Cache (Debug)</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </ScrollView>
@@ -382,5 +453,18 @@ const styles = StyleSheet.create({
   },
   ctaSection: {
     paddingBottom: 32,
+  },
+  debugButton: {
+    marginTop: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: Colors.error,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  debugText: {
+    color: Colors.accent,
+    fontSize: Typography.sizes.sm,
+    fontWeight: Typography.weights.medium,
   },
 });

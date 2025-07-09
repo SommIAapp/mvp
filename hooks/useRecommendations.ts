@@ -30,16 +30,37 @@ export function useRecommendations() {
   const getRecommendations = async (
     dishDescription: string,
     budget?: number,
+    timestamp?: number,
   ): Promise<WineRecommendation[]> => {
+    console.log('🔄 getRecommendations - Starting with params:', {
+      dishDescription,
+      budget,
+      timestamp,
+      userId: user?.id
+    });
+    
     setLoading(true);
     setError(null);
 
     try {
+      // Create unique request body with timestamp to avoid cache
+      const requestBody = {
+        dish_description: dishDescription,
+        user_budget: budget,
+        user_id: user?.id,
+        timestamp: timestamp || Date.now(),
+        cache_buster: Math.random().toString(36).substring(7)
+      };
+      
+      console.log('📤 getRecommendations - Request body:', requestBody);
+      
       // First, update popular dishes count
       await updatePopularDish(dishDescription);
 
       // Get wine recommendations based on dish and budget
-      const wines = await fetchWineRecommendations(dishDescription, budget);
+      const wines = await fetchWineRecommendations(dishDescription, budget, requestBody);
+      
+      console.log('🍷 getRecommendations - Fetched wines:', wines);
 
       // Save recommendation to history first
       if (user) {
@@ -123,8 +144,60 @@ export function useRecommendations() {
 
   const fetchWineRecommendations = async (
     dishDescription: string,
-    budget?: number
+    budget?: number,
+    requestBody?: any
   ): Promise<WineRecommendation[]> => {
+    console.log('🔍 fetchWineRecommendations - Starting fetch with:', {
+      dishDescription,
+      budget,
+      requestBody
+    });
+    
+    // Prepare API call with no-cache headers
+    const apiUrl = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/wine-recommendations`;
+    const headers = {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    };
+    
+    console.log('🌐 fetchWineRecommendations - API URL:', apiUrl);
+    console.log('📋 fetchWineRecommendations - Headers:', headers);
+    
+    try {
+      // Make API call to Edge Function (if it exists)
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(requestBody || {
+          dish_description: dishDescription,
+          user_budget: budget,
+          timestamp: Date.now()
+        })
+      });
+      
+      console.log('📡 fetchWineRecommendations - API Response status:', response.status);
+      console.log('📡 fetchWineRecommendations - API Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      if (response.ok) {
+        const apiResult = await response.json();
+        console.log('✅ fetchWineRecommendations - API Result:', apiResult);
+        
+        if (apiResult && apiResult.length > 0) {
+          console.log('🎉 fetchWineRecommendations - Using API recommendations');
+          return apiResult;
+        }
+      } else {
+        console.log('⚠️ fetchWineRecommendations - API call failed, falling back to database');
+      }
+    } catch (apiError) {
+      console.log('⚠️ fetchWineRecommendations - API error, falling back to database:', apiError);
+    }
+    
+    // Fallback to database query
+    console.log('🗄️ fetchWineRecommendations - Using database fallback');
+    
     let query = supabase
       .from('wines')
       .select('*')
@@ -133,10 +206,16 @@ export function useRecommendations() {
 
     // Apply budget filter if provided
     if (budget) {
+      console.log('💰 fetchWineRecommendations - Applying budget filter:', budget);
       query = query.lte('price_estimate', budget);
     }
 
     const { data: wines, error } = await query.limit(50);
+    
+    console.log('🗄️ fetchWineRecommendations - Database query result:', {
+      winesCount: wines?.length || 0,
+      error: error?.message
+    });
 
     if (error) throw error;
     if (!wines || wines.length === 0) {
@@ -148,7 +227,7 @@ export function useRecommendations() {
       const category = getCategoryFromPrice(wine.price_estimate || 0);
       const color = mapWineColor(wine.color);
       
-      return {
+      const recommendation = {
         id: wine.id,
         name: wine.name,
         producer: wine.producer || 'Producteur inconnu',
@@ -163,7 +242,12 @@ export function useRecommendations() {
         vintage: wine.vintage || undefined,
         appellation: wine.appellation || undefined,
       };
+      
+      console.log(`🍷 fetchWineRecommendations - Recommendation ${index + 1}:`, recommendation);
+      return recommendation;
     });
+    
+    console.log('✅ fetchWineRecommendations - Final recommendations:', recommendations);
 
     return recommendations;
   };
