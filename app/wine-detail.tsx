@@ -130,7 +130,14 @@ export default function WineDetailScreen() {
           <View style={styles.priceRatingSection}>
             <View style={styles.priceContainer}>
               <Text style={styles.priceLabel}>Prix</Text>
-              <Text style={styles.winePrice}>€{wine.price}</Text>
+              <Text style={styles.winePrice}>
+                €{wine.price_estimate ? 
+                  (Number.isInteger(wine.price_estimate) ? 
+                    wine.price_estimate.toString() : 
+                    wine.price_estimate.toFixed(2)
+                  ) : '0'
+                }
+              </Text>
             </View>
             <View style={styles.ratingContainer}>
               <Text style={styles.ratingLabel}>Note</Text>

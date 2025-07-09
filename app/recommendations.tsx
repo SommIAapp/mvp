@@ -186,7 +186,14 @@ export default function RecommendationsScreen() {
               </Text>
               
               <View style={styles.priceRatingRow}>
-                <Text style={styles.winePrice}>€{wine.price}</Text>
+                <Text style={styles.winePrice}>
+                  €{wine.price_estimate ? 
+                    (Number.isInteger(wine.price_estimate) ? 
+                      wine.price_estimate.toString() : 
+                      wine.price_estimate.toFixed(2)
+                    ) : '0'
+                  }
+                </Text>
                 {renderStars(wine.rating)}
               </View>
 
