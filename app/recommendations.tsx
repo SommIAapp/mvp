@@ -65,11 +65,27 @@ export default function RecommendationsScreen() {
   };
 
   const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'economique': return Colors.economique;
-      case 'qualite-prix': return Colors.qualitePrix;
-      case 'premium': return Colors.premium;
-      default: return Colors.textSecondary;
+    // Return background color based on wine color instead of category
+    return Colors.textSecondary; // This will be overridden by getWineColorBackground
+  };
+
+  const getWineColorBackground = (color: string) => {
+    switch (color) {
+      case 'blanc': return '#F5F5DC';
+      case 'rouge': return '#722F37';
+      case 'sparkling': return '#D4AF37';
+      case 'rosé': return '#FFB6C1';
+      default: return '#F5F5DC';
+    }
+  };
+
+  const getCategoryBadgeTextColor = (color: string) => {
+    switch (color) {
+      case 'blanc': return '#333';
+      case 'rouge': return '#FFF';
+      case 'sparkling': return '#333';
+      case 'rosé': return '#333';
+      default: return '#333';
     }
   };
 
@@ -79,16 +95,6 @@ export default function RecommendationsScreen() {
       case 'qualite-prix': return 'Qualité-Prix';
       case 'premium': return 'Premium';
       default: return category;
-    }
-  };
-
-  const getWineColorIndicator = (color: string) => {
-    switch (color) {
-      case 'rouge': return Colors.rouge;
-      case 'blanc': return '#F5F5DC';
-      case 'rose': return '#FFB6C1';
-      case 'sparkling': return Colors.secondary;
-      default: return Colors.textSecondary;
     }
   };
 
@@ -153,9 +159,9 @@ export default function RecommendationsScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        {recommendations.map((wine) => (
+        {recommendations.map((wine, index) => (
           <TouchableOpacity
-            key={wine.id}
+            key={wine.id || index}
             style={styles.wineCard}
             onPress={() => handleWinePress(wine)}
             activeOpacity={0.8}
@@ -163,20 +169,18 @@ export default function RecommendationsScreen() {
             <View style={styles.cardHeader}>
               <View style={[
                 styles.categoryBadge,
-                { backgroundColor: getCategoryColor(wine.category) }
+                { 
+                  backgroundColor: getWineColorBackground(wine.color),
+                  borderColor: getWineColorBackground(wine.color)
+                }
               ]}>
-                <Text style={styles.categoryText}>
+                <Text style={[
+                  styles.categoryText,
+                  { color: getCategoryBadgeTextColor(wine.color) }
+                ]}>
                   {getCategoryLabel(wine.category)}
                 </Text>
               </View>
-              <View style={[
-                styles.colorIndicator,
-                { backgroundColor: getWineColorIndicator(wine.color) }
-              ]} />
-            </View>
-
-            <View style={styles.wineImagePlaceholder}>
-              <Text style={styles.winePlaceholderText}>🍷</Text>
             </View>
 
             <View style={styles.cardContent}>
@@ -274,40 +278,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   categoryBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
+    borderWidth: 1,
   },
   categoryText: {
     fontSize: Typography.sizes.xs,
     fontWeight: Typography.weights.semibold,
-    color: Colors.accent,
-  },
-  colorIndicator: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: Colors.textLight,
-    position: 'absolute',
-    top: 0,
-    right: 0,
-  },
-  wineImagePlaceholder: {
-    width: 60,
-    height: 80,
-    backgroundColor: Colors.softGray,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'center',
-    marginBottom: 16,
-  },
-  winePlaceholderText: {
-    fontSize: 32,
   },
   cardContent: {
     flex: 1,

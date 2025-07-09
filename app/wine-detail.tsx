@@ -23,11 +23,27 @@ export default function WineDetailScreen() {
   const wine: WineRecommendation = JSON.parse(wineParam);
 
   const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'economique': return Colors.economique;
-      case 'qualite-prix': return Colors.qualitePrix;
-      case 'premium': return Colors.premium;
-      default: return Colors.textSecondary;
+    // Return background color based on wine color instead of category
+    return Colors.textSecondary; // This will be overridden by getWineColorBackground
+  };
+
+  const getWineColorBackground = (color: string) => {
+    switch (color) {
+      case 'blanc': return '#F5F5DC';
+      case 'rouge': return '#722F37';
+      case 'sparkling': return '#D4AF37';
+      case 'rosé': return '#FFB6C1';
+      default: return '#F5F5DC';
+    }
+  };
+
+  const getCategoryBadgeTextColor = (color: string) => {
+    switch (color) {
+      case 'blanc': return '#333';
+      case 'rouge': return '#FFF';
+      case 'sparkling': return '#333';
+      case 'rosé': return '#333';
+      default: return '#333';
     }
   };
 
@@ -37,16 +53,6 @@ export default function WineDetailScreen() {
       case 'qualite-prix': return 'Qualité-Prix';
       case 'premium': return 'Premium';
       default: return category;
-    }
-  };
-
-  const getWineColorIndicator = (color: string) => {
-    switch (color) {
-      case 'rouge': return Colors.rouge;
-      case 'blanc': return '#F5F5DC';
-      case 'rose': return '#FFB6C1';
-      case 'sparkling': return Colors.secondary;
-      default: return Colors.textSecondary;
     }
   };
 
@@ -87,25 +93,21 @@ export default function WineDetailScreen() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.wineCard}>
           {/* Wine Image Placeholder */}
-          <View style={styles.wineImageContainer}>
-            <View style={styles.wineImagePlaceholder}>
-              <Text style={styles.winePlaceholderText}>🍷</Text>
-            </View>
-            <View style={[
-              styles.colorIndicator,
-              { backgroundColor: getWineColorIndicator(wine.color) }
-            ]} />
-          </View>
-
           {/* Wine Basic Info */}
           <View style={styles.basicInfo}>
             <View style={styles.nameAndCategory}>
               <Text style={styles.wineName}>{wine.name}</Text>
               <View style={[
                 styles.categoryBadge,
-                { backgroundColor: getCategoryColor(wine.category) }
+                { 
+                  backgroundColor: getWineColorBackground(wine.color),
+                  borderColor: getWineColorBackground(wine.color)
+                }
               ]}>
-                <Text style={styles.categoryText}>
+                <Text style={[
+                  styles.categoryText,
+                  { color: getCategoryBadgeTextColor(wine.color) }
+                ]}>
                   {getCategoryLabel(wine.category)}
                 </Text>
               </View>
@@ -236,34 +238,8 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  wineImageContainer: {
-    alignItems: 'center',
-    marginBottom: 24,
-    position: 'relative',
-  },
-  wineImagePlaceholder: {
-    width: 100,
-    height: 120,
-    backgroundColor: Colors.softGray,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  winePlaceholderText: {
-    fontSize: 48,
-  },
-  colorIndicator: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: Colors.textLight,
-    position: 'absolute',
-    top: 8,
-    right: 8,
-  },
   basicInfo: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   nameAndCategory: {
     flexDirection: 'row',
@@ -282,11 +258,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
+    borderWidth: 1,
   },
   categoryText: {
     fontSize: Typography.sizes.xs,
     fontWeight: Typography.weights.semibold,
-    color: Colors.accent,
   },
   wineProducer: {
     fontSize: Typography.sizes.lg,
