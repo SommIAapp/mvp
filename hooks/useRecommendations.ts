@@ -32,6 +32,7 @@ export function useRecommendations() {
     budget?: number,
     timestamp?: number,
   ): Promise<WineRecommendation[]> => {
+    console.log('🚀 STARTING API CALL pour:', dishDescription);
     console.log('🔄 getRecommendations - Starting with params:', {
       dishDescription,
       budget,
@@ -76,7 +77,8 @@ export function useRecommendations() {
     dishDescription: string,
     budget?: number
   ): Promise<WineRecommendation[]> => {
-    console.log('🔍 fetchWineRecommendationsFromAPI - Starting API call');
+    console.log('🔍 fetchWineRecommendationsFromAPI - Starting API call for:', dishDescription);
+    console.log('💰 fetchWineRecommendationsFromAPI - Budget:', budget);
     
     // Get current session for authorization
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -85,6 +87,8 @@ export function useRecommendations() {
       console.error('❌ fetchWineRecommendationsFromAPI - Session error:', sessionError);
       throw new Error('Session non valide');
     }
+
+    console.log('🔑 fetchWineRecommendationsFromAPI - Session token available:', !!session?.access_token);
 
     // Prepare API call
     const apiUrl = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/wine-recommendations`;
@@ -96,23 +100,26 @@ export function useRecommendations() {
     const headers = {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${session.access_token}`,
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
       'Pragma': 'no-cache',
       'Expires': '0',
     };
     
-    console.log('🌐 fetchWineRecommendationsFromAPI - API URL:', apiUrl);
-    console.log('📋 fetchWineRecommendationsFromAPI - Request body:', requestBody);
-    console.log('📋 fetchWineRecommendationsFromAPI - Headers:', headers);
+    console.log('📍 URL appelée:', apiUrl);
+    console.log('📝 Request body:', JSON.stringify(requestBody, null, 2));
+    console.log('📋 fetchWineRecommendationsFromAPI - Headers:', JSON.stringify(headers, null, 2));
+    console.log('⏰ fetchWineRecommendationsFromAPI - Timestamp:', new Date().toISOString());
     
     try {
+      console.log('🌐 fetchWineRecommendationsFromAPI - Making fetch request...');
+      
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers,
         body: JSON.stringify(requestBody)
       });
       
-      console.log('📡 fetchWineRecommendationsFromAPI - Response status:', response.status);
+      console.log('📊 Response status:', response.status);
       console.log('📡 fetchWineRecommendationsFromAPI - Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
@@ -122,20 +129,25 @@ export function useRecommendations() {
       }
       
       const apiResult = await response.json();
-      console.log('✅ fetchWineRecommendationsFromAPI - API Result:', apiResult);
+      console.log('🎯 API Response data:', JSON.stringify(apiResult, null, 2));
       
       // Check if we got the new algorithm response
       if (apiResult.algorithm) {
-        console.log('🎉 fetchWineRecommendationsFromAPI - Algorithm version:', apiResult.algorithm);
+        console.log('🔍 Algorithm version:', apiResult.algorithm);
         if (apiResult.algorithm === 'SOMMIA Smart v2.0') {
           console.log('✅ Using NEW algorithm v2.0!');
+        } else {
+          console.log('⚠️ Using OLD algorithm:', apiResult.algorithm);
         }
+      } else {
+        console.log('❌ NO ALGORITHM VERSION in response - using fallback?');
       }
       
       // Return the recommendations array
       const recommendations = apiResult.recommendations || apiResult;
       
       if (!Array.isArray(recommendations) || recommendations.length === 0) {
+        console.error('❌ Invalid recommendations format:', typeof recommendations, recommendations);
         throw new Error('Aucune recommandation reçue de l\'API');
       }
       
@@ -144,15 +156,23 @@ export function useRecommendations() {
         console.log(`🍷 Recommendation ${index + 1}:`, {
           name: rec.name,
           producer: rec.producer,
-          price: rec.price,
-          category: rec.category
+          price: rec.price_estimate || rec.price,
+          category: rec.category,
+          color: rec.color,
+          reasoning: rec.reasoning?.substring(0, 100) + '...'
         });
       });
       
+      console.log('✅ API CALL SUCCESSFUL - returning', recommendations.length, 'recommendations');
       return recommendations;
       
     } catch (apiError) {
       console.error('💥 fetchWineRecommendationsFromAPI - API call failed:', apiError);
+      console.error('🔍 Error details:', {
+        message: apiError.message,
+        stack: apiError.stack,
+        name: apiError.name
+      });
       
       // Fallback to database if API fails
       console.log('🗄️ fetchWineRecommendationsFromAPI - Falling back to database');
@@ -164,7 +184,8 @@ export function useRecommendations() {
     dishDescription: string,
     budget?: number
   ): Promise<WineRecommendation[]> => {
-    console.log('🗄️ fetchWineRecommendationsFromDatabase - Using database fallback');
+    console.log('🗄️ fetchWineRecommendationsFromDatabase - Using database fallback for:', dishDescription);
+    console.log('💰 fetchWineRecommendationsFromDatabase - Budget filter:', budget);
     
     let query = supabase
       .from('wines')
@@ -200,7 +221,7 @@ export function useRecommendations() {
         name: wine.name,
         producer: wine.producer || 'Producteur inconnu',
         region: wine.region || 'Région inconnue',
-        price: wine.price_estimate || 0,
+        price_estimate: wine.price_estimate || 0,
         rating: wine.global_wine_score || 80,
         category,
         color,
@@ -215,7 +236,7 @@ export function useRecommendations() {
       return recommendation;
     });
     
-    console.log('✅ fetchWineRecommendationsFromDatabase - Final recommendations:', recommendations);
+    console.log('✅ DATABASE FALLBACK - Final recommendations count:', recommendations.length);
     return recommendations;
   };
 
