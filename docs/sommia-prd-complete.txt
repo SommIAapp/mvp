@@ -1,0 +1,339 @@
+# SOMMIA - Product Requirements Document
+
+**Platform:** Mobile (React Native - Expo) - iOS Only  
+**Primary Purpose:** Deliver AI-powered wine recommendations based on food pairings in an elegant, accessible mobile interface for French Millennials.  
+**Business Model:** Freemium with 7-day trial, then 1 recommendation/day (max 3/month) free, premium €4.99/month unlimited.
+
+---
+
+## 1. Branding & Tone
+
+### Color Palette
+- **Primary:** Bordeaux Red (#722F37) 
+- **Secondary:** Champagne Gold (#D4AF37)
+- **Accent:** Warm White (#FEFEFE)
+- **Supporting:** Soft Gray (#F8F8F8), Dark Gray (#2C2C2C)
+
+### Typography
+- **Primary Font:** SF Pro (iOS native)
+- **Headings:** SF Pro Display - Bold/Semibold
+- **Body:** SF Pro Text - Regular/Medium
+- **Size Scale:** 12pt, 14pt, 16pt, 18pt, 24pt, 32pt
+
+### Voice & Tone
+- **Accessible & Bienveillant:** "Trouve ton vin parfait" vs "Sélectionnez votre accord"
+- **Confident but humble:** Expert knowledge without intimidation
+- **Encouraging:** "C'est le moment de découvrir" vs "Vous devez acheter"
+- **French-focused:** Use French wine terminology naturally
+- **No wine snobbery:** Avoid complicated jargon
+
+---
+
+## 2. Main App Screens
+
+### 2.1 Splash Screen
+- **SOMMIA logo** centered with wine glass icon
+- **Bordeaux gradient background** (dark to light)
+- **Fade-in animation** with elegant transition
+- **Auto-redirect:** Check auth state (2 second display)
+- **Tagline:** "Ton sommelier IA personnel" (small text below logo)
+
+### 2.2 Authentication
+**Welcome Screen:**
+- Hero section with app preview mockup
+- **Title:** "SOMMIA - Fini l'intimidation vin !"
+- **Subtitle:** "Trouve le vin parfait pour ton plat en 10 secondes"
+- **CTA Buttons:**
+  - "Continuer avec Google" (Google sign-in)
+  - "Créer un compte" (email/password signup)
+  - "J'ai déjà un compte" (login)
+
+**Signup/Login Forms:**
+- Email field with validation
+- Password field (8+ characters)
+- "Mot de passe oublié ?" link
+- Form validation with clear error messages
+- **Design:** Clean forms with bordeaux accent borders
+
+### 2.3 Subscription Offer
+**Title:** "Essai gratuit 7 jours"
+**Subtitle:** "Puis 1 recommandation/jour gratuite"
+
+**Benefits List:**
+- ✨ Recommandations IA illimitées
+- 🍷 Accords personnalisés selon ton budget  
+- 📱 Explications sommelier pour chaque choix
+- 🔄 Historique de tes découvertes
+
+**Pricing:**
+- **7 jours gratuits** (prominent badge)
+- **Puis €4,99/mois** 
+- **Ou 1/jour gratuit** (max 3/mois)
+
+**CTA:** "Commencer l'essai gratuit"
+**Footer:** "Annule quand tu veux • Restore Purchases"
+
+### 2.4 Home - "MES RECOMMANDATIONS"
+**Header:**
+- **SOMMIA** logo (left)
+- **Profile avatar** (right) - shows subscription status
+- **Greeting:** "Bonjour [Name], que manges-tu ?"
+
+**Main Input Section:**
+- **Large card** with camera icon and text input
+- **Placeholder:** "Décris ton plat ou prends une photo..."
+- **Camera button** (prominent, bordeaux)
+- **Text input** (expandable, 200 char limit)
+
+**Budget Section:**
+- **Label:** "Budget par bouteille (optionnel)"
+- **Input:** Number input with €/bouteille suffix
+- **Quick buttons:** €10, €20, €30, €50+
+
+**Popular Suggestions:**
+- **Title:** "Suggestions populaires"
+- **Horizontal scroll:** "Saumon grillé", "Pizza margherita", "Entrecôte", "Coq au vin"
+
+**CTA Button:**
+- **"Trouver mes vins"** (full-width, bordeaux, gold accent)
+- **Loading state:** "L'IA analyse ton plat..." with spinner
+
+### 2.5 Recommendations Results
+**Header:**
+- Back arrow + **"Mes recommandations"**
+- **Subtitle:** "Pour [dish name]" + budget if specified
+
+**Results Cards (3 recommendations):**
+**Card Structure:**
+- **Category badge:** "Économique" (green), "Qualité-Prix" (blue), "Premium" (gold)
+- **Wine image placeholder** (bottle silhouette)
+- **Wine name** (bold, 18pt)
+- **Producer + Region** (14pt, gray)
+- **Price** (large, bordeaux, "€XX")
+- **Rating** (stars + score /100)
+- **Color indicator** (small colored circle)
+- **Quick reasoning** (1 line preview)
+- **Tap area:** Full card clickable
+
+**List Layout:**
+- Vertical scroll
+- Cards with subtle shadows
+- 16px spacing between cards
+- Pull-to-refresh functionality
+
+### 2.6 Wine Details (Modal/Sheet)
+**Triggered by:** Tapping recommendation card
+
+**Content:**
+- **Wine photo** (if available) or elegant placeholder
+- **Full wine name + vintage**
+- **Producer + Region + Appellation**
+- **Price breakdown:** "€XX • [price_range]"
+- **Rating:** Visual stars + "/100 score"
+- **Grape varieties:** Pill badges
+- **Full AI reasoning:** "Ce vin s'accorde parfaitement car..."
+- **Food pairings:** "Accorde aussi avec: [list]"
+
+**Actions:**
+- **Close button** (top right)
+- **Share button** (post-launch)
+- **Add to favorites** (post-launch)
+
+### 2.7 Quota Exceeded (Free Users)
+**When 1/day limit reached:**
+- **Modal overlay** with gentle messaging
+- **Title:** "Limite quotidienne atteinte"
+- **Message:** "Reviens demain pour une nouvelle recommandation, ou découvre toutes nos suggestions avec Premium"
+- **CTA:** "Passer à Premium" 
+- **Secondary:** "Ok, à demain !"
+
+**When 3/month limit reached:**
+- Similar modal with monthly reset messaging
+
+---
+
+## 3. Bottom Tab Navigation
+
+### Tab Structure:
+1. **Accueil** (Home icon) - Main recommendation engine
+2. **Historique** (Clock icon) - Past recommendations  
+3. **Profil** (User icon) - Account + subscription management
+
+### Tab Design:
+- **Active state:** Bordeaux color + icon fill
+- **Inactive state:** Gray + outline icons
+- **Badge:** Show quota status on Accueil tab
+
+---
+
+## 4. User Flows
+
+### First-Time User:
+1. **Splash screen** (2s)
+2. **Welcome/Auth** screen
+3. **Google sign-in** OR **Email signup**
+4. **Subscription offer** (7-day trial)
+5. **Home screen** - ready to use
+6. **First recommendation** flow
+7. **Results** + detail exploration
+
+### Returning Free User (Within Limits):
+1. **Splash** → **Auto-login**
+2. **Home** → **Input dish**
+3. **Get recommendation**
+4. **View results**
+
+### Free User (Quota Exceeded):
+1. **Home** → **Input dish**
+2. **Quota modal** → **Upgrade or wait**
+
+### Premium User:
+1. **Splash** → **Auto-login**
+2. **Home** → **Unlimited usage**
+3. **Full feature access**
+
+---
+
+## 5. UX Guidelines
+
+### Core Principles:
+- **5-second rule:** User should get first recommendation in under 5 seconds
+- **Confidence building:** Always explain "why" for each recommendation
+- **Budget respect:** Never suggest wines significantly over user budget
+- **French-first:** Prioritize French wines and terminology
+- **Accessible luxury:** Premium feel without intimidation
+
+### Interaction Patterns:
+- **Large touch targets** (44pt minimum)
+- **Smooth animations** (300ms standard)
+- **Haptic feedback** for key actions
+- **Pull-to-refresh** for updated content
+- **Swipe gestures** for navigation where appropriate
+
+### Content Guidelines:
+- **Avoid wine jargon** ("notes de cassis" → "arômes de fruits rouges")
+- **Explain reasoning** in simple French
+- **Show confidence** ("Excellent choix pour" vs "Peut-être approprié")
+- **Price transparency** (always show exact price + range)
+
+---
+
+## 6. Error & Loading States
+
+### Loading States:
+- **Search loading:** "L'IA analyse ton plat..." + elegant spinner
+- **Skeleton cards** for results loading
+- **Image loading** placeholders for wine photos
+
+### Error States:
+- **No internet:** "Connexion requise pour les recommandations"
+- **API failure:** "Oups ! Retry" button + fallback suggestions
+- **No results:** Show budget-friendly alternatives
+- **Invalid input:** "Peux-tu décrire ton plat plus précisément ?"
+
+### Empty States:
+- **No history:** Elegant illustration + "Tes recommandations apparaîtront ici"
+- **First-time user:** Guided tour of main features
+
+---
+
+## 7. Subscription Integration
+
+### Trial Management:
+- **Day counter** visible in profile
+- **Grace period** reminders (day 5, 6, 7)
+- **Seamless conversion** to paid or free tier
+
+### Free Tier Limitations:
+- **Daily quota:** 1 recommendation/day
+- **Monthly cap:** 3 recommendations max
+- **Reset timing:** Clear communication
+- **Upgrade prompts:** Gentle, not aggressive
+
+### Premium Features:
+- **Unlimited recommendations**
+- **Full wine details** 
+- **Complete food pairing lists**
+- **Priority AI processing**
+
+### Payment Integration:
+- **Apple Pay** integration
+- **Subscription management** via iOS settings
+- **Restore purchases** functionality
+- **Clear pricing** display
+
+---
+
+## 8. Technical Specifications
+
+### Platform Requirements:
+- **iOS 13.0+** minimum
+- **iPhone support** only (no iPad optimization needed)
+- **Portrait orientation** primary
+- **Dark mode** support optional (Phase 2)
+
+### Performance Targets:
+- **App launch:** <2 seconds cold start
+- **Recommendation response:** <3 seconds
+- **Smooth 60fps** animations
+- **Offline graceful degradation**
+
+### Analytics Integration:
+- **User journey** tracking
+- **Recommendation accuracy** feedback
+- **Subscription conversion** metrics
+- **Error rate** monitoring
+
+### Backend Integration:
+- **Supabase** authentication
+- **Edge Functions** for AI processing
+- **PostgreSQL** for wine database
+- **Real-time** recommendation status
+
+---
+
+## 9. Success Metrics
+
+### User Engagement:
+- **Daily Active Users** retention
+- **Recommendations per session**
+- **Detail view** engagement rate
+- **Session duration** (target: 2-5 minutes)
+
+### Business Metrics:
+- **Free→Premium conversion** rate (target: 15%)
+- **Trial completion** rate (target: 60%)
+- **Monthly churn** rate (target: <5%)
+- **Revenue per user** growth
+
+### Product Quality:
+- **Recommendation satisfaction** (5-star rating)
+- **App Store rating** (target: 4.5+)
+- **Customer support** ticket volume
+- **API response time** consistency
+
+---
+
+## 10. Development Phases
+
+### Phase 1 (MVP - 2 weeks):
+- ✅ Core recommendation engine
+- ✅ Basic authentication
+- ✅ Subscription flow
+- ✅ 3-screen navigation
+
+### Phase 2 (1 month post-launch):
+- 📱 Wine photo integration
+- 📱 Advanced filtering
+- 📱 Social sharing
+- 📱 Push notifications
+
+### Phase 3 (3 months post-launch):
+- 📱 Personal wine cave
+- 📱 Advanced analytics
+- 📱 Community features
+- 📱 Android version
+
+---
+
+**Ready for Bolt.new implementation with React Native + Expo + Supabase integration.**
