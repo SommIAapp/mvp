@@ -56,7 +56,7 @@ export default function SplashScreen() {
       <Animated.View style={[styles.content, animatedStyle]}>
         <View style={styles.logoContainer}>
           <Image 
-            source={require('@/assets/images/ChatGPT_Image_6_juil._2025__14_01_43-removebg-preview.png')}
+            source={require('@/assets/images/3BEC3B78-656F-4757-8B8B-44109C1DE084.PNG')}
             style={styles.logoImage}
             resizeMode="contain"
           />
