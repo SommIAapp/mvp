@@ -188,6 +188,7 @@ Deno.serve(async (req) => {
         },
       ],
       mode,
+      allow_promotion_codes: true,
       success_url,
       cancel_url,
     });
