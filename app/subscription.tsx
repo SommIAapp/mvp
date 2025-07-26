@@ -86,7 +86,7 @@ export default function SubscriptionScreen() {
       case 'trial_signup':
         return {
           title: 'Découvre l\'accord parfait',
-          subtitle: 'Essai gratuit de 7 jours, puis 4,99€/mois',
+          subtitle: 'Essai gratuit de 7 jours, puis 4,99€/mois ou 60€/an',
           badge: '🎁 7 jours offerts',
           buttonTitle: 'Commencer mon essai gratuit',
           onPress: handleStartTrialFlow,
@@ -96,7 +96,7 @@ export default function SubscriptionScreen() {
       case 'daily_limit':
         return {
           title: 'Limite quotidienne atteinte',
-          subtitle: 'Passe à Premium pour des recommandations illimitées',
+          subtitle: 'Passe à Premium (4,99€/mois ou 60€/an) pour des recommandations illimitées',
           badge: '⭐ Premium',
           buttonTitle: 'Passer à Premium',
           onPress: handleBuyPremium,
@@ -106,7 +106,7 @@ export default function SubscriptionScreen() {
       case 'trial_expired':
         return {
           title: 'Essai terminé !',
-          subtitle: 'Continue avec Premium pour des recommandations illimitées',
+          subtitle: 'Continue avec Premium (4,99€/mois ou 60€/an) pour des recommandations illimitées',
           badge: '⭐ Premium',
           buttonTitle: 'Passer à Premium',
           onPress: handleBuyPremium,
@@ -116,7 +116,7 @@ export default function SubscriptionScreen() {
       case 'premium_upgrade':
         return {
           title: 'Passe à Premium',
-          subtitle: 'Accès illimité à toutes les fonctionnalités',
+          subtitle: 'Accès illimité (4,99€/mois ou 60€/an) à toutes les fonctionnalités',
           badge: '⭐ Premium',
           buttonTitle: 'Passer à Premium',
           onPress: handleBuyPremium,
@@ -126,7 +126,7 @@ export default function SubscriptionScreen() {
       default:
         return {
           title: 'Découvre l\'accord parfait',
-          subtitle: 'Essai gratuit de 7 jours, puis 4,99€/mois',
+          subtitle: 'Essai gratuit de 7 jours, puis 4,99€/mois ou 60€/an',
           badge: '🎁 7 jours offerts',
           buttonTitle: 'Commencer mon essai gratuit',
           onPress: handleStartTrialFlow,
@@ -222,8 +222,8 @@ export default function SubscriptionScreen() {
             </Text>
             <Text style={styles.priceText}>
               {reason === 'trial_signup' 
-                ? 'Puis accès illimité pour €4,99/mois'
-                : 'Accès illimité pour €4,99/mois'
+                ? 'Puis accès illimité pour €4,99/mois ou €60/an'
+                : 'Accès illimité pour €4,99/mois ou €60/an'
               }
             </Text>
           </View>
