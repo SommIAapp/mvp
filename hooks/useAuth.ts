@@ -16,6 +16,15 @@ export function useAuth() {
   useEffect(() => {
     // Get initial session
     const initializeAuth = async () => {
+      // Check if Supabase is properly configured
+      if (!process.env.EXPO_PUBLIC_SUPABASE_URL || !process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY) {
+        console.error('❌ Supabase environment variables not configured');
+        setUser(null);
+        setProfile(null);
+        setLoading(false);
+        return;
+      }
+
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
