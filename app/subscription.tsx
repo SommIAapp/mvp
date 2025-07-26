@@ -77,7 +77,7 @@ export default function SubscriptionScreen() {
         title: 'Découvre l\'accord parfait',
         subtitle: 'Essai gratuit de 7 jours, puis 4,99€/mois',
         badge: '🎁 7 jours offerts',
-        title: 'Chargement...',
+        buttonTitle: 'Chargement...',
         onPress: () => {},
         loading: true,
       };
@@ -282,7 +282,7 @@ export default function SubscriptionScreen() {
                   loading={loading}
                 />
               </View>
-            </div>
+            </View>
           </View>
         )}
 
@@ -469,7 +469,6 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.sm,
     color: Colors.textPrimary,
     marginLeft: 8,
-  },
   },
   trialText: {
     fontSize: Typography.sizes.lg,
