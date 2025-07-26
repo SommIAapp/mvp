@@ -112,10 +112,9 @@ export default function RestaurantScreen() {
       console.error('OCR processing error:', error);
       Alert.alert(
         'Erreur de traitement',
-        'Impossible d\'analyser la carte des vins. Voulez-vous réessayer ou saisir manuellement ?',
+        'Impossible d\'analyser la carte des vins. Voulez-vous réessayer ?',
         [
           { text: 'Réessayer', onPress: () => setScannedImage(null) },
-          { text: 'Saisie manuelle', onPress: () => handleManualEntry() }
         ]
       );
     } finally {
@@ -124,13 +123,7 @@ export default function RestaurantScreen() {
   };
 
   const handleManualEntry = () => {
-    // For now, simulate manual entry with some example wines
-    setExtractedWines([
-      { name: 'Château Margaux 2018', type: 'rouge', price_bottle: 45, region: 'Bordeaux' },
-      { name: 'Sancerre Loire 2022', type: 'blanc', price_bottle: 28, region: 'Loire' },
-      { name: 'Côtes du Rhône 2021', type: 'rouge', price_bottle: 22, region: 'Rhône' }
-    ]);
-    setCurrentStep('dish');
+    // Function removed
   };
 
   const handleGetRecommendations = async () => {
@@ -218,9 +211,6 @@ export default function RestaurantScreen() {
             </View>
           </View>
           
-          <TouchableOpacity style={styles.manualButton} onPress={handleManualEntry}>
-            <Text style={styles.manualText}>Ou saisir manuellement les vins</Text>
-          </TouchableOpacity>
         </View>
       )}
 
@@ -354,18 +344,6 @@ export default function RestaurantScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.modeHeader}>
-        <View style={styles.modeIconContainer}>
-          <Utensils size={24} color={Colors.primary} />
-        </View>
-        <View style={styles.modeInfo}>
-          <Text style={styles.modeTitle}>Mode Restaurant</Text>
-          <Text style={styles.modeSubtitle}>
-            Trouvez le vin parfait sur la carte
-          </Text>
-        </View>
-      </View>
-
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {currentStep === 'scan' && renderScanStep()}
         {currentStep === 'dish' && renderDishStep()}
@@ -418,39 +396,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
-  },
-  modeHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-  },
-  modeIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: Colors.softGray,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  modeInfo: {
-    flex: 1,
-  },
-  modeTitle: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.bold,
-    color: Colors.textPrimary,
-  },
-  modeSubtitle: {
-    fontSize: Typography.sizes.base,
-    color: Colors.textSecondary,
-    marginTop: 2,
   },
   content: {
     flex: 1,
@@ -517,15 +462,6 @@ const styles = StyleSheet.create({
   scanButtons: {
     width: '100%',
     gap: 12,
-  },
-  manualButton: {
-    paddingVertical: 16,
-  },
-  manualText: {
-    fontSize: Typography.sizes.base,
-    color: Colors.primary,
-    textAlign: 'center',
-    textDecorationLine: 'underline',
   },
   imagePreview: {
     position: 'relative',
