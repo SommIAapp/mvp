@@ -21,7 +21,7 @@ export default function WelcomeScreen() {
         <View style={styles.heroContent}>
           <View style={styles.logoContainer}>
             <Image
-              source={require('@/assets/images/sommialogo.png')}
+              source={require('@/assets/images/Sommialogo.PNG')}
               style={styles.logoImage}
               resizeMode="contain"
             />
