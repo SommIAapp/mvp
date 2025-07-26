@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Camera, Utensils, MapPin, CircleCheck as CheckCircle, RotateCcw, User, Wine } from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
@@ -338,21 +337,320 @@ export default function RestaurantScreen() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={[Colors.primary, Colors.secondary]}
-        style={styles.header}
-      >
-        <View style={styles.headerContent}>
-          <View style={styles.headerLeft}>
-            <View style={styles.restaurantIcon}>
-              <Utensils size={28} color={Colors.accent} />
-            </View>
-            <View>
-              <Text style={styles.headerTitle}>Mode Restaurant</Text>
-              <Text style={styles.headerSubtitle}>
-                Trouvez le vin parfait sur la carte
-              </Text>
-            </View>
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <Image
+            source={require('../../assets/images/sommia-logo.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
+          <Text style={styles.logo}>SOMMIA</Text>
+        </View>
+        <TouchableOpacity 
+          style={styles.profileButton}
+          onPress={() => router.push('/(tabs)/profile')}
+        >
+          <User size={24} color={Colors.primary} />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.modeHeader}>
+        <View style={styles.modeIconContainer}>
+          <Utensils size={24} color={Colors.primary} />
+        </View>
+        <View style={styles.modeInfo}>
+          <Text style={styles.modeTitle}>Mode Restaurant</Text>
+          <Text style={styles.modeSubtitle}>
+            Trouvez le vin parfait sur la carte
+          </Text>
+        </View>
+      </View>
+
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {currentStep === 'scan' && renderScanStep()}
+        {currentStep === 'dish' && renderDishStep()}
+        {currentStep === 'recommendations' && renderRecommendationsStep()}
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.accent,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 60,
+    paddingBottom: 24,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logoImage: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+  },
+  logo: {
+    fontSize: Typography.sizes.xl,
+    fontWeight: Typography.weights.bold,
+    color: Colors.primary,
+    marginLeft: 12,
+    letterSpacing: 1,
+  },
+  profileButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: Colors.softGray,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: Colors.darkGray,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  modeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+  },
+  modeIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: Colors.softGray,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+    shadowColor: Colors.darkGray,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  modeInfo: {
+    flex: 1,
+  },
+  modeTitle: {
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.bold,
+    color: Colors.textPrimary,
+  },
+  modeSubtitle: {
+    fontSize: Typography.sizes.base,
+    color: Colors.textSecondary,
+    marginTop: 2,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+  },
+  stepContainer: {
+    marginBottom: 32,
+  },
+  stepHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  stepNumber: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  stepNumberText: {
+    fontSize: Typography.sizes.base,
+    fontWeight: Typography.weights.bold,
+    color: Colors.accent,
+  },
+  stepTitle: {
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.bold,
+    color: Colors.textPrimary,
+  },
+  scanSection: {
+    alignItems: 'center',
+  },
+  scanCard: {
+    backgroundColor: Colors.softGray,
+    borderRadius: 16,
+    padding: 32,
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 24,
+    shadowColor: Colors.darkGray,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  scanTitle: {
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.bold,
+    color: Colors.textPrimary,
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  scanSubtitle: {
+    fontSize: Typography.sizes.base,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: Typography.sizes.base * Typography.lineHeights.relaxed,
+  },
+  scanButtons: {
+    width: '100%',
+    gap: 12,
+  },
+  manualButton: {
+    paddingVertical: 16,
+  },
+  manualText: {
+    fontSize: Typography.sizes.base,
+    color: Colors.primary,
+    textAlign: 'center',
+    textDecorationLine: 'underline',
+  },
+  imagePreview: {
+    position: 'relative',
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 24,
+  },
+  previewImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 16,
+  },
+  imageOverlay: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+  },
+  retakeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  retakeText: {
+    color: Colors.accent,
+    fontSize: Typography.sizes.sm,
+    fontWeight: Typography.weights.medium,
+    marginLeft: 6,
+  },
+  processingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 16,
+  },
+  winesDetected: {
+    backgroundColor: Colors.success,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginBottom: 24,
+  },
+  winesDetectedText: {
+    fontSize: Typography.sizes.base,
+    fontWeight: Typography.weights.medium,
+    color: Colors.accent,
+    textAlign: 'center',
+  },
+  dishSection: {
+    gap: 24,
+  },
+  recommendationsSubtitle: {
+    fontSize: Typography.sizes.base,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  recommendationsList: {
+    maxHeight: 400,
+  },
+  restaurantWineCard: {
+    backgroundColor: Colors.softGray,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: Colors.darkGray,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  wineCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  wineTypeIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  wineType: {
+    fontSize: Typography.sizes.sm,
+    fontWeight: Typography.weights.medium,
+    color: Colors.primary,
+    marginLeft: 6,
+    textTransform: 'capitalize',
+  },
+  winePrice: {
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.bold,
+    color: Colors.primary,
+  },
+  wineName: {
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.bold,
+    color: Colors.textPrimary,
+    marginBottom: 4,
+  },
+  wineRegion: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.textSecondary,
+    marginBottom: 12,
+  },
+  wineReasoning: {
+    fontSize: Typography.sizes.base,
+    color: Colors.textPrimary,
+    lineHeight: Typography.sizes.base * Typography.lineHeights.relaxed,
+    marginBottom: 16,
+  },
+  wineActions: {
+    marginTop: 8,
+  },
+  newSearchSection: {
+    marginTop: 24,
+    paddingBottom: 32,
+  },
+});
           </View>
           <TouchableOpacity 
             style={styles.profileButton}
