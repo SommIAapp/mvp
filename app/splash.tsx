@@ -95,6 +95,8 @@ const styles = StyleSheet.create({
   logoImage: {
     width: 80,
     height: 80,
+    borderRadius: 40, // Half of width/height to make it circular
+    overflow: 'hidden', // Ensure content is clipped by borderRadius
   },
   title: {
     fontSize: Typography.sizes.xxl,
