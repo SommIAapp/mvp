@@ -84,6 +84,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden', // Ensure image is clipped by border radius
+    borderWidth: 2, // Add border
+    borderColor: Colors.primary, // Border color
     marginBottom: 24,
   },
   logoImage: {

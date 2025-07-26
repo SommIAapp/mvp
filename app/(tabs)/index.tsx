@@ -272,6 +272,9 @@ const styles = StyleSheet.create({
   logoImage: {
     width: 32,
     height: 32,
+    borderRadius: 16, // Make it circular
+    borderWidth: 1, // Add border
+    borderColor: Colors.primary, // Border color
   },
   logo: {
     fontSize: Typography.sizes.xl,
