@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import Sommialogo from '@/assets/images/Sommialogo.PNG';
 import { Sparkles, Clock, Wine } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
@@ -20,8 +21,8 @@ export default function WelcomeScreen() {
       >
         <View style={styles.heroContent}>
           <View style={styles.logoContainer}>
-            <Image
-              source={require('@/assets/images/Sommialogo.PNG')}
+            <Image 
+              source={Sommialogo}
               style={styles.logoImage}
               resizeMode="contain"
             />
