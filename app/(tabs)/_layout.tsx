@@ -35,20 +35,20 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="history"
-        options={{
-          title: 'Historique',
-          tabBarIcon: ({ size, color }) => (
-            <Clock size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="restaurant"
         options={{
           title: 'Restaurant',
           tabBarIcon: ({ size, color }) => (
             <Utensils size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="history"
+        options={{
+          title: 'Historique',
+          tabBarIcon: ({ size, color }) => (
+            <Clock size={size} color={color} />
           ),
         }}
       />
