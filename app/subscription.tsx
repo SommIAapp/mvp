@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Sparkles, Wine, Smartphone, RotateCcw, X } from 'lucide-react-native';
+import { Sparkles, Wine, Smartphone, RotateCcw, X, Check } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
@@ -21,6 +21,7 @@ export default function SubscriptionScreen() {
   const [loading, setLoading] = useState(false);
 
   const premiumProduct = stripeProducts.find(p => p.name === 'SommIA Premium');
+  const annualProduct = stripeProducts.find(p => p.name === 'SommIA Premium (Annuel)');
 
   const handleStartTrialFlow = async () => {
     console.log('🎯 handleStartTrialFlow - Starting free trial process');
@@ -51,8 +52,8 @@ export default function SubscriptionScreen() {
     }
   };
 
-  const handleBuyPremium = async () => {
-    if (!premiumProduct) {
+  const handleBuyPremium = async (priceId: string) => {
+    if (!priceId) {
       Alert.alert('Erreur', 'Produit non trouvé');
       return;
     }
@@ -60,7 +61,7 @@ export default function SubscriptionScreen() {
     setLoading(true);
     
     try {
-      await createCheckoutSession(premiumProduct.priceId, premiumProduct.mode);
+      await createCheckoutSession(priceId, 'subscription');
     } catch (error) {
       console.error('Checkout error:', error);
       Alert.alert('Erreur', 'Impossible de créer la session de paiement. Réessaie plus tard.');
@@ -96,37 +97,37 @@ export default function SubscriptionScreen() {
       case 'daily_limit':
         return {
           title: 'Limite quotidienne atteinte',
-          subtitle: 'Passe à Premium (4,99€/mois ou 60€/an) pour des recommandations illimitées',
+          subtitle: 'Passe à Premium pour des recommandations illimitées',
           badge: '⭐ Premium',
           buttonTitle: 'Passer à Premium',
-          onPress: handleBuyPremium,
+          onPress: () => handleBuyPremium(premiumProduct?.priceId || ''),
           loading: false,
         };
 
       case 'trial_expired':
         return {
           title: 'Essai terminé !',
-          subtitle: 'Continue avec Premium (4,99€/mois ou 60€/an) pour des recommandations illimitées',
+          subtitle: 'Continue avec Premium pour des recommandations illimitées',
           badge: '⭐ Premium',
           buttonTitle: 'Passer à Premium',
-          onPress: handleBuyPremium,
+          onPress: () => handleBuyPremium(premiumProduct?.priceId || ''),
           loading: false,
         };
 
       case 'premium_upgrade':
         return {
           title: 'Passe à Premium',
-          subtitle: 'Accès illimité (4,99€/mois ou 60€/an) à toutes les fonctionnalités',
+          subtitle: 'Accès illimité à toutes les fonctionnalités',
           badge: '⭐ Premium',
           buttonTitle: 'Passer à Premium',
-          onPress: handleBuyPremium,
+          onPress: () => handleBuyPremium(premiumProduct?.priceId || ''),
           loading: false,
         };
 
       default:
         return {
           title: 'Découvre l\'accord parfait',
-          subtitle: 'Essai gratuit de 7 jours, puis 4,99€/mois ou 60€/an',
+          subtitle: 'Essai gratuit de 7 jours, puis choisis ton plan',
           badge: '🎁 7 jours offerts',
           buttonTitle: 'Commencer mon essai gratuit',
           onPress: handleStartTrialFlow,
@@ -215,19 +216,86 @@ export default function SubscriptionScreen() {
           </View>
         </View>
 
-        <View style={styles.pricingSection}>
-          <View style={styles.pricingCard}>
-            <Text style={styles.trialText}>
-              {reason === 'trial_signup' ? '7 jours gratuits' : 'Accès Premium'}
-            </Text>
-            <Text style={styles.priceText}>
-              {reason === 'trial_signup' 
-                ? 'Puis accès illimité pour €4,99/mois ou €60/an'
-                : 'Accès illimité pour €4,99/mois ou €60/an'
-              }
-            </Text>
+        {reason !== 'trial_signup' && (
+          <View style={styles.pricingSection}>
+            <Text style={styles.pricingSectionTitle}>Choisis ton plan</Text>
+            
+            <View style={styles.pricingGrid}>
+              {/* Plan Mensuel */}
+              <View style={styles.pricingCard}>
+                <View style={styles.pricingHeader}>
+                  <Text style={styles.planName}>Mensuel</Text>
+                </View>
+                <View style={styles.pricingContent}>
+                  <Text style={styles.priceAmount}>€4,99</Text>
+                  <Text style={styles.pricePeriod}>par mois</Text>
+                </View>
+                <View style={styles.pricingFeatures}>
+                  <View style={styles.feature}>
+                    <Check size={16} color={Colors.success} />
+                    <Text style={styles.featureText}>Recommandations illimitées</Text>
+                  </View>
+                  <View style={styles.feature}>
+                    <Check size={16} color={Colors.success} />
+                    <Text style={styles.featureText}>Explications détaillées</Text>
+                  </View>
+                </View>
+                <Button
+                  title="Choisir Mensuel"
+                  onPress={() => handleBuyPremium(premiumProduct?.priceId || '')}
+                  variant="outline"
+                  size="medium"
+                  fullWidth
+                  loading={loading}
+                />
+              </View>
+
+              {/* Plan Annuel */}
+              <View style={[styles.pricingCard, styles.pricingCardPopular]}>
+                <View style={styles.popularBadge}>
+                  <Text style={styles.popularBadgeText}>Économise 40€</Text>
+                </View>
+                <View style={styles.pricingHeader}>
+                  <Text style={styles.planName}>Annuel</Text>
+                </View>
+                <View style={styles.pricingContent}>
+                  <Text style={styles.priceAmount}>€60</Text>
+                  <Text style={styles.pricePeriod}>par an</Text>
+                  <Text style={styles.priceEquivalent}>€5/mois</Text>
+                </View>
+                <View style={styles.pricingFeatures}>
+                  <View style={styles.feature}>
+                    <Check size={16} color={Colors.success} />
+                    <Text style={styles.featureText}>Recommandations illimitées</Text>
+                  </View>
+                  <View style={styles.feature}>
+                    <Check size={16} color={Colors.success} />
+                    <Text style={styles.featureText}>Explications détaillées</Text>
+                  </View>
+                </View>
+                <Button
+                  title="Choisir Annuel"
+                  onPress={() => handleBuyPremium(annualProduct?.priceId || '')}
+                  variant="primary"
+                  size="medium"
+                  fullWidth
+                  loading={loading}
+                />
+              </View>
+            </div>
           </View>
-        </View>
+        )}
+
+        {reason === 'trial_signup' && (
+          <View style={styles.pricingSection}>
+            <View style={styles.pricingCard}>
+              <Text style={styles.trialText}>7 jours gratuits</Text>
+              <Text style={styles.priceText}>
+                Puis choisis entre €4,99/mois ou €60/an
+              </Text>
+            </View>
+          </View>
+        )}
 
         <View style={styles.buttonSection}>
           <Button
@@ -320,27 +388,101 @@ const styles = StyleSheet.create({
   pricingSection: {
     marginBottom: 32,
   },
+  pricingSectionTitle: {
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.bold,
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  pricingGrid: {
+    gap: 16,
+  },
   pricingCard: {
     backgroundColor: Colors.softGray,
     borderRadius: 16,
     padding: 24,
-    alignItems: 'center',
+    position: 'relative',
     shadowColor: Colors.darkGray,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
+    marginBottom: 16,
+  },
+  pricingCardPopular: {
+    borderWidth: 2,
+    borderColor: Colors.primary,
+    backgroundColor: Colors.accent,
+  },
+  popularBadge: {
+    position: 'absolute',
+    top: -10,
+    left: 20,
+    backgroundColor: Colors.secondary,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  popularBadgeText: {
+    fontSize: Typography.sizes.xs,
+    fontWeight: Typography.weights.bold,
+    color: Colors.darkGray,
+  },
+  pricingHeader: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  planName: {
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.bold,
+    color: Colors.textPrimary,
+  },
+  pricingContent: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  priceAmount: {
+    fontSize: Typography.sizes.xxl,
+    fontWeight: Typography.weights.bold,
+    color: Colors.primary,
+  },
+  pricePeriod: {
+    fontSize: Typography.sizes.base,
+    color: Colors.textSecondary,
+    marginTop: 4,
+  },
+  priceEquivalent: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.textLight,
+    marginTop: 2,
+  },
+  pricingFeatures: {
+    marginBottom: 20,
+  },
+  feature: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  featureText: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.textPrimary,
+    marginLeft: 8,
+  },
   },
   trialText: {
     fontSize: Typography.sizes.lg,
     fontWeight: Typography.weights.bold,
     color: Colors.primary,
     marginBottom: 8,
+    textAlign: 'center',
   },
   priceText: {
-    fontSize: Typography.sizes.xl,
+    fontSize: Typography.sizes.base,
     fontWeight: Typography.weights.bold,
     color: Colors.textPrimary,
+    textAlign: 'center',
   },
   buttonSection: {
     marginBottom: 24,

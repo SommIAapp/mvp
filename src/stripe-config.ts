@@ -15,7 +15,7 @@ export const stripeProducts: StripeProduct[] = [
   {
     priceId: 'price_1Rp8OmEafAFTMvbGdRLcRMoI',
     name: 'SommIA Premium (Annuel)',
-    description: 'Annuel - 60€/an (économise 40€)',
+    description: 'Annuel - 60€/an (économise 40€ par rapport au mensuel)',
     mode: 'subscription',
   },
 ];
