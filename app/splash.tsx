@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
+import Sommialogo from '@/assets/images/Sommialogo.PNG';
 import { useAuth } from '@/hooks/useAuth';
 
 const { width, height } = Dimensions.get('window');
@@ -56,7 +57,7 @@ export default function SplashScreen() {
       <Animated.View style={[styles.content, animatedStyle]}>
         <View style={styles.logoContainer}>
           <Image
-            source={require('../assets/images/Sommialogo.PNG')}
+            source={Sommialogo}
             style={styles.logoImage}
             resizeMode="contain"
           />
