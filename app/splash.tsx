@@ -55,8 +55,8 @@ export default function SplashScreen() {
     >
       <Animated.View style={[styles.content, animatedStyle]}>
         <View style={styles.logoContainer}>
-          <Image 
-            source={require('@/assets/images/icon.png')}
+          <Image
+            source={require('@/assets/images/sommialogo.png')}
             style={styles.logoImage}
             resizeMode="contain"
           />

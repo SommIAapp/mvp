@@ -150,7 +150,7 @@ export default function HomeScreen() {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Image
-            source={require('@/assets/images/icon.png')}
+            source={require('@/assets/images/sommialogo.png')}
             style={styles.logoImage}
             resizeMode="contain"
           />
