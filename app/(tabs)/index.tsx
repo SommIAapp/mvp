@@ -18,7 +18,6 @@ import { Input } from '@/components/Input';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useRecommendations } from '@/hooks/useRecommendations';
-const Sommialogo = require('../../assets/images/Sommialogo.PNG');
 
 const { width } = Dimensions.get('window');
 
@@ -151,7 +150,7 @@ export default function HomeScreen() {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Image
-            source={Sommialogo}
+            source={require('../../assets/images/Sommialogo.PNG')}
             style={styles.logoImage}
             resizeMode="contain"
           />

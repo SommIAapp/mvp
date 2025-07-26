@@ -6,7 +6,6 @@ import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
-const Sommialogo = require('../assets/images/Sommialogo.PNG');
 
 const { width, height } = Dimensions.get('window');
 
@@ -22,7 +21,7 @@ export default function WelcomeScreen() {
         <View style={styles.heroContent}>
           <View style={styles.logoContainer}>
             <Image 
-              source={Sommialogo}
+              source={require('../assets/images/Sommialogo.PNG')}
               style={styles.logoImage}
               resizeMode="contain"
             />
