@@ -17,8 +17,8 @@ import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
-import Sommialogo from '@/assets/images/Sommialogo.PNG';
 import { useRecommendations } from '@/hooks/useRecommendations';
+import Sommialogo from '@/assets/images/Sommialogo.PNG';
 
 const { width } = Dimensions.get('window');
 
