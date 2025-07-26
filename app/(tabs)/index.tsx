@@ -149,8 +149,8 @@ export default function HomeScreen() {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Image 
-            source={require('@/assets/images/3BEC3B78-656F-4757-8B8B-44109C1DE084.PNG')}
+          <Image
+            source={require('@/assets/images/icon.png')}
             style={styles.logoImage}
             resizeMode="contain"
           />
