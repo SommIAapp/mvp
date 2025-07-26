@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Chrome as Home, Clock, User, Utensils } from 'lucide-react-native';
+import { Wine, Clock, User, Utensils } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 
@@ -28,9 +28,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Accueil',
+          title: 'Accords',
           tabBarIcon: ({ size, color }) => (
-            <Home size={size} color={color} />
+            <Wine size={size} color={color} />
           ),
         }}
       />
