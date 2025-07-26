@@ -10,7 +10,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Camera, Utensils, MapPin, CircleCheck as CheckCircle, RotateCcw, User, Wine } from 'lucide-react-native';
+import { Camera, Upload, Check, Wine, User, RotateCcw } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
@@ -22,116 +22,26 @@ import { useRestaurantMode } from '@/hooks/useRestaurantMode';
 
 const { width } = Dimensions.get('window');
 
-type RestaurantStep = 'scan' | 'dish' | 'recommendations';
+type RestaurantStep = 'scan' | 'dish' | 'results';
 
 export default function RestaurantScreen() {
   const router = useRouter();
   const { user, profile, canMakeRecommendation } = useAuth();
   const { 
-    scanWineCard, 
-    getRestaurantRecommendations, 
     currentSession,
     loading,
-    error 
+    error,
+    scanWineCard,
+    pickFromGallery,
+    getRestaurantRecommendations, 
+    clearSession
   } = useRestaurantMode();
 
-  const [currentStep, setCurrentStep] = useState<RestaurantStep>('scan');
-  const [scannedImage, setScannedImage] = useState<string | null>(null);
-  const [extractedWines, setExtractedWines] = useState<any[]>([]);
   const [dishDescription, setDishDescription] = useState('');
+  const [step, setStep] = useState<RestaurantStep>('scan');
   const [recommendations, setRecommendations] = useState<any[]>([]);
-  const [processingImage, setProcessingImage] = useState(false);
-  const [gettingRecommendations, setGettingRecommendations] = useState(false);
 
-  const handleTakePhoto = async () => {
-    try {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      
-      if (status !== 'granted') {
-        Alert.alert(
-          'Permission requise',
-          'L\'accès à l\'appareil photo est nécessaire pour scanner la carte des vins.'
-        );
-        return;
-      }
-
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8,
-      });
-
-      if (!result.canceled && result.assets[0]) {
-        setScannedImage(result.assets[0].uri);
-        await processWineCard(result.assets[0].uri);
-      }
-    } catch (error) {
-      console.error('Camera error:', error);
-      Alert.alert('Erreur', 'Impossible d\'accéder à l\'appareil photo');
-    }
-  };
-
-  const handlePickFromGallery = async () => {
-    try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
-      if (status !== 'granted') {
-        Alert.alert(
-          'Permission requise',
-          'L\'accès à la galerie est nécessaire pour sélectionner une photo.'
-        );
-        return;
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8,
-      });
-
-      if (!result.canceled && result.assets[0]) {
-        setScannedImage(result.assets[0].uri);
-        await processWineCard(result.assets[0].uri);
-      }
-    } catch (error) {
-      console.error('Gallery error:', error);
-      Alert.alert('Erreur', 'Impossible d\'accéder à la galerie');
-    }
-  };
-
-  const processWineCard = async (imageUri: string) => {
-    setProcessingImage(true);
-    
-    try {
-      const result = await scanWineCard(imageUri);
-      setExtractedWines(result.extracted_wines || []);
-      setCurrentStep('dish');
-    } catch (error) {
-      console.error('OCR processing error:', error);
-      Alert.alert(
-        'Erreur de traitement',
-        'Impossible d\'analyser la carte des vins. Voulez-vous réessayer ?',
-        [
-          { text: 'Réessayer', onPress: () => setScannedImage(null) },
-        ]
-      );
-    } finally {
-      setProcessingImage(false);
-    }
-  };
-
-  const handleManualEntry = () => {
-    // Function removed
-  };
-
-  const handleGetRecommendations = async () => {
-    if (!dishDescription.trim()) {
-      Alert.alert('Erreur', 'Veuillez décrire votre plat');
-      return;
-    }
-
+  const handleScanCard = async () => {
     if (!canMakeRecommendation()) {
       router.push({
         pathname: '/subscription',
@@ -140,190 +50,248 @@ export default function RestaurantScreen() {
       return;
     }
 
-    setGettingRecommendations(true);
-
     try {
-      const result = await getRestaurantRecommendations(
-        dishDescription,
-        extractedWines,
-        undefined
+      const session = await scanWineCard();
+      Alert.alert(
+        'Carte analysée !', 
+        `${session.extracted_wines.length} vins détectés chez ${session.restaurant_name}`,
+        [{ text: 'Continuer', onPress: () => setStep('dish') }]
       );
-      setRecommendations(result);
-      setCurrentStep('recommendations');
-    } catch (error) {
-      console.error('Restaurant recommendations error:', error);
-      Alert.alert('Erreur', 'Impossible de générer les recommandations');
-    } finally {
-      setGettingRecommendations(false);
+    } catch (error: any) {
+      Alert.alert('Erreur', error.message);
     }
   };
 
-  const handleRetakePhoto = () => {
-    setScannedImage(null);
-    setExtractedWines([]);
-    setCurrentStep('scan');
+  const handlePickFromGallery = async () => {
+    if (!canMakeRecommendation()) {
+      router.push({
+        pathname: '/subscription',
+        params: { reason: 'daily_limit' }
+      });
+      return;
+    }
+
+    try {
+      const session = await pickFromGallery();
+      Alert.alert(
+        'Carte analysée !', 
+        `${session.extracted_wines.length} vins détectés chez ${session.restaurant_name}`,
+        [{ text: 'Continuer', onPress: () => setStep('dish') }]
+      );
+    } catch (error: any) {
+      Alert.alert('Erreur', error.message);
+    }
   };
 
-  const renderScanStep = () => (
-    <View style={styles.stepContainer}>
-      <View style={styles.stepHeader}>
-        <View style={styles.stepNumber}>
-          <Text style={styles.stepNumberText}>1</Text>
-        </View>
-        <Text style={styles.stepTitle}>Scannez la carte des vins</Text>
-      </View>
+  const handleGetRecommendations = async () => {
+    if (!dishDescription.trim()) {
+      Alert.alert('Erreur', 'Veuillez décrire votre plat');
+      return;
+    }
 
-      {scannedImage ? (
-        <View style={styles.imagePreview}>
-          <Image source={{ uri: scannedImage }} style={styles.previewImage} />
-          <View style={styles.imageOverlay}>
-            <TouchableOpacity style={styles.retakeButton} onPress={handleRetakePhoto}>
-              <RotateCcw size={20} color={Colors.accent} />
-              <Text style={styles.retakeText}>Reprendre</Text>
-            </TouchableOpacity>
+    try {
+      const results = await getRestaurantRecommendations(dishDescription);
+      setRecommendations(results);
+      setStep('results');
+    } catch (error: any) {
+      Alert.alert('Erreur', error.message);
+    }
+  };
+
+  const handleNewSearch = () => {
+    setStep('scan');
+    setDishDescription('');
+    setRecommendations([]);
+    clearSession();
+  };
+
+  // ÉCRAN 1: SCAN CARTE
+  if (step === 'scan') {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Image
+              source={require('../../assets/images/sommia-logo.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
+            <Text style={styles.logo}>SOMMIA</Text>
           </View>
+          <TouchableOpacity 
+            style={styles.profileButton}
+            onPress={() => router.push('/(tabs)/profile')}
+          >
+            <User size={24} color={Colors.primary} />
+          </TouchableOpacity>
         </View>
-      ) : (
-        <View style={styles.scanSection}>
-          <View style={styles.scanCard}>
-            <Camera size={48} color={Colors.primary} strokeWidth={1} />
-            <Text style={styles.scanTitle}>Photographiez la carte des vins</Text>
-            <Text style={styles.scanSubtitle}>
-              Prenez une photo claire de la section vins de la carte
-            </Text>
-            
-            <View style={styles.scanButtons}>
-              <Button
-                title="Prendre une photo"
-                onPress={handleTakePhoto}
-                variant="primary"
-                size="large"
-                fullWidth
-              />
+
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <View style={styles.pageHeader}>
+            <Text style={styles.title}>Mode Restaurant</Text>
+            <Text style={styles.subtitle}>Scannez la carte des vins de votre restaurant</Text>
+          </View>
+
+          <View style={styles.scanSection}>
+            <View style={styles.scanCard}>
+              <Camera size={64} color={Colors.primary} strokeWidth={1} />
+              <Text style={styles.scanTitle}>Photographier la carte des vins</Text>
+              <Text style={styles.scanSubtitle}>
+                L'IA va extraire automatiquement tous les vins disponibles
+              </Text>
               
-              <Button
-                title="Choisir depuis la galerie"
-                onPress={handlePickFromGallery}
-                variant="outline"
-                size="medium"
-                fullWidth
-              />
+              <View style={styles.scanButtons}>
+                <Button
+                  title={loading ? "Analyse en cours..." : "Scanner la carte"}
+                  onPress={handleScanCard}
+                  variant="primary"
+                  size="large"
+                  fullWidth
+                  loading={loading}
+                />
+                
+                <Button
+                  title="Choisir depuis la galerie"
+                  onPress={handlePickFromGallery}
+                  variant="outline"
+                  size="medium"
+                  fullWidth
+                  loading={loading}
+                />
+              </View>
             </View>
           </View>
-          
-        </View>
-      )}
 
-      {processingImage && (
-        <View style={styles.processingOverlay}>
-          <LoadingSpinner text="Analyse de la carte en cours..." />
-        </View>
-      )}
-    </View>
-  );
-
-  const renderDishStep = () => (
-    <View style={styles.stepContainer}>
-      <View style={styles.stepHeader}>
-        <View style={styles.stepNumber}>
-          <CheckCircle size={16} color={Colors.accent} />
-        </View>
-        <Text style={styles.stepTitle}>Décrivez votre plat</Text>
+          {error && (
+            <View style={styles.errorCard}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
+        </ScrollView>
       </View>
+    );
+  }
 
-      <View style={styles.winesDetected}>
-        <Text style={styles.winesDetectedText}>
-          ✅ Vins détectés sur la carte
-        </Text>
-      </View>
-
-      <View style={styles.dishSection}>
-        <Input
-          label="Que Mangez-vous?"
-          placeholder="Décrivez votre plat..."
-          value={dishDescription}
-          onChangeText={setDishDescription}
-          multiline
-          numberOfLines={2}
-          maxLength={200}
-        />
-
-        <Button
-          title={gettingRecommendations ? "Analyse en cours..." : "Trouver l'accord parfait"}
-          onPress={handleGetRecommendations}
-          variant="primary"
-          size="large"
-          fullWidth
-          loading={gettingRecommendations}
-        />
-      </View>
-    </View>
-  );
-
-  const renderRecommendationsStep = () => (
-    <View style={styles.stepContainer}>
-      <View style={styles.stepHeader}>
-        <View style={styles.stepNumber}>
-          <CheckCircle size={16} color={Colors.accent} />
+  // ÉCRAN 2: DESCRIPTION PLAT
+  if (step === 'dish' && currentSession) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Image
+              source={require('../../assets/images/sommia-logo.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
+            <Text style={styles.logo}>SOMMIA</Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.profileButton}
+            onPress={() => router.push('/(tabs)/profile')}
+          >
+            <User size={24} color={Colors.primary} />
+          </TouchableOpacity>
         </View>
-        <Text style={styles.stepTitle}>Vos recommandations</Text>
-      </View>
 
-      <Text style={styles.recommendationsSubtitle}>
-        Pour {dishDescription} • Carte de ce restaurant
-      </Text>
-
-      <ScrollView style={styles.recommendationsList} showsVerticalScrollIndicator={false}>
-        {recommendations.map((wine, index) => (
-          <View key={index} style={styles.restaurantWineCard}>
-            <View style={styles.wineCardHeader}>
-              <View style={styles.wineTypeIndicator}>
-                <Wine size={20} color={Colors.primary} />
-                <Text style={styles.wineType}>{wine.type}</Text>
-              </View>
-              <Text style={styles.winePrice}>
-                €{wine.price_bottle || wine.price_glass}
-                {wine.price_glass && '/verre'}
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <View style={styles.pageHeader}>
+            <View style={styles.sessionInfo}>
+              <Check size={20} color={Colors.success} />
+              <Text style={styles.sessionText}>
+                {currentSession.extracted_wines.length} vins • {currentSession.restaurant_name}
               </Text>
             </View>
+          </View>
+
+          <View style={styles.dishSection}>
+            <Text style={styles.stepTitle}>Que mangez-vous ce soir ?</Text>
             
-            <Text style={styles.wineName}>{wine.name}</Text>
-            {wine.region && (
-              <Text style={styles.wineRegion}>{wine.region}</Text>
-            )}
-            
-            <Text style={styles.wineReasoning}>{wine.reasoning}</Text>
-            
-            <View style={styles.wineActions}>
+            <Input
+              placeholder="Décrivez votre plat..."
+              value={dishDescription}
+              onChangeText={setDishDescription}
+              multiline
+              numberOfLines={3}
+              maxLength={200}
+            />
+
+            <Button
+              title={loading ? "Recherche en cours..." : "Trouver l'accord parfait"}
+              onPress={handleGetRecommendations}
+              variant="primary"
+              size="large"
+              fullWidth
+              loading={loading}
+              disabled={!dishDescription.trim()}
+            />
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
+
+  // ÉCRAN 3: RÉSULTATS
+  if (step === 'results') {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Image
+              source={require('../../assets/images/sommia-logo.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
+            <Text style={styles.logo}>SOMMIA</Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.profileButton}
+            onPress={() => router.push('/(tabs)/profile')}
+          >
+            <User size={24} color={Colors.primary} />
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <View style={styles.pageHeader}>
+            <Text style={styles.title}>Vos accords parfaits</Text>
+            <Text style={styles.subtitle}>Pour {dishDescription}</Text>
+          </View>
+
+          <View style={styles.resultsSection}>
+            {recommendations.map((wine, index) => (
+              <View key={index} style={styles.recommendationCard}>
+                <View style={styles.wineHeader}>
+                  <Wine size={24} color={Colors.primary} />
+                  <Text style={styles.wineName}>{wine.name}</Text>
+                </View>
+                
+                <Text style={styles.winePrice}>{wine.price_display}</Text>
+                <Text style={styles.reasoning}>{wine.reasoning}</Text>
+                
+                <Button
+                  title="Demander au serveur"
+                  onPress={() => Alert.alert('Super choix !', `"Pourriez-vous nous servir le ${wine.name} s'il vous plaît ?"`)}
+                  variant="outline"
+                  size="medium"
+                  fullWidth
+                />
+              </View>
+            ))}
+
+            <View style={styles.newSearchSection}>
               <Button
-                title="Demander au serveur"
-                onPress={() => Alert.alert('Info', `Demandez le ${wine.name} à votre serveur`)}
+                title="Nouvelle recherche"
+                onPress={handleNewSearch}
                 variant="primary"
                 size="medium"
                 fullWidth
               />
             </View>
           </View>
-        ))}
-      </ScrollView>
-
-      <View style={styles.newSearchSection}>
-        <Button
-          title="Nouvelle recherche"
-          onPress={() => {
-            setCurrentStep('scan');
-            setScannedImage(null);
-            setExtractedWines([]);
-            setDishDescription('');
-            setRecommendations([]);
-          }}
-          variant="outline"
-          size="medium"
-          fullWidth
-        />
+        </ScrollView>
       </View>
-    </View>
-  );
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -344,10 +312,11 @@ export default function RestaurantScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {currentStep === 'scan' && renderScanStep()}
-        {currentStep === 'dish' && renderDishStep()}
-        {currentStep === 'recommendations' && renderRecommendationsStep()}
+      <ScrollView style={styles.content}>
+        <View style={styles.pageHeader}>
+          <Text style={styles.title}>Mode Restaurant</Text>
+          <Text style={styles.subtitle}>Commencez par scanner une carte des vins</Text>
+        </View>
       </ScrollView>
     </View>
   );
@@ -401,43 +370,29 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 24,
   },
-  stepContainer: {
-    marginBottom: 32,
-  },
-  stepHeader: {
-    flexDirection: 'row',
+  pageHeader: {
     alignItems: 'center',
-    marginBottom: 24,
+    paddingVertical: 32,
   },
-  stepNumber: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: Colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  stepNumberText: {
-    fontSize: Typography.sizes.base,
-    fontWeight: Typography.weights.bold,
-    color: Colors.accent,
-  },
-  stepTitle: {
-    fontSize: Typography.sizes.lg,
+  title: {
+    fontSize: Typography.sizes.xxl,
     fontWeight: Typography.weights.bold,
     color: Colors.textPrimary,
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: Typography.sizes.base,
+    color: Colors.textSecondary,
+    textAlign: 'center',
   },
   scanSection: {
-    alignItems: 'center',
+    marginBottom: 32,
   },
   scanCard: {
     backgroundColor: Colors.softGray,
     borderRadius: 16,
     padding: 32,
     alignItems: 'center',
-    width: '100%',
-    marginBottom: 24,
     shadowColor: Colors.darkGray,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -457,79 +412,38 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center',
     marginBottom: 24,
-    lineHeight: Typography.sizes.base * Typography.lineHeights.relaxed,
   },
   scanButtons: {
     width: '100%',
     gap: 12,
   },
-  imagePreview: {
-    position: 'relative',
-    borderRadius: 16,
-    overflow: 'hidden',
-    marginBottom: 24,
-  },
-  previewImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: 16,
-  },
-  imageOverlay: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-  },
-  retakeButton: {
+  sessionInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    paddingHorizontal: 12,
+    backgroundColor: Colors.softGray,
+    paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
   },
-  retakeText: {
-    color: Colors.accent,
+  sessionText: {
     fontSize: Typography.sizes.sm,
-    fontWeight: Typography.weights.medium,
-    marginLeft: 6,
-  },
-  processingOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 16,
-  },
-  winesDetected: {
-    backgroundColor: Colors.success,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
-    marginBottom: 24,
-  },
-  winesDetectedText: {
-    fontSize: Typography.sizes.base,
-    fontWeight: Typography.weights.medium,
-    color: Colors.accent,
-    textAlign: 'center',
+    color: Colors.textPrimary,
+    marginLeft: 8,
   },
   dishSection: {
     gap: 24,
   },
-  recommendationsSubtitle: {
-    fontSize: Typography.sizes.base,
-    color: Colors.textSecondary,
+  stepTitle: {
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.bold,
+    color: Colors.textPrimary,
+    marginBottom: 16,
     textAlign: 'center',
-    marginBottom: 24,
   },
-  recommendationsList: {
-    maxHeight: 400,
+  resultsSection: {
+    paddingBottom: 32,
   },
-  restaurantWineCard: {
+  recommendationCard: {
     backgroundColor: Colors.softGray,
     borderRadius: 16,
     padding: 20,
@@ -540,50 +454,42 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  wineCardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  wineTypeIndicator: {
+  wineHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  wineType: {
-    fontSize: Typography.sizes.sm,
-    fontWeight: Typography.weights.medium,
-    color: Colors.primary,
-    marginLeft: 6,
-    textTransform: 'capitalize',
-  },
-  winePrice: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.bold,
-    color: Colors.primary,
+    marginBottom: 8,
   },
   wineName: {
     fontSize: Typography.sizes.lg,
     fontWeight: Typography.weights.bold,
     color: Colors.textPrimary,
-    marginBottom: 4,
+    marginLeft: 12,
+    flex: 1,
   },
-  wineRegion: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.textSecondary,
+  winePrice: {
+    fontSize: Typography.sizes.xl,
+    fontWeight: Typography.weights.bold,
+    color: Colors.primary,
     marginBottom: 12,
   },
-  wineReasoning: {
+  reasoning: {
     fontSize: Typography.sizes.base,
-    color: Colors.textPrimary,
-    lineHeight: Typography.sizes.base * Typography.lineHeights.relaxed,
+    color: Colors.textSecondary,
+    lineHeight: Typography.sizes.base * 1.5,
     marginBottom: 16,
   },
-  wineActions: {
-    marginTop: 8,
+  errorCard: {
+    backgroundColor: Colors.error,
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 16,
+  },
+  errorText: {
+    color: Colors.accent,
+    fontSize: Typography.sizes.base,
+    textAlign: 'center',
   },
   newSearchSection: {
-    marginTop: 24,
-    paddingBottom: 32,
+    marginBottom: 24,
   },
 });
