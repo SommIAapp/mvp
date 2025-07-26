@@ -222,7 +222,7 @@ export default function SubscriptionScreen() {
             
             <View style={styles.pricingGrid}>
               {/* Plan Mensuel */}
-              <View style={styles.pricingCard}>
+              <View style={[styles.pricingCard, styles.pricingCardSideBySide]}>
                 <View style={styles.pricingHeader}>
                   <Text style={styles.planName}>Mensuel</Text>
                 </View>
@@ -251,10 +251,7 @@ export default function SubscriptionScreen() {
               </View>
 
               {/* Plan Annuel */}
-              <View style={[styles.pricingCard, styles.pricingCardPopular]}>
-                <View style={styles.popularBadge}>
-                  <Text style={styles.popularBadgeText}>Économise 40€</Text>
-                </View>
+              <View style={[styles.pricingCard, styles.pricingCardSideBySide]}>
                 <View style={styles.pricingHeader}>
                   <Text style={styles.planName}>Annuel</Text>
                 </View>
@@ -396,7 +393,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   pricingGrid: {
-    gap: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
   },
   pricingCard: {
     backgroundColor: Colors.softGray,
@@ -408,26 +407,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
-    marginBottom: 16,
   },
-  pricingCardPopular: {
-    borderWidth: 2,
-    borderColor: Colors.primary,
-    backgroundColor: Colors.accent,
-  },
-  popularBadge: {
-    position: 'absolute',
-    top: -10,
-    left: 20,
-    backgroundColor: Colors.secondary,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  popularBadgeText: {
-    fontSize: Typography.sizes.xs,
-    fontWeight: Typography.weights.bold,
-    color: Colors.darkGray,
+  pricingCardSideBySide: {
+    width: '48%',
   },
   pricingHeader: {
     alignItems: 'center',
