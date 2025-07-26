@@ -10,15 +10,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { 
-  Camera, 
-  Utensils, 
-  MapPin, 
-  CheckCircle, 
-  RotateCcw,
-  User,
-  Wine
-} from 'lucide-react-native';
+import { Camera, Utensils, MapPin, CircleCheck as CheckCircle, RotateCcw, User, Wine } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '@/constants/Colors';
