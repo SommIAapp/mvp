@@ -104,8 +104,20 @@ export function useRestaurantMode() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur analyse image');
+        let errorMessage = 'Erreur analyse image';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (parseError) {
+          // If JSON parsing fails, try to get text response or use generic message
+          try {
+            const errorText = await response.text();
+            errorMessage = errorText || `Erreur serveur (${response.status})`;
+          } catch (textError) {
+            errorMessage = `Erreur serveur (${response.status})`;
+          }
+        }
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
