@@ -3,6 +3,14 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import * as ImagePicker from 'expo-image-picker';
 
+// Custom error for user cancellations
+class UserCancellationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'UserCancellationError';
+  }
+}
+
 interface RestaurantSession {
   id: string;
   restaurant_name: string;
@@ -65,7 +73,7 @@ export function useRestaurantMode() {
         });
 
         if (result.canceled) {
-          throw new Error('Scan annulé');
+          throw new UserCancellationError('Scan annulé');
         }
 
         finalImageUri = result.assets[0].uri;
@@ -121,8 +129,15 @@ export function useRestaurantMode() {
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur scan';
-      setError(errorMessage);
-      console.error('❌ Scan error:', errorMessage);
+      
+      // Don't treat user cancellation as a critical error
+      if (err instanceof UserCancellationError) {
+        console.log('ℹ️ User cancelled scan');
+        // Don't set error state for cancellations
+      } else {
+        setError(errorMessage);
+        console.error('❌ Scan error:', errorMessage);
+      }
       throw err;
     } finally {
       setLoading(false);
@@ -265,7 +280,7 @@ export function useRestaurantMode() {
     });
 
     if (result.canceled) {
-      throw new Error('Sélection annulée');
+      throw new UserCancellationError('Sélection annulée');
     }
 
     return await scanWineCard(result.assets[0].uri);
@@ -281,6 +296,9 @@ export function useRestaurantMode() {
     clearSession,
   };
 }
+
+// Export the custom error for use in components
+export { UserCancellationError };
 
 // UTILITAIRE CONVERSION IMAGE
 async function convertImageToBase64(imageUri: string): Promise<string> {
