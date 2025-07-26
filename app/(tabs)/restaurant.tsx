@@ -18,7 +18,7 @@ import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
-import { useRestaurantMode } from '@/hooks/useRestaurantMode';
+import { useRestaurantMode, UserCancellationError } from '@/hooks/useRestaurantMode';
 
 const { width } = Dimensions.get('window');
 
@@ -58,7 +58,10 @@ export default function RestaurantScreen() {
         [{ text: 'Continuer', onPress: () => setStep('dish') }]
       );
     } catch (error: any) {
-      Alert.alert('Erreur', error.message);
+      // Don't show alert for user cancellations
+      if (!(error instanceof UserCancellationError)) {
+        Alert.alert('Erreur', error.message);
+      }
     }
   };
 
@@ -79,7 +82,10 @@ export default function RestaurantScreen() {
         [{ text: 'Continuer', onPress: () => setStep('dish') }]
       );
     } catch (error: any) {
-      Alert.alert('Erreur', error.message);
+      // Don't show alert for user cancellations
+      if (!(error instanceof UserCancellationError)) {
+        Alert.alert('Erreur', error.message);
+      }
     }
   };
 
