@@ -97,6 +97,8 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 40, // Half of width/height to make it circular
     overflow: 'hidden', // Ensure content is clipped by borderRadius
+    borderRadius: 40, // Half of width/height to make it circular
+    overflow: 'hidden', // Ensure content is clipped by borderRadius
   },
   title: {
     fontSize: Typography.sizes.xxl,
