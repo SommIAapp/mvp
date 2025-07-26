@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Chrome as Home, Clock, User } from 'lucide-react-native';
+import { Chrome as Home, Clock, User, Utensils } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 
@@ -40,6 +40,15 @@ export default function TabLayout() {
           title: 'Historique',
           tabBarIcon: ({ size, color }) => (
             <Clock size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="restaurant"
+        options={{
+          title: 'Restaurant',
+          tabBarIcon: ({ size, color }) => (
+            <Utensils size={size} color={color} />
           ),
         }}
       />
