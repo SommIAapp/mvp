@@ -294,16 +294,18 @@ export default function SubscriptionScreen() {
           </View>
         )}
 
-        <View style={styles.buttonSection}>
-          <Button
-            title={(loading || contentConfig.loading) ? "Chargement..." : contentConfig.buttonTitle}
-            onPress={contentConfig.onPress}
-            variant="primary"
-            size="large"
-            fullWidth
-            loading={loading || contentConfig.loading}
-          />
-        </View>
+        {reason === 'trial_signup' && (
+          <View style={styles.buttonSection}>
+            <Button
+              title={(loading || contentConfig.loading) ? "Chargement..." : contentConfig.buttonTitle}
+              onPress={contentConfig.onPress}
+              variant="primary"
+              size="large"
+              fullWidth
+              loading={loading || contentConfig.loading}
+            />
+          </View>
+        )}
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>
