@@ -244,13 +244,13 @@ export default function RestaurantScreen() {
 
       <View style={styles.winesDetected}>
         <Text style={styles.winesDetectedText}>
-          ✅ {extractedWines.length} vins détectés sur la carte
+          ✅ Vins détectés sur la carte
         </Text>
       </View>
 
       <View style={styles.dishSection}>
         <Input
-          label="Que mangez-vous ce soir ?"
+          label="Que Mangez-vous?"
           placeholder="Décrivez votre plat..."
           value={dishDescription}
           onChangeText={setDishDescription}
