@@ -12,7 +12,7 @@ import Animated, {
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { useAuth } from '@/hooks/useAuth';
-import Sommialogo from '@/assets/images/Sommialogo.PNG';
+const Sommialogo = require('../assets/images/Sommialogo.PNG');
 
 const { width, height } = Dimensions.get('window');
 

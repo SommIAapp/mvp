@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
-import Sommialogo from '@/assets/images/Sommialogo.PNG';
+const Sommialogo = require('../assets/images/Sommialogo.PNG');
 
 const { width, height } = Dimensions.get('window');
 

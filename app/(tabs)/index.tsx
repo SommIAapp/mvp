@@ -18,7 +18,7 @@ import { Input } from '@/components/Input';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useRecommendations } from '@/hooks/useRecommendations';
-import Sommialogo from '@/assets/images/Sommialogo.PNG';
+const Sommialogo = require('../../assets/images/Sommialogo.PNG');
 
 const { width } = Dimensions.get('window');
 
