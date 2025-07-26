@@ -272,6 +272,9 @@ const styles = StyleSheet.create({
   logoImage: {
     width: 32,
     height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Colors.primary,
     borderRadius: 16, // Make it circular
     borderWidth: 1, // Add border
     borderColor: Colors.primary, // Border color
