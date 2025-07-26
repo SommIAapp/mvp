@@ -25,21 +25,6 @@ const { width } = Dimensions.get('window');
 
 type RestaurantStep = 'scan' | 'dish' | 'recommendations';
 
-const BUDGET_OPTIONS = [
-  { label: '€20-30', value: 25 },
-  { label: '€30-50', value: 40 },
-  { label: '€50+', value: 75 },
-];
-
-const DISH_SUGGESTIONS = [
-  'Saumon grillé',
-  'Entrecôte',
-  'Risotto aux champignons',
-  'Coq au vin',
-  'Bouillabaisse',
-  'Magret de canard'
-];
-
 export default function RestaurantScreen() {
   const router = useRouter();
   const { user, profile, canMakeRecommendation } = useAuth();
@@ -55,7 +40,6 @@ export default function RestaurantScreen() {
   const [scannedImage, setScannedImage] = useState<string | null>(null);
   const [extractedWines, setExtractedWines] = useState<any[]>([]);
   const [dishDescription, setDishDescription] = useState('');
-  const [budget, setBudget] = useState<number | null>(null);
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [processingImage, setProcessingImage] = useState(false);
   const [gettingRecommendations, setGettingRecommendations] = useState(false);
@@ -170,7 +154,7 @@ export default function RestaurantScreen() {
       const result = await getRestaurantRecommendations(
         dishDescription,
         extractedWines,
-        budget
+        undefined
       );
       setRecommendations(result);
       setCurrentStep('recommendations');
@@ -186,10 +170,6 @@ export default function RestaurantScreen() {
     setScannedImage(null);
     setExtractedWines([]);
     setCurrentStep('scan');
-  };
-
-  const handleSuggestionPress = (suggestion: string) => {
-    setDishDescription(suggestion);
   };
 
   const renderScanStep = () => (
@@ -279,46 +259,6 @@ export default function RestaurantScreen() {
           maxLength={200}
         />
 
-        <View style={styles.suggestionsSection}>
-          <Text style={styles.suggestionsTitle}>Suggestions populaires</Text>
-          <View style={styles.suggestions}>
-            {DISH_SUGGESTIONS.map((suggestion) => (
-              <TouchableOpacity
-                key={suggestion}
-                style={styles.suggestionChip}
-                onPress={() => handleSuggestionPress(suggestion)}
-              >
-                <Text style={styles.suggestionText}>{suggestion}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.budgetSection}>
-          <Text style={styles.budgetTitle}>Budget par bouteille</Text>
-          <View style={styles.budgetOptions}>
-            {BUDGET_OPTIONS.map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                style={[
-                  styles.budgetOption,
-                  budget === option.value && styles.budgetOptionSelected,
-                ]}
-                onPress={() => setBudget(budget === option.value ? null : option.value)}
-              >
-                <Text
-                  style={[
-                    styles.budgetOptionText,
-                    budget === option.value && styles.budgetOptionTextSelected,
-                  ]}
-                >
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
         <Button
           title={gettingRecommendations ? "Analyse en cours..." : "Trouver l'accord parfait"}
           onPress={handleGetRecommendations}
@@ -386,7 +326,6 @@ export default function RestaurantScreen() {
             setScannedImage(null);
             setExtractedWines([]);
             setDishDescription('');
-            setBudget(null);
             setRecommendations([]);
           }}
           variant="outline"
@@ -613,66 +552,6 @@ const styles = StyleSheet.create({
   },
   dishSection: {
     gap: 24,
-  },
-  suggestionsSection: {
-    marginTop: 8,
-  },
-  suggestionsTitle: {
-    fontSize: Typography.sizes.base,
-    fontWeight: Typography.weights.semibold,
-    color: Colors.textPrimary,
-    marginBottom: 12,
-  },
-  suggestions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  suggestionChip: {
-    backgroundColor: Colors.accent,
-    borderWidth: 1,
-    borderColor: Colors.textLight,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  suggestionText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.textPrimary,
-  },
-  budgetSection: {
-    marginTop: 8,
-  },
-  budgetTitle: {
-    fontSize: Typography.sizes.base,
-    fontWeight: Typography.weights.semibold,
-    color: Colors.textPrimary,
-    marginBottom: 12,
-  },
-  budgetOptions: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  budgetOption: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.textLight,
-    backgroundColor: Colors.accent,
-    alignItems: 'center',
-  },
-  budgetOptionSelected: {
-    borderColor: Colors.primary,
-    backgroundColor: Colors.primary,
-  },
-  budgetOptionText: {
-    fontSize: Typography.sizes.sm,
-    fontWeight: Typography.weights.medium,
-    color: Colors.textPrimary,
-  },
-  budgetOptionTextSelected: {
-    color: Colors.accent,
   },
   recommendationsSubtitle: {
     fontSize: Typography.sizes.base,
