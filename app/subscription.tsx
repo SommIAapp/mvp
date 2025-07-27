@@ -256,9 +256,9 @@ export default function SubscriptionScreen() {
                   <Text style={styles.planName}>Annuel</Text>
                 </View>
                 <View style={styles.pricingContent}>
-                  <Text style={styles.priceAmount}>€60</Text>
+                  <Text style={styles.priceAmount}>€30</Text>
                   <Text style={styles.pricePeriod}>par an</Text>
-                  <Text style={styles.priceEquivalent}>€5/mois</Text>
+                  <Text style={styles.priceEquivalent}>€2.5/mois</Text>
                 </View>
                 <View style={styles.pricingFeatures}>
                   <View style={styles.feature}>
@@ -288,7 +288,7 @@ export default function SubscriptionScreen() {
             <View style={styles.pricingCard}>
               <Text style={styles.trialText}>7 jours gratuits</Text>
               <Text style={styles.priceText}>
-                Puis choisis entre €4,99/mois ou €60/an
+                Puis choisis entre €4,99/mois ou €30/an
               </Text>
             </View>
           </View>
