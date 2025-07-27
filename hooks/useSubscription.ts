@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AppState, Alert } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -128,7 +129,7 @@ export function useSubscription() {
       const { url } = await response.json();
       
       if (url) {
-        window.location.href = url;
+        await WebBrowser.openBrowserAsync(url);
       } else {
         throw new Error('No checkout URL received');
       }
