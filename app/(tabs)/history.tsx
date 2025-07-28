@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -42,6 +43,13 @@ export default function HistoryScreen() {
   const [history, setHistory] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    console.log('📚 History: Component mounted');
+    return () => {
+      console.log('📚 History: Component unmounted');
+    };
+  }, []);
 
   // Use useFocusEffect to refresh data every time screen comes into focus
   useFocusEffect(

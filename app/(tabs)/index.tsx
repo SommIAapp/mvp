@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -30,6 +31,13 @@ export default function HomeScreen() {
   const [dishDescription, setDishDescription] = useState('');
   const [budget, setBudget] = useState<number | null>(null);
   const [recommendationLoading, setRecommendationLoading] = useState(false);
+
+  useEffect(() => {
+    console.log('🏡 Home: Component mounted');
+    return () => {
+      console.log('🏡 Home: Component unmounted');
+    };
+  }, []);
 
   // Show loading spinner while profile is being loaded
   if (loading) {

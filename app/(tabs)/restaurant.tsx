@@ -53,6 +53,13 @@ export default function RestaurantScreen() {
   const hasNavigatedRef = useRef(false);
   const hasLoadedFromHistoryRef = useRef(false);
 
+  useEffect(() => {
+    console.log('🍽️ Restaurant: Component mounted');
+    return () => {
+      console.log('🍽️ Restaurant: Component unmounted');
+    };
+  }, []);
+
   // Handle navigation to subscription screen when user is not eligible
   useEffect(() => {
     if (!authLoading && !canMakeRecommendation() && !hasNavigatedRef.current) {

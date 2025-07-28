@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Tabs } from 'expo-router';
 import { Wine, Clock, User, Utensils } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -5,6 +6,13 @@ import { Colors } from '@/constants/Colors';
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    console.log('📊 Tabs Layout: Component mounted');
+    return () => {
+      console.log('📊 Tabs Layout: Component unmounted');
+    };
+  }, []);
 
   return (
     <Tabs

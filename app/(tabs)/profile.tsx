@@ -25,6 +25,13 @@ export default function ProfileScreen() {
   const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
+    console.log('👤 Profile: Component mounted');
+    return () => {
+      console.log('👤 Profile: Component unmounted');
+    };
+  }, []);
+
+  useEffect(() => {
     if (user) {
       fetchTotalRecommendations();
     }
