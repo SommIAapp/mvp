@@ -20,6 +20,7 @@ import { Input } from '@/components/Input';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useRestaurantMode, UserCancellationError } from '@/hooks/useRestaurantMode';
+import { tempStore } from '@/utils/tempStore';
 
 const { width } = Dimensions.get('window');
 
@@ -29,11 +30,9 @@ export default function RestaurantScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{
     fromHistory?: string;
-    dish?: string;
-    recommendations?: string;
-    restaurantName?: string;
     sessionId?: string;
-    extractedWines?: string;
+    dish?: string;
+    restaurantName?: string;
   }>();
   const { user, profile, canMakeRecommendation, loading: authLoading } = useAuth();
   const { 
@@ -76,16 +75,25 @@ export default function RestaurantScreen() {
     if (params.fromHistory === 'true' && 
         params.sessionId && 
         params.dish && 
-        params.recommendations && 
-        params.restaurantName && 
-        params.extractedWines &&
+        params.restaurantName &&
         !hasLoadedFromHistoryRef.current) {
       
       hasLoadedFromHistoryRef.current = true;
       
       try {
-        const parsedRecommendations = JSON.parse(params.recommendations);
-        const parsedExtractedWines = JSON.parse(params.extractedWines);
+        // Retrieve data from temporary store
+        const storedData = tempStore.get(params.sessionId);
+        
+        if (!storedData || !storedData.recommendations || !storedData.extractedWines) {
+          console.error('❌ No stored data found for session:', params.sessionId);
+          setStep('scan');
+          return;
+        }
+        
+        const { recommendations: parsedRecommendations, extractedWines: parsedExtractedWines } = storedData;
+        
+        // Clear data from temporary store after use
+        tempStore.clear(params.sessionId);
         
         // Set current session with historical data
         const historicalSession: RestaurantSession = {
@@ -104,11 +112,15 @@ export default function RestaurantScreen() {
         console.log('✅ Loaded restaurant session from history:', params.sessionId);
       } catch (error) {
         console.error('❌ Error loading from history:', error);
+        // Clear potentially corrupted data
+        if (params.sessionId) {
+          tempStore.clear(params.sessionId);
+        }
         // Fallback to scan step if parsing fails
         setStep('scan');
       }
     }
-  }, [params.fromHistory, params.sessionId, params.dish, params.recommendations, params.restaurantName, params.extractedWines, setCurrentSession]);
+  }, [params.fromHistory, params.sessionId, params.dish, params.restaurantName, setCurrentSession]);
 
   const handleScanCard = async () => {
     if (!canMakeRecommendation()) {

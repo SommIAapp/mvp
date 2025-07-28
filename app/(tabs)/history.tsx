@@ -15,6 +15,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import { useRestaurantMode } from '@/hooks/useRestaurantMode';
+import { tempStore } from '@/utils/tempStore';
 import type { Database } from '@/lib/supabase';
 
 type Recommendation = Database['public']['Tables']['recommendations']['Row'] & {
@@ -150,16 +151,20 @@ export default function HistoryScreen() {
     console.log('🔍 handleHistoryItemPress - Opening recommendation:', item.id);
     
     if (item.type === 'restaurant') {
-      // Navigation vers l'écran restaurant avec les résultats
-      router.push({
+      // Store large data objects in temporary store to avoid large URL parameters
+      tempStore.set(item.id, {
+        recommendations: item.recommended_wines,
+        extractedWines: item.restaurant_sessions?.extracted_wines || [],
+      });
+      
+      // Navigate with minimal parameters
+      router.navigate({
         pathname: '/(tabs)/restaurant',
         params: {
           fromHistory: 'true',
-          dish: item.dish_description,
-          recommendations: JSON.stringify(item.recommended_wines),
-          restaurantName: item.restaurant_name || 'Restaurant',
           sessionId: item.id,
-          extractedWines: JSON.stringify(item.restaurant_sessions?.extracted_wines || []),
+          dish: item.dish_description,
+          restaurantName: item.restaurant_name || 'Restaurant',
         },
       });
     } else {
