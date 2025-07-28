@@ -87,7 +87,7 @@ export default function SubscriptionScreen() {
       case 'trial_signup':
         return {
           title: 'Découvre l\'accord parfait',
-          subtitle: 'Essai gratuit de 7 jours, puis 4,99€/mois ou 60€/an',
+          subtitle: 'Essai gratuit de 7 jours, puis 4,99€/mois ou 30€/an',
           badge: '🎁 7 jours offerts',
           buttonTitle: 'Commencer mon essai gratuit',
           onPress: handleStartTrialFlow,
@@ -127,7 +127,7 @@ export default function SubscriptionScreen() {
       default:
         return {
           title: 'Découvre l\'accord parfait',
-          subtitle: 'Essai gratuit de 7 jours, puis choisis ton plan',
+          subtitle: 'Essai gratuit de 7 jours, puis 4,99€/mois ou 30€/an',
           badge: '🎁 7 jours offerts',
           buttonTitle: 'Commencer mon essai gratuit',
           onPress: handleStartTrialFlow,
