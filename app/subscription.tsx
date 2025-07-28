@@ -21,6 +21,7 @@ export default function SubscriptionScreen() {
   const [loading, setLoading] = useState(false);
 
   const premiumProduct = stripeProducts.find(p => p.name === 'SommIA Premium');
+  const weeklyProduct = stripeProducts.find(p => p.name === 'SommIA Premium (Hebdomadaire)');
   const annualProduct = stripeProducts.find(p => p.name === 'SommIA Premium (Annuel)');
 
   const handleStartTrialFlow = async () => {
@@ -87,7 +88,7 @@ export default function SubscriptionScreen() {
       case 'trial_signup':
         return {
           title: 'Découvre l\'accord parfait',
-          subtitle: 'Essai gratuit de 7 jours, puis 4,99€/mois ou 30€/an',
+          subtitle: 'Essai gratuit de 7 jours, puis 2,99€/semaine, 4,99€/mois ou 30€/an',
           badge: '🎁 7 jours offerts',
           buttonTitle: 'Commencer mon essai gratuit',
           onPress: handleStartTrialFlow,
@@ -238,8 +239,37 @@ export default function SubscriptionScreen() {
             <Text style={styles.pricingSectionTitle}>Choisis ton plan</Text>
             
             <View style={styles.pricingGrid}>
+              {/* Plan Hebdomadaire */}
+              <View style={[styles.pricingCard, styles.pricingCardThreeColumn]}>
+                <View style={styles.pricingHeader}>
+                  <Text style={styles.planName}>Hebdomadaire</Text>
+                </View>
+                <View style={styles.pricingContent}>
+                  <Text style={styles.priceAmount}>€2,99</Text>
+                  <Text style={styles.pricePeriod}>par semaine</Text>
+                </View>
+                <View style={styles.pricingFeatures}>
+                  <View style={styles.feature}>
+                    <Check size={16} color={Colors.success} />
+                    <Text style={styles.featureText}>Recommandations illimitées</Text>
+                  </View>
+                  <View style={styles.feature}>
+                    <Check size={16} color={Colors.success} />
+                    <Text style={styles.featureText}>Explications détaillées</Text>
+                  </View>
+                </View>
+                <Button
+                  title="Choisir Hebdomadaire"
+                  onPress={() => handleBuyPremium(weeklyProduct?.priceId || '')}
+                  variant="outline"
+                  size="medium"
+                  fullWidth
+                  loading={loading}
+                />
+              </View>
+
               {/* Plan Mensuel */}
-              <View style={[styles.pricingCard, styles.pricingCardSideBySide]}>
+              <View style={[styles.pricingCard, styles.pricingCardThreeColumn]}>
                 <View style={styles.pricingHeader}>
                   <Text style={styles.planName}>Mensuel</Text>
                 </View>
@@ -268,7 +298,7 @@ export default function SubscriptionScreen() {
               </View>
 
               {/* Plan Annuel */}
-              <View style={[styles.pricingCard, styles.pricingCardSideBySide]}>
+              <View style={[styles.pricingCard, styles.pricingCardThreeColumn]}>
                 <View style={styles.pricingHeader}>
                   <Text style={styles.planName}>Annuel</Text>
                 </View>
@@ -305,7 +335,7 @@ export default function SubscriptionScreen() {
             <View style={styles.pricingCard}>
               <Text style={styles.trialText}>7 jours gratuits</Text>
               <Text style={styles.priceText}>
-                Puis choisis entre €4,99/mois ou €30/an
+                Puis choisis entre €2,99/semaine, €4,99/mois ou €30/an
               </Text>
             </View>
           </View>
@@ -427,9 +457,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   pricingGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
+    flexDirection: 'column',
+    gap: 16,
   },
   pricingCard: {
     backgroundColor: Colors.softGray,
@@ -442,8 +471,8 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  pricingCardSideBySide: {
-    width: '48%',
+  pricingCardThreeColumn: {
+    width: '100%',
   },
   pricingHeader: {
     alignItems: 'center',

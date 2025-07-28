@@ -13,6 +13,12 @@ export const stripeProducts: StripeProduct[] = [
     mode: 'subscription',
   },
   {
+    priceId: 'price_1RpsAdEafAFTMvbGPm0iKFUg',
+    name: 'SommIA Premium (Hebdomadaire)',
+    description: 'Hebdomadaire - 2,99€/semaine',
+    mode: 'subscription',
+  },
+  {
     priceId: 'price_1RpXeuEafAFTMvbGpj42kAWx',
     name: 'SommIA Premium (Annuel)',
     description: 'Annuel - 30€/an',
