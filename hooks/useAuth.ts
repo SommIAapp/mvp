@@ -16,9 +16,12 @@ export function useAuth() {
   useEffect(() => {
     // Get initial session
     const initializeAuth = async () => {
+      console.log('🔐 Auth: Initializing session...');
+      
       // Check if Supabase is properly configured
       if (!process.env.EXPO_PUBLIC_SUPABASE_URL || !process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY) {
         console.error('❌ Supabase environment variables not configured');
+        console.log('🔐 Auth: Environment variables missing, setting user to null');
         setUser(null);
         setProfile(null);
         setLoading(false);
@@ -27,8 +30,10 @@ export function useAuth() {
 
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
+        console.log('🔐 Auth: getSession result:', { session: !!session, user: session?.user?.id, error: error?.message });
         
         if (error && error.message.includes('Refresh Token Not Found')) {
+          console.log('🔐 Auth: Refresh Token Not Found, signing out.');
           // Clear invalid session
           await supabase.auth.signOut();
           setUser(null);
@@ -39,12 +44,14 @@ export function useAuth() {
         
         setUser(session?.user ?? null);
         if (session?.user) {
+          console.log('🔐 Auth: Valid session found, fetching profile for user:', session.user.id);
           fetchProfile(session.user.id);
         } else {
+          console.log('🔐 Auth: No valid session found, setting loading to false');
           setLoading(false);
         }
       } catch (error) {
-        console.error('Auth initialization error:', error);
+        console.error('🔐 Auth: Initialization error caught:', error);
         // Clear any potentially corrupted auth state
         await supabase.auth.signOut();
         setUser(null);
@@ -58,10 +65,13 @@ export function useAuth() {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('🔐 Auth: State change detected. Event:', event, 'Session:', !!session, 'User:', session?.user?.id);
         setUser(session?.user ?? null);
         if (session?.user) {
+          console.log('🔐 Auth: Auth state change - fetching profile for user:', session.user.id);
           await fetchProfile(session.user.id);
         } else {
+          console.log('🔐 Auth: Auth state change - no session, clearing profile');
           setProfile(null);
           setLoading(false);
         }
@@ -72,24 +82,28 @@ export function useAuth() {
   }, []);
 
   const fetchProfile = async (userId: string) => {
+    console.log('🔐 Auth: Fetching profile for userId:', userId);
     let finalProfileData: UserProfile | null = null;
     
     try {
       const now = new Date().toISOString();
       
+      console.log('🔐 Auth: Querying user_profiles for ID:', userId);
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('id', userId)
         .maybeSingle();
 
+      console.log('🔐 Auth: User profile query result:', { data: !!data, error: error?.message });
 
       if (error) {
-        console.error('❌ fetchProfile - Database error:', error);
+        console.error('🔐 Auth: Error fetching profile from DB:', error);
         throw error;
       }
       
       if (!data) {
+        console.log('🔐 Auth: Profile not found, attempting to create new profile.');
         const newProfile = {
           id: userId,
           email: user?.email || '',
@@ -111,6 +125,7 @@ export function useAuth() {
           .select()
           .maybeSingle();
 
+        console.log('🔐 Auth: New profile creation result:', { createdProfile: !!createdProfile, createError: createError?.message });
         if (createError) {
           console.error('❌ fetchProfile - Error creating profile:', createError);
           // Don't throw error, continue with minimal profile
@@ -129,11 +144,13 @@ export function useAuth() {
           }
         }
       } else {
+        console.log('🔐 Auth: Profile found. Checking daily quota reset logic.');
         // Check if we need to reset daily count
         const today = new Date().toDateString();
         const lastReset = data.last_daily_reset ? new Date(data.last_daily_reset).toDateString() : null;
         
         if (lastReset !== today) {
+          console.log('🔐 Auth: Daily quota needs reset. Last reset:', lastReset, 'Today:', today);
           // Reset daily count for new day
           const { data: updatedProfile, error: updateError } = await supabase
             .from('user_profiles')
@@ -146,6 +163,7 @@ export function useAuth() {
             .maybeSingle();
             
           if (!updateError && updatedProfile) {
+            console.log('🔐 Auth: Daily quota reset successful');
             setProfile(updatedProfile);
             finalProfileData = updatedProfile;
           } else {
@@ -156,6 +174,7 @@ export function useAuth() {
         } else {
           // Check if free user has non-zero daily count and reset it
           if (data.subscription_plan === 'free' && (data.daily_count || 0) > 0) {
+            console.log('🔐 Auth: Free user has non-zero daily count, resetting to 0');
             const { data: updatedProfile, error: updateError } = await supabase
               .from('user_profiles')
               .update({
@@ -167,6 +186,7 @@ export function useAuth() {
               .maybeSingle();
               
             if (!updateError && updatedProfile) {
+              console.log('🔐 Auth: Free user daily count reset successful');
               setProfile(updatedProfile);
               finalProfileData = updatedProfile;
             } else {
@@ -177,13 +197,14 @@ export function useAuth() {
               finalProfileData = correctedData;
             }
           } else {
+            console.log('🔐 Auth: Profile is up to date, no changes needed');
             setProfile(data);
             finalProfileData = data;
           }
         }
       }
     } catch (error) {
-      console.error('💥 fetchProfile - Unexpected error:', error);
+      console.error('🔐 Auth: Unexpected error in fetchProfile:', error);
       
       // Fail-safe: create minimal profile to allow app to continue
       const minimalProfile = {
@@ -197,23 +218,27 @@ export function useAuth() {
         created_at: new Date().toISOString(),
       } as UserProfile;
       
-      console.log('🛡️ fetchProfile - Setting minimal profile as fallback:', minimalProfile);
+      console.log('🔐 Auth: Setting minimal profile as fallback:', minimalProfile);
       setProfile(minimalProfile);
       finalProfileData = minimalProfile;
     } finally {
+      console.log('🔐 Auth: fetchProfile finished. Loading set to false.');
       setLoading(false);
     }
   };
 
   const signIn = async (email: string, password: string) => {
+    console.log('🔐 Auth: Attempting to sign in with email:', email);
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+    console.log('🔐 Auth: Sign in result:', { success: !error, error: error?.message });
     return { error };
   };
 
   const signUp = async (email: string, password: string, fullName?: string) => {
+    console.log('🔐 Auth: Attempting to sign up with email:', email);
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -223,11 +248,14 @@ export function useAuth() {
         },
       },
     });
+    console.log('🔐 Auth: Sign up result:', { success: !error, error: error?.message });
     return { error };
   };
 
   const signOut = async () => {
+    console.log('🔐 Auth: Attempting to sign out.');
     const { error } = await supabase.auth.signOut();
+    console.log('🔐 Auth: Sign out result:', { success: !error, error: error?.message });
     return { error };
   };
 
