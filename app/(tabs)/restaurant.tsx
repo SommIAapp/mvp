@@ -33,7 +33,6 @@ export default function RestaurantScreen() {
     recommendations?: string;
     restaurantName?: string;
   }>();
-  const { user, profile, canMakeRecommendation } = useAuth();
   const { user, profile, canMakeRecommendation, loading: authLoading } = useAuth();
   const { 
     currentSession,
