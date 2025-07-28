@@ -1,4 +1,5 @@
 import React from 'react';
+import { useEffect } from 'react';
 import { View, Text, StyleSheet, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Clock, Crown } from 'lucide-react-native';
@@ -14,6 +15,13 @@ export default function QuotaExceededScreen() {
   const trialExpired = isTrialExpired();
   const dailyLimitReached = profile && (profile.daily_count || 0) >= 1;
   const daysRemaining = getTrialDaysRemaining();
+
+  useEffect(() => {
+    console.log('🚫 QuotaExceeded: Component mounted');
+    return () => {
+      console.log('🚫 QuotaExceeded: Component unmounted');
+    };
+  }, []);
 
   return (
     <Modal visible={true} animationType="slide" presentationStyle="pageSheet">
@@ -60,6 +68,7 @@ export default function QuotaExceededScreen() {
             <Button
               title={profile?.subscription_plan === 'free' && !profile?.trial_start_date ? "Commencer l'essai gratuit" : "Passer à Premium"}
               onPress={() => {
+                console.log('🚫 QuotaExceeded: Premium button pressed, dismissing modal');
                 router.dismiss();
                 
                 // Determine the reason for showing paywall
@@ -93,6 +102,10 @@ export default function QuotaExceededScreen() {
                   : "Plus tard"
               }
               onPress={() => router.dismiss()}
+              onPress={() => {
+                console.log('🚫 QuotaExceeded: Dismiss button pressed, closing modal');
+                router.dismiss();
+              }}
               variant="outline"
               size="medium"
               fullWidth

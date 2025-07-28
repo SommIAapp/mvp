@@ -5,6 +5,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 
 export default function RootLayout() {
+  console.log('📱 Layout: RootLayout rendering');
+  
   useFrameworkReady();
 
   return (

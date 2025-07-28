@@ -391,6 +391,13 @@ export function useAuth() {
     return getTrialDaysRemaining() === 0;
   };
 
+  // Log current state on every render for debugging
+  console.log('🔐 Auth: Current state -', {
+    user: user ? `${user.id} (${user.email})` : 'null',
+    profile: profile ? `${profile.subscription_plan} - daily: ${profile.daily_count}` : 'null',
+    loading
+  });
+
   return {
     user,
     profile,
