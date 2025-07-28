@@ -48,23 +48,6 @@ export default function RestaurantScreen() {
   const [step, setStep] = useState<RestaurantStep>('scan');
   const [recommendations, setRecommendations] = useState<any[]>([]);
 
-  // Initialize state directly from params to prevent infinite loops
-  const [dishDescription, setDishDescription] = useState(params.dish || '');
-  const [step, setStep] = useState<RestaurantStep>(
-    params.fromHistory === 'true' && params.dish && params.recommendations ? 'results' : 'scan'
-  );
-  const [recommendations, setRecommendations] = useState<any[]>(() => {
-    if (params.fromHistory === 'true' && params.recommendations) {
-      try {
-        return JSON.parse(params.recommendations);
-      } catch (error) {
-        console.error('Error parsing recommendations from history:', error);
-        return [];
-      }
-    }
-    return [];
-  });
-
   const handleScanCard = async () => {
     if (!canMakeRecommendation()) {
       router.push({
