@@ -66,6 +66,17 @@ export function useAuth() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('🔐 Auth: State change detected. Event:', event, 'Session:', !!session, 'User:', session?.user?.id);
+        
+        // Log detailed event information when user becomes null
+        if (!session?.user) {
+          console.log('🚨 Auth: User became null! Event details:', {
+            event,
+            hasSession: !!session,
+            sessionUser: session?.user?.id || 'null',
+            timestamp: new Date().toISOString()
+          });
+        }
+        
         setUser(session?.user ?? null);
         if (session?.user) {
           console.log('🔐 Auth: Auth state change - fetching profile for user:', session.user.id);
