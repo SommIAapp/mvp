@@ -194,7 +194,13 @@ export default function SubscriptionScreen() {
         {reason !== 'trial_signup' && (
           <TouchableOpacity 
             style={styles.backButton}
-            onPress={() => router.back()}
+            onPress={() => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace('/(tabs)');
+              }
+            }}
           >
             <ArrowLeft size={24} color={Colors.primary} />
           </TouchableOpacity>
