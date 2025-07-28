@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocalSearchParams } from 'expo-router';
 import { 
   View, 
   Text, 
@@ -26,6 +27,12 @@ type RestaurantStep = 'scan' | 'dish' | 'results';
 
 export default function RestaurantScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{
+    fromHistory?: string;
+    dish?: string;
+    recommendations?: string;
+    restaurantName?: string;
+  }>();
   const { user, profile, canMakeRecommendation } = useAuth();
   const { 
     currentSession,
@@ -40,6 +47,20 @@ export default function RestaurantScreen() {
   const [dishDescription, setDishDescription] = useState('');
   const [step, setStep] = useState<RestaurantStep>('scan');
   const [recommendations, setRecommendations] = useState<any[]>([]);
+
+  // Gérer l'affichage depuis l'historique
+  React.useEffect(() => {
+    if (params.fromHistory === 'true' && params.dish && params.recommendations) {
+      try {
+        const parsedRecommendations = JSON.parse(params.recommendations);
+        setDishDescription(params.dish);
+        setRecommendations(parsedRecommendations);
+        setStep('results');
+      } catch (error) {
+        console.error('Error parsing recommendations from history:', error);
+      }
+    }
+  }, [params]);
 
   const handleScanCard = async () => {
     if (!canMakeRecommendation()) {
@@ -260,7 +281,12 @@ export default function RestaurantScreen() {
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.pageHeader}>
             <Text style={styles.title}>Vos accords parfaits</Text>
-            <Text style={styles.subtitle}>Pour {dishDescription}</Text>
+            <Text style={styles.subtitle}>
+              Pour {dishDescription}
+              {params.fromHistory === 'true' && params.restaurantName && (
+                <Text style={styles.restaurantContext}> • Chez {params.restaurantName}</Text>
+              )}
+            </Text>
           </View>
 
           <View style={styles.resultsSection}>
@@ -390,6 +416,11 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.base,
     color: Colors.textSecondary,
     textAlign: 'center',
+  },
+  restaurantContext: {
+    fontSize: Typography.sizes.base,
+    color: Colors.primary,
+    fontWeight: Typography.weights.medium,
   },
   scanSection: {
     marginBottom: 32,

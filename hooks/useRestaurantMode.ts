@@ -305,9 +305,37 @@ export function useRestaurantMode() {
     scanWineCard,
     pickFromGallery,
     getRestaurantRecommendations,
+    getRestaurantRecommendationHistory,
     clearSession,
   };
 }
+
+// RÉCUPÉRER L'HISTORIQUE DES RECOMMANDATIONS RESTAURANT
+const getRestaurantRecommendationHistory = async (userId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('restaurant_recommendations')
+      .select(`
+        *,
+        restaurant_sessions!inner(
+          restaurant_name,
+          extracted_wines
+        )
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('❌ Error fetching restaurant history:', error);
+      throw error;
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('❌ Error in getRestaurantRecommendationHistory:', error);
+    throw error;
+  }
+};
 
 // Export the custom error for use in components
 export { UserCancellationError };

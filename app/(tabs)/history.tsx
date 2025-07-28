@@ -8,20 +8,37 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { Wine, Calendar } from 'lucide-react-native';
+import { Wine, Calendar, Utensils } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useRecommendations } from '@/hooks/useRecommendations';
+import { useRestaurantMode } from '@/hooks/useRestaurantMode';
 import type { Database } from '@/lib/supabase';
 
-type Recommendation = Database['public']['Tables']['recommendations']['Row'];
+type Recommendation = Database['public']['Tables']['recommendations']['Row'] & {
+  type?: 'normal' | 'restaurant';
+  restaurant_name?: string;
+};
+
+type RestaurantRecommendation = {
+  id: string;
+  dish_description: string;
+  recommended_wines: any;
+  created_at: string;
+  restaurant_sessions: {
+    restaurant_name: string;
+    extracted_wines: any[];
+  };
+  type: 'restaurant';
+};
 
 export default function HistoryScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { getRecommendationHistory } = useRecommendations();
+  const { getRestaurantRecommendationHistory } = useRestaurantMode();
   const [history, setHistory] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -49,22 +66,49 @@ export default function HistoryScreen() {
     
     try {
       console.log('📚 loadHistory - Calling getRecommendationHistory for user:', user.id);
-      const recommendations = await getRecommendationHistory(user.id);
-      console.log('📚 loadHistory - Received recommendations:', recommendations);
-      console.log('📚 loadHistory - Recommendations count:', recommendations?.length || 0);
       
-      if (recommendations && recommendations.length > 0) {
-        console.log('📚 loadHistory - Sample recommendation structure:', {
-          id: recommendations[0].id,
-          dish_description: recommendations[0].dish_description,
-          recommended_wines_type: typeof recommendations[0].recommended_wines,
-          recommended_wines_isArray: Array.isArray(recommendations[0].recommended_wines),
-          recommended_wines_length: Array.isArray(recommendations[0].recommended_wines) ? recommendations[0].recommended_wines.length : 'N/A',
-          created_at: recommendations[0].created_at
+      // Récupérer les recommandations normales
+      const normalRecommendations = await getRecommendationHistory(user.id);
+      console.log('📚 loadHistory - Received normal recommendations:', normalRecommendations?.length || 0);
+      
+      // Récupérer les recommandations restaurant
+      const restaurantRecommendations = await getRestaurantRecommendationHistory(user.id);
+      console.log('📚 loadHistory - Received restaurant recommendations:', restaurantRecommendations?.length || 0);
+      
+      // Combiner et marquer les types
+      const combinedHistory: Recommendation[] = [
+        ...(normalRecommendations || []).map(rec => ({ ...rec, type: 'normal' as const })),
+        ...(restaurantRecommendations || []).map(rec => ({
+          id: rec.id,
+          dish_description: rec.dish_description,
+          recommended_wines: rec.recommended_wines,
+          created_at: rec.created_at,
+          user_id: user.id,
+          user_budget: null,
+          type: 'restaurant' as const,
+          restaurant_name: rec.restaurant_sessions?.restaurant_name || 'Restaurant'
+        }))
+      ];
+      
+      // Trier par date (plus récent en premier)
+      const sortedHistory = combinedHistory.sort((a, b) => 
+        new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime()
+      );
+      
+      if (sortedHistory && sortedHistory.length > 0) {
+        console.log('📚 loadHistory - Sample combined recommendation structure:', {
+          id: sortedHistory[0].id,
+          dish_description: sortedHistory[0].dish_description,
+          type: sortedHistory[0].type,
+          restaurant_name: sortedHistory[0].restaurant_name,
+          recommended_wines_type: typeof sortedHistory[0].recommended_wines,
+          recommended_wines_isArray: Array.isArray(sortedHistory[0].recommended_wines),
+          recommended_wines_length: Array.isArray(sortedHistory[0].recommended_wines) ? sortedHistory[0].recommended_wines.length : 'N/A',
+          created_at: sortedHistory[0].created_at
         });
       }
       
-      setHistory(recommendations || []);
+      setHistory(sortedHistory);
     } catch (error) {
       console.error('❌ loadHistory - Error loading history:', error);
       setHistory([]);
@@ -98,15 +142,29 @@ export default function HistoryScreen() {
   const handleHistoryItemPress = (item: Recommendation) => {
     console.log('🔍 handleHistoryItemPress - Opening recommendation:', item.id);
     
-    router.push({
-      pathname: '/recommendations',
-      params: {
-        dish: item.dish_description,
-        budget: item.user_budget?.toString() || '',
-        recommendations: JSON.stringify(item.recommended_wines),
-        fromHistory: 'true',
-      },
-    });
+    if (item.type === 'restaurant') {
+      // Navigation vers l'écran restaurant avec les résultats
+      router.push({
+        pathname: '/(tabs)/restaurant',
+        params: {
+          fromHistory: 'true',
+          dish: item.dish_description,
+          recommendations: JSON.stringify(item.recommended_wines),
+          restaurantName: item.restaurant_name || 'Restaurant',
+        },
+      });
+    } else {
+      // Navigation normale vers les recommandations
+      router.push({
+        pathname: '/recommendations',
+        params: {
+          dish: item.dish_description,
+          budget: item.user_budget?.toString() || '',
+          recommendations: JSON.stringify(item.recommended_wines),
+          fromHistory: 'true',
+        },
+      });
+    }
   };
 
   if (loading) {
@@ -152,9 +210,22 @@ export default function HistoryScreen() {
           >
             <View style={styles.cardHeader}>
               <View style={styles.dishInfo}>
+                <View style={styles.dishHeader}>
+                  {item.type === 'restaurant' && (
+                    <View style={styles.restaurantBadge}>
+                      <Utensils size={12} color={Colors.accent} />
+                      <Text style={styles.restaurantBadgeText}>Restaurant</Text>
+                    </View>
+                  )}
+                </View>
                 <Text style={styles.dishName} numberOfLines={2}>
                   {item.dish_description}
                 </Text>
+                {item.type === 'restaurant' && item.restaurant_name && (
+                  <Text style={styles.restaurantName}>
+                    Chez {item.restaurant_name}
+                  </Text>
+                )}
                 {item.user_budget && (
                   <Text style={styles.budgetText}>
                     Budget: €{item.user_budget}
@@ -256,10 +327,36 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 16,
   },
+  dishHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  restaurantBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginBottom: 4,
+  },
+  restaurantBadgeText: {
+    fontSize: Typography.sizes.xs,
+    fontWeight: Typography.weights.semibold,
+    color: Colors.accent,
+    marginLeft: 4,
+  },
   dishName: {
     fontSize: Typography.sizes.lg,
     fontWeight: Typography.weights.semibold,
     color: Colors.textPrimary,
+    marginBottom: 4,
+  },
+  restaurantName: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.primary,
+    fontWeight: Typography.weights.medium,
     marginBottom: 4,
   },
   budgetText: {
