@@ -32,12 +32,15 @@ export default function RestaurantScreen() {
     dish?: string;
     recommendations?: string;
     restaurantName?: string;
+    sessionId?: string;
+    extractedWines?: string;
   }>();
   const { user, profile, canMakeRecommendation, loading: authLoading } = useAuth();
   const { 
     currentSession,
     loading,
     error,
+    setCurrentSession,
     scanWineCard,
     pickFromGallery,
     getRestaurantRecommendations, 
@@ -48,6 +51,7 @@ export default function RestaurantScreen() {
   const [step, setStep] = useState<RestaurantStep>('scan');
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const hasNavigatedRef = useRef(false);
+  const hasLoadedFromHistoryRef = useRef(false);
 
   // Handle navigation to subscription screen when user is not eligible
   useEffect(() => {
@@ -60,7 +64,64 @@ export default function RestaurantScreen() {
     }
   }, [authLoading, profile, canMakeRecommendation, router]);
 
+  // Handle loading from history
+  useEffect(() => {
+    if (params.fromHistory === 'true' && 
+        params.sessionId && 
+        params.dish && 
+        params.recommendations && 
+        params.restaurantName && 
+        params.extractedWines &&
+        !hasLoadedFromHistoryRef.current) {
+      
+      hasLoadedFromHistoryRef.current = true;
+      
+      try {
+        const parsedRecommendations = JSON.parse(params.recommendations);
+        const parsedExtractedWines = JSON.parse(params.extractedWines);
+        
+        // Set current session with historical data
+        const historicalSession: RestaurantSession = {
+          id: params.sessionId,
+          restaurant_name: params.restaurantName,
+          extracted_wines: parsedExtractedWines,
+          confidence_score: 0.85, // Default value for historical sessions
+          session_active: true,
+        };
+        
+        setCurrentSession(historicalSession);
+        setDishDescription(params.dish);
+        setRecommendations(parsedRecommendations);
+        setStep('results');
+        
+        console.log('✅ Loaded restaurant session from history:', params.sessionId);
+      } catch (error) {
+        console.error('❌ Error loading from history:', error);
+        // Fallback to scan step if parsing fails
+        setStep('scan');
+      }
+    }
+  }, [params.fromHistory, params.sessionId, params.dish, params.recommendations, params.restaurantName, params.extractedWines, setCurrentSession]);
+
   const handleScanCard = async () => {
+    if (!canMakeRecommendation()) {
+      Alert.alert(
+        'Quota dépassé',
+        'Tu as atteint ta limite quotidienne. Passe à Premium pour des scans illimités !',
+        [
+          { text: 'Plus tard', style: 'cancel' },
+          { 
+            text: 'Voir Premium', 
+            onPress: () => router.push({
+              pathname: '/subscription',
+              params: { reason: 'daily_limit' }
+            })
+          }
+        ]
+      );
+      return;
+    }
+
     try {
       const session = await scanWineCard();
       Alert.alert(
@@ -77,6 +138,24 @@ export default function RestaurantScreen() {
   };
 
   const handlePickFromGallery = async () => {
+    if (!canMakeRecommendation()) {
+      Alert.alert(
+        'Quota dépassé',
+        'Tu as atteint ta limite quotidienne. Passe à Premium pour des scans illimités !',
+        [
+          { text: 'Plus tard', style: 'cancel' },
+          { 
+            text: 'Voir Premium', 
+            onPress: () => router.push({
+              pathname: '/subscription',
+              params: { reason: 'daily_limit' }
+            })
+          }
+        ]
+      );
+      return;
+    }
+
     try {
       const session = await pickFromGallery();
       Alert.alert(

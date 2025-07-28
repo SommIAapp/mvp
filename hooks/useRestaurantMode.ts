@@ -48,6 +48,11 @@ export function useRestaurantMode() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Export setCurrentSession for external use
+  const setCurrentSessionExternal = (session: RestaurantSession | null) => {
+    setCurrentSession(session);
+  };
+
   // SCANNER CARTE DES VINS
   const scanWineCard = async (imageUri?: string): Promise<RestaurantSession> => {
     setLoading(true);
@@ -137,6 +142,12 @@ export function useRestaurantMode() {
       setCurrentSession(restaurantSession);
       console.log('✅ OCR completed, session created:', restaurantSession.id);
       
+      // Update usage count after successful scan
+      if (user) {
+        await updateUsageCount();
+        console.log('✅ Usage count updated after scan');
+      }
+      
       return restaurantSession;
 
     } catch (err) {
@@ -209,11 +220,6 @@ export function useRestaurantMode() {
       
       // Sauvegarder recommandation
       await saveRestaurantRecommendation(session.id, dishDescription, recommendations);
-      
-      // Mettre à jour le compteur d'usage
-      if (user) {
-        await updateUsageCount();
-      }
       
       console.log('✅ Restaurant recommendations generated:', recommendations.length);
       
@@ -302,6 +308,7 @@ export function useRestaurantMode() {
     currentSession,
     loading,
     error,
+    setCurrentSession: setCurrentSessionExternal,
     scanWineCard,
     pickFromGallery,
     getRestaurantRecommendations,
@@ -311,7 +318,7 @@ export function useRestaurantMode() {
 }
 
 // RÉCUPÉRER L'HISTORIQUE DES RECOMMANDATIONS RESTAURANT
-const getRestaurantRecommendationHistory = async (userId: string) => {
+export const getRestaurantRecommendationHistory = async (userId: string) => {
   try {
     const { data, error } = await supabase
       .from('restaurant_recommendations')

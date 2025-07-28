@@ -151,6 +151,8 @@ export default function HistoryScreen() {
           dish: item.dish_description,
           recommendations: JSON.stringify(item.recommended_wines),
           restaurantName: item.restaurant_name || 'Restaurant',
+          sessionId: item.id,
+          extractedWines: JSON.stringify(item.restaurant_sessions?.extracted_wines || []),
         },
       });
     } else {
