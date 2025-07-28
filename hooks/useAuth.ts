@@ -90,7 +90,7 @@ export function useAuth() {
     );
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, []); // Empty dependency array - only run once on mount
 
   const fetchProfile = async (userId: string) => {
     console.log('🔐 Auth: Fetching profile for userId:', userId);
