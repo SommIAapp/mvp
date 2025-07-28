@@ -191,12 +191,14 @@ export default function SubscriptionScreen() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <ArrowLeft size={24} color={Colors.primary} />
-        </TouchableOpacity>
+        {reason !== 'trial_signup' && (
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <ArrowLeft size={24} color={Colors.primary} />
+          </TouchableOpacity>
+        )}
         
         <View style={styles.headerContent}>
         <View style={styles.badge}>
