@@ -159,7 +159,7 @@ export default function HistoryScreen() {
       
       // Navigate with minimal parameters
       router.push({
-        pathname: '/(tabs)/restaurant',
+        pathname: '/restaurant',
         params: {
           fromHistory: 'true',
           sessionId: item.id,
