@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Sparkles, Wine, Smartphone, RotateCcw, X, Check } from 'lucide-react-native';
+import { Sparkles, Wine, Smartphone, RotateCcw, X, Check, ArrowLeft } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
@@ -191,11 +191,20 @@ export default function SubscriptionScreen() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <ArrowLeft size={24} color={Colors.primary} />
+        </TouchableOpacity>
+        
+        <View style={styles.headerContent}>
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{contentConfig.badge}</Text>
         </View>
         <Text style={styles.title}>{contentConfig.title}</Text>
         <Text style={styles.subtitle}>{contentConfig.subtitle}</Text>
+        </View>
       </View>
 
       <View style={styles.content}>
@@ -329,10 +338,25 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.accent,
   },
   header: {
-    alignItems: 'center',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     paddingHorizontal: 24,
     paddingTop: 80,
     paddingBottom: 32,
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: Colors.softGray,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+    marginTop: 8,
+  },
+  headerContent: {
+    flex: 1,
+    alignItems: 'center',
   },
   badge: {
     flexDirection: 'row',
