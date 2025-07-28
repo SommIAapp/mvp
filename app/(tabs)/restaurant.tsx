@@ -63,7 +63,7 @@ export default function RestaurantScreen() {
   useEffect(() => {
     if (!authLoading && !canMakeRecommendation() && !hasNavigatedRef.current) {
       hasNavigatedRef.current = true;
-      router.replace({
+      router.push({
         pathname: '/subscription',
         params: { reason: 'daily_limit' }
       });
