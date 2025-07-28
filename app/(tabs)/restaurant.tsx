@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { 
   View, 
@@ -34,6 +34,7 @@ export default function RestaurantScreen() {
     restaurantName?: string;
   }>();
   const { user, profile, canMakeRecommendation } = useAuth();
+  const { user, profile, canMakeRecommendation, loading: authLoading } = useAuth();
   const { 
     currentSession,
     loading,
@@ -47,16 +48,20 @@ export default function RestaurantScreen() {
   const [dishDescription, setDishDescription] = useState('');
   const [step, setStep] = useState<RestaurantStep>('scan');
   const [recommendations, setRecommendations] = useState<any[]>([]);
+  const hasNavigatedRef = useRef(false);
 
-  const handleScanCard = async () => {
-    if (!canMakeRecommendation()) {
-      router.push({
+  // Handle navigation to subscription screen when user is not eligible
+  useEffect(() => {
+    if (!authLoading && !canMakeRecommendation() && !hasNavigatedRef.current) {
+      hasNavigatedRef.current = true;
+      router.replace({
         pathname: '/subscription',
         params: { reason: 'daily_limit' }
       });
-      return;
     }
+  }, [authLoading, profile, canMakeRecommendation, router]);
 
+  const handleScanCard = async () => {
     try {
       const session = await scanWineCard();
       Alert.alert(
@@ -73,14 +78,6 @@ export default function RestaurantScreen() {
   };
 
   const handlePickFromGallery = async () => {
-    if (!canMakeRecommendation()) {
-      router.push({
-        pathname: '/subscription',
-        params: { reason: 'daily_limit' }
-      });
-      return;
-    }
-
     try {
       const session = await pickFromGallery();
       Alert.alert(
@@ -117,6 +114,17 @@ export default function RestaurantScreen() {
     setRecommendations([]);
     clearSession();
   };
+
+  // Show loading while auth is being checked
+  if (authLoading) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <LoadingSpinner text="Chargement..." />
+        </View>
+      </View>
+    );
+  }
 
   // ÉCRAN 1: SCAN CARTE
   if (step === 'scan') {
@@ -514,5 +522,10 @@ const styles = StyleSheet.create({
   },
   newSearchSection: {
     marginBottom: 24,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
