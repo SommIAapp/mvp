@@ -21,8 +21,8 @@ export default function RootLayout() {
             <Stack.Screen name="auth/signup" />
             <Stack.Screen name="subscription" options={{ presentation: 'modal' }} />
             <Stack.Screen name="subscription-success" options={{ presentation: 'modal' }} />
-            <Stack.Screen name="recommendations" />
-            <Stack.Screen name="wine-detail" />
+            <Stack.Screen name="recommendations" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="wine-detail" options={{ presentation: 'modal' }} />
             <Stack.Screen name="quota-exceeded" options={{ presentation: 'modal' }} />
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="+not-found" />
