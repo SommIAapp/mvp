@@ -8,7 +8,7 @@ import {
   RefreshControl 
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, Star } from 'lucide-react-native';
+import { ArrowLeft, Star, Camera } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
@@ -17,11 +17,13 @@ import { useRecommendations, type WineRecommendation } from '@/hooks/useRecommen
 
 export default function RecommendationsScreen() {
   const router = useRouter();
-  const { dish, budget, recommendations: recommendationsParam, fromHistory } = useLocalSearchParams<{ 
+  const { dish, budget, recommendations: recommendationsParam, fromHistory, photoMode, visionConfidence } = useLocalSearchParams<{ 
     dish: string; 
     budget?: string;
     recommendations?: string;
     fromHistory?: string;
+    photoMode?: string;
+    visionConfidence?: string;
   }>();
   const { getRecommendations } = useRecommendations();
   const [recommendations, setRecommendations] = useState<WineRecommendation[]>([]);
@@ -144,13 +146,30 @@ export default function RecommendationsScreen() {
           <ArrowLeft size={24} color={Colors.primary} />
         </TouchableOpacity>
         <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Mes recommandations</Text>
+          <Text style={styles.headerTitle}>
+            {photoMode === 'true' ? 'Mes recommandations' : 'Mes recommandations'}
+          </Text>
           <Text style={styles.headerSubtitle}>
-            {fromHistory === 'true' ? 'Historique • ' : ''}Pour {dish}
+            {fromHistory === 'true' ? 'Historique • ' : ''}
+            {photoMode === 'true' ? 'Pour votre plat photographié' : `Pour ${dish}`}
             {budget && ` • Budget: €${budget}`}
           </Text>
         </View>
       </View>
+
+      {photoMode === 'true' && (
+        <View style={styles.photoModeIndicator}>
+          <Camera size={20} color={Colors.primary} />
+          <Text style={styles.photoModeText}>
+            🤖 Plat identifié par IA
+            {visionConfidence && (
+              <Text style={styles.visionConfidenceText}>
+                {' '}avec {visionConfidence}% de confiance
+              </Text>
+            )}
+          </Text>
+        </View>
+      )}
 
       <ScrollView 
         style={styles.content}
@@ -328,5 +347,31 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.sm,
     color: Colors.textSecondary,
     lineHeight: Typography.sizes.sm * Typography.lineHeights.relaxed,
+  },
+  photoModeIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.softGray,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginHorizontal: 24,
+    marginBottom: 16,
+    borderRadius: 12,
+    shadowColor: Colors.darkGray,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  photoModeText: {
+    fontSize: Typography.sizes.sm,
+    fontWeight: Typography.weights.medium,
+    color: Colors.textPrimary,
+    marginLeft: 8,
+  },
+  visionConfidenceText: {
+    fontSize: Typography.sizes.sm,
+    fontWeight: Typography.weights.regular,
+    color: Colors.textSecondary,
   },
 });
