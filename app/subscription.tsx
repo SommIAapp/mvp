@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity, Dimensions } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Sparkles, Wine, Smartphone, RotateCcw, X, Check, ArrowLeft } from 'lucide-react-native';
+import { Sparkles, Wine, Smartphone, RotateCcw, X, Check, ArrowLeft, Camera, DollarSign, BookOpen } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
@@ -10,6 +11,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/lib/supabase';
 import { stripeProducts } from '@/src/stripe-config';
+
+const { width } = Dimensions.get('window');
 
 type PaywallReason = 'trial_signup' | 'daily_limit' | 'trial_expired' | 'premium_upgrade';
 
@@ -23,6 +26,7 @@ export default function SubscriptionScreen() {
   const premiumProduct = stripeProducts.find(p => p.name === 'SommIA Premium');
   const weeklyProduct = stripeProducts.find(p => p.name === 'SommIA Premium (Hebdomadaire)');
   const annualProduct = stripeProducts.find(p => p.name === 'SommIA Premium (Annuel)');
+  const [selectedPlan, setSelectedPlan] = useState('annual'); // Pre-select annual plan
 
   const handleStartTrialFlow = async () => {
     console.log('🎯 handleStartTrialFlow - Starting free trial process');
@@ -211,44 +215,93 @@ export default function SubscriptionScreen() {
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{contentConfig.badge}</Text>
         </View>
-        <Text style={styles.title}>{contentConfig.title}</Text>
+        {reason === 'trial_signup' ? (
+          <Text style={styles.mainTitle}>
+            Trouve le vin parfait{'\n'}pour chaque plat
+          </Text>
+        ) : (
+          <Text style={styles.title}>{contentConfig.title}</Text>
+        )}
         <Text style={styles.subtitle}>{contentConfig.subtitle}</Text>
         </View>
       </View>
 
       <View style={styles.content}>
-        <View style={styles.benefitsSection}>
-          <View style={styles.benefit}>
-            <Wine size={24} color={Colors.secondary} />
-            <Text style={styles.benefitText}>Accords personnalisés selon ton budget</Text>
-          </View>
-          
-          <View style={styles.benefit}>
-            <Smartphone size={24} color={Colors.secondary} />
-            <Text style={styles.benefitText}>Explications sommelier pour chaque choix</Text>
-          </View>
-          
-          <View style={styles.benefit}>
-            <RotateCcw size={24} color={Colors.secondary} />
-            <Text style={styles.benefitText}>Historique de tes découvertes</Text>
-          </View>
-        </View>
+        {reason === 'trial_signup' ? (
+          <>
+            <View style={styles.benefitsSection}>
+              <View style={styles.benefit}>
+                <Wine size={32} color={Colors.secondary} />
+                <Text style={styles.benefitText}>Recommandations IA personnalisées</Text>
+              </View>
+              
+              <View style={styles.benefit}>
+                <Camera size={32} color={Colors.secondary} />
+                <Text style={styles.benefitText}>Analyse photo de tes plats</Text>
+              </View>
+              
+              <View style={styles.benefit}>
+                <DollarSign size={32} color={Colors.secondary} />
+                <Text style={styles.benefitText}>Économise sur chaque bouteille</Text>
+              </View>
+              
+              <View style={styles.benefit}>
+                <BookOpen size={32} color={Colors.secondary} />
+                <Text style={styles.benefitText}>Apprends avec un sommelier virtuel</Text>
+              </View>
+            </View>
 
+            <View style={styles.offerBox}>
+              <Text style={styles.offerTitle}>Essai gratuit 7 jours</Text>
+              <Text style={styles.offerSubtitle}>Puis seulement 4,99€/mois</Text>
+              <Text style={styles.offerDetail}>Annule à tout moment</Text>
+            </View>
+          </>
+        ) : (
+          <View style={styles.benefitsSection}>
+            <View style={styles.benefit}>
+              <Wine size={24} color={Colors.secondary} />
+              <Text style={styles.benefitText}>Accords personnalisés selon ton budget</Text>
+            </View>
+            
+            <View style={styles.benefit}>
+              <Smartphone size={24} color={Colors.secondary} />
+              <Text style={styles.benefitText}>Explications sommelier pour chaque choix</Text>
+            </View>
+            
+            <View style={styles.benefit}>
+              <RotateCcw size={24} color={Colors.secondary} />
+              <Text style={styles.benefitText}>Historique de tes découvertes</Text>
+            </View>
+          </View>
+        )}
         {reason !== 'trial_signup' && (
           <View style={styles.pricingSection}>
             <Text style={styles.pricingSectionTitle}>Choisis ton plan</Text>
             
-            <View style={styles.pricingGrid}>
+            <ScrollView 
+              horizontal 
+              pagingEnabled 
+              showsHorizontalScrollIndicator={false}
+              style={styles.planCarousel}
+              contentContainerStyle={styles.carouselContent}
+            >
               {/* Plan Hebdomadaire */}
-              <View style={[styles.pricingCard, styles.pricingCardThreeColumn]}>
-                <View style={styles.pricingHeader}>
+              <TouchableOpacity 
+                style={[
+                  styles.planCard, 
+                  selectedPlan === 'weekly' && styles.selectedPlanCard
+                ]}
+                onPress={() => setSelectedPlan('weekly')}
+              >
+                <View style={styles.planHeader}>
                   <Text style={styles.planName}>Hebdomadaire</Text>
                 </View>
-                <View style={styles.pricingContent}>
-                  <Text style={styles.priceAmount}>€2,99</Text>
-                  <Text style={styles.pricePeriod}>par semaine</Text>
+                <View style={styles.planPricing}>
+                  <Text style={styles.planPrice}>2,99€</Text>
+                  <Text style={styles.planPeriod}>par semaine</Text>
                 </View>
-                <View style={styles.pricingFeatures}>
+                <View style={styles.planFeatures}>
                   <View style={styles.feature}>
                     <Check size={16} color={Colors.success} />
                     <Text style={styles.featureText}>Recommandations illimitées</Text>
@@ -258,26 +311,27 @@ export default function SubscriptionScreen() {
                     <Text style={styles.featureText}>Explications détaillées</Text>
                   </View>
                 </View>
-                <Button
-                  title="Choisir Hebdomadaire"
-                  onPress={() => handleBuyPremium(weeklyProduct?.priceId || '')}
-                  variant="outline"
-                  size="medium"
-                  fullWidth
-                  loading={loading}
-                />
-              </View>
+              </TouchableOpacity>
 
               {/* Plan Mensuel */}
-              <View style={[styles.pricingCard, styles.pricingCardThreeColumn]}>
-                <View style={styles.pricingHeader}>
+              <TouchableOpacity 
+                style={[
+                  styles.planCard, 
+                  selectedPlan === 'monthly' && styles.selectedPlanCard
+                ]}
+                onPress={() => setSelectedPlan('monthly')}
+              >
+                <View style={styles.planHeader}>
                   <Text style={styles.planName}>Mensuel</Text>
+                  <View style={styles.popularBadge}>
+                    <Text style={styles.popularText}>Populaire</Text>
+                  </View>
                 </View>
-                <View style={styles.pricingContent}>
-                  <Text style={styles.priceAmount}>€4,99</Text>
-                  <Text style={styles.pricePeriod}>par mois</Text>
+                <View style={styles.planPricing}>
+                  <Text style={styles.planPrice}>4,99€</Text>
+                  <Text style={styles.planPeriod}>par mois</Text>
                 </View>
-                <View style={styles.pricingFeatures}>
+                <View style={styles.planFeatures}>
                   <View style={styles.feature}>
                     <Check size={16} color={Colors.success} />
                     <Text style={styles.featureText}>Recommandations illimitées</Text>
@@ -287,27 +341,31 @@ export default function SubscriptionScreen() {
                     <Text style={styles.featureText}>Explications détaillées</Text>
                   </View>
                 </View>
-                <Button
-                  title="Choisir Mensuel"
-                  onPress={() => handleBuyPremium(premiumProduct?.priceId || '')}
-                  variant="outline"
-                  size="medium"
-                  fullWidth
-                  loading={loading}
-                />
-              </View>
+              </TouchableOpacity>
 
               {/* Plan Annuel */}
-              <View style={[styles.pricingCard, styles.pricingCardThreeColumn]}>
-                <View style={styles.pricingHeader}>
+              <TouchableOpacity 
+                style={[
+                  styles.planCard, 
+                  styles.bestValueCard,
+                  selectedPlan === 'annual' && styles.selectedPlanCard
+                ]}
+                onPress={() => setSelectedPlan('annual')}
+              >
+                <View style={styles.bestValueBadge}>
+                  <Text style={styles.badgeText}>-50%</Text>
+                </View>
+                <View style={styles.planHeader}>
                   <Text style={styles.planName}>Annuel</Text>
+                  <Text style={styles.bestOfferText}>MEILLEURE OFFRE</Text>
                 </View>
-                <View style={styles.pricingContent}>
-                  <Text style={styles.priceAmount}>€30</Text>
-                  <Text style={styles.pricePeriod}>par an</Text>
-                  <Text style={styles.priceEquivalent}>€2.5/mois</Text>
+                <View style={styles.planPricing}>
+                  <Text style={styles.planPrice}>30€</Text>
+                  <Text style={styles.planPeriod}>par an</Text>
+                  <Text style={styles.equivalentPrice}>2,50€/mois</Text>
+                  <Text style={styles.savingText}>Économise 29,88€</Text>
                 </View>
-                <View style={styles.pricingFeatures}>
+                <View style={styles.planFeatures}>
                   <View style={styles.feature}>
                     <Check size={16} color={Colors.success} />
                     <Text style={styles.featureText}>Recommandations illimitées</Text>
@@ -317,15 +375,35 @@ export default function SubscriptionScreen() {
                     <Text style={styles.featureText}>Explications détaillées</Text>
                   </View>
                 </View>
-                <Button
-                  title="Choisir Annuel"
-                  onPress={() => handleBuyPremium(annualProduct?.priceId || '')}
-                  variant="primary"
-                  size="medium"
-                  fullWidth
-                  loading={loading}
-                />
-              </View>
+              </TouchableOpacity>
+            </ScrollView>
+
+            <LinearGradient
+              colors={[Colors.primary, '#8B4A52']}
+              style={styles.ctaButton}
+            >
+              <TouchableOpacity
+                style={styles.ctaButtonInner}
+                onPress={() => {
+                  const priceId = selectedPlan === 'weekly' ? weeklyProduct?.priceId :
+                                 selectedPlan === 'monthly' ? premiumProduct?.priceId :
+                                 annualProduct?.priceId;
+                  handleBuyPremium(priceId || '');
+                }}
+                disabled={loading}
+              >
+                <Text style={styles.ctaButtonText}>
+                  {selectedPlan === 'weekly' ? 'Choisir Hebdomadaire' :
+                   selectedPlan === 'monthly' ? 'Choisir Mensuel' :
+                   'Choisir Annuel'}
+                </Text>
+              </TouchableOpacity>
+            </LinearGradient>
+
+            <View style={styles.trustBadges}>
+              <Text style={styles.trustText}>✓ 7 jours gratuits</Text>
+              <Text style={styles.trustText}>✓ Annulation facile</Text>
+              <Text style={styles.trustText}>✓ Paiement sécurisé</Text>
             </View>
           </View>
         )}
@@ -396,6 +474,14 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
   },
+  mainTitle: {
+    fontSize: Typography.sizes.xxl + 4,
+    fontWeight: Typography.weights.bold,
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: 16,
+    lineHeight: Typography.sizes.xxl * 1.2,
+  },
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -437,14 +523,43 @@ const styles = StyleSheet.create({
   benefit: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
     paddingHorizontal: 8,
   },
   benefitText: {
-    fontSize: Typography.sizes.base,
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.medium,
     color: Colors.textPrimary,
     marginLeft: 16,
     flex: 1,
+  },
+  offerBox: {
+    backgroundColor: Colors.softGray,
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    marginBottom: 32,
+    shadowColor: Colors.darkGray,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  offerTitle: {
+    fontSize: Typography.sizes.xl,
+    fontWeight: Typography.weights.bold,
+    color: Colors.primary,
+    marginBottom: 8,
+  },
+  offerSubtitle: {
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.semibold,
+    color: Colors.textPrimary,
+    marginBottom: 4,
+  },
+  offerDetail: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.textSecondary,
   },
   pricingSection: {
     marginBottom: 32,
@@ -456,25 +571,51 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
   },
-  pricingGrid: {
-    flexDirection: 'column',
-    gap: 16,
+  planCarousel: {
+    marginBottom: 24,
   },
-  pricingCard: {
+  carouselContent: {
+    paddingHorizontal: 12,
+  },
+  planCard: {
+    width: width * 0.75,
     backgroundColor: Colors.softGray,
     borderRadius: 16,
     padding: 24,
+    marginHorizontal: 8,
     position: 'relative',
     shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
     shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  selectedPlanCard: {
+    borderColor: Colors.primary,
+    shadowColor: Colors.primary,
+    shadowOpacity: 0.2,
+  },
+  bestValueCard: {
+    borderColor: Colors.secondary,
+    backgroundColor: '#FFFEF8',
+  },
+  bestValueBadge: {
+    position: 'absolute',
+    top: -8,
+    right: 16,
+    backgroundColor: Colors.secondary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    shadowColor: Colors.secondary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
     elevation: 3,
   },
-  pricingCardThreeColumn: {
-    width: '100%',
-  },
-  pricingHeader: {
+  planHeader: {
     alignItems: 'center',
     marginBottom: 16,
   },
@@ -482,27 +623,52 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.lg,
     fontWeight: Typography.weights.bold,
     color: Colors.textPrimary,
+    marginBottom: 4,
   },
-  pricingContent: {
+  popularBadge: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  popularText: {
+    fontSize: Typography.sizes.xs,
+    fontWeight: Typography.weights.semibold,
+    color: Colors.accent,
+  },
+  bestOfferText: {
+    fontSize: Typography.sizes.xs,
+    fontWeight: Typography.weights.bold,
+    color: Colors.secondary,
+    letterSpacing: 0.5,
+  },
+  planPricing: {
     alignItems: 'center',
     marginBottom: 20,
   },
-  priceAmount: {
+  planPrice: {
     fontSize: Typography.sizes.xxl,
     fontWeight: Typography.weights.bold,
     color: Colors.primary,
   },
-  pricePeriod: {
+  planPeriod: {
     fontSize: Typography.sizes.base,
     color: Colors.textSecondary,
     marginTop: 4,
   },
-  priceEquivalent: {
+  equivalentPrice: {
     fontSize: Typography.sizes.sm,
-    color: Colors.textLight,
+    color: Colors.secondary,
+    fontWeight: Typography.weights.semibold,
     marginTop: 2,
   },
-  pricingFeatures: {
+  savingText: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.success,
+    fontWeight: Typography.weights.bold,
+    marginTop: 4,
+  },
+  planFeatures: {
     marginBottom: 20,
   },
   feature: {
@@ -514,6 +680,38 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.sm,
     color: Colors.textPrimary,
     marginLeft: 8,
+  },
+  ctaButton: {
+    borderRadius: 16,
+    marginBottom: 24,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  ctaButtonInner: {
+    paddingVertical: 18,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ctaButtonText: {
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.bold,
+    color: Colors.accent,
+  },
+  trustBadges: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  trustText: {
+    fontSize: Typography.sizes.xs,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    flex: 1,
   },
   trialText: {
     fontSize: Typography.sizes.lg,
