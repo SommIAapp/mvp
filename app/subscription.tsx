@@ -289,118 +289,97 @@ export default function SubscriptionScreen() {
           </View>
         )}
         {reason !== 'trial_signup' && (
-          <View style={styles.pricingSection}>
+          <>
             <Text style={styles.pricingSectionTitle}>Choisis ton plan</Text>
             
-            <ScrollView 
-              horizontal 
-              pagingEnabled 
-              showsHorizontalScrollIndicator={false}
-              style={styles.plansScrollView}
-              contentContainerStyle={styles.plansContainer}
-            >
-              {/* Plan Hebdomadaire */}
+            <View style={styles.plansListContainer}>
+              {/* Plan Annuel - En premier et mis en avant */}
               <TouchableOpacity 
                 style={[
-                  styles.planCard, 
-                  selectedPlan === 'weekly' && styles.selectedPlanCard
+                  styles.planOption, 
+                  styles.recommendedPlan,
+                  selectedPlan === 'annual' && styles.selectedPlanOption
                 ]}
-                onPress={() => setSelectedPlan('weekly')}
+                onPress={() => setSelectedPlan('annual')}
               >
-                <View style={styles.planHeader}>
-                  <Text style={styles.planName}>Hebdomadaire</Text>
-                </View>
-                <Text style={styles.planPrice}>2,99€</Text>
-                  <Text style={styles.planPeriod}>sem</Text>
-                <View style={styles.planFeatures}>
-                  <View style={styles.feature}>
-                    <Check size={16} color={Colors.success} />
-                    <Text style={styles.featureText}>Illimité</Text>
+                <View style={styles.planContent}>
+                  <View style={styles.planHeader}>
+                    <Text style={styles.planTitle}>Annuel</Text>
+                    <View style={styles.saveBadge}>
+                      <Text style={styles.saveText}>ÉCONOMISE 50%</Text>
+                    </View>
                   </View>
+                  <Text style={styles.planPrice}>30€ par an</Text>
+                  <Text style={styles.planEquivalent}>Seulement 2,50€/mois</Text>
+                </View>
+                <View style={styles.radioButton}>
+                  {selectedPlan === 'annual' && <View style={styles.radioButtonInner} />}
                 </View>
               </TouchableOpacity>
 
               {/* Plan Mensuel */}
               <TouchableOpacity 
                 style={[
-                  styles.planCard, 
-                  selectedPlan === 'monthly' && styles.selectedPlanCard
+                  styles.planOption,
+                  selectedPlan === 'monthly' && styles.selectedPlanOption
                 ]}
                 onPress={() => setSelectedPlan('monthly')}
               >
-                <View style={styles.planHeader}>
-                  <Text style={styles.planName}>Mensuel</Text>
-                  <View style={styles.popularBadge}>
-                    <Text style={styles.popularText}>Populaire</Text>
+                <View style={styles.planContent}>
+                  <View style={styles.planHeader}>
+                    <Text style={styles.planTitle}>Mensuel</Text>
                   </View>
+                  <Text style={styles.planPrice}>4,99€ par mois</Text>
                 </View>
-                <Text style={styles.planPrice}>4,99€</Text>
-                  <Text style={styles.planPeriod}>mois</Text>
-                <View style={styles.planFeatures}>
-                  <View style={styles.feature}>
-                    <Check size={16} color={Colors.success} />
-                    <Text style={styles.featureText}>Illimité</Text>
-                  </View>
+                <View style={styles.radioButton}>
+                  {selectedPlan === 'monthly' && <View style={styles.radioButtonInner} />}
                 </View>
               </TouchableOpacity>
 
-              {/* Plan Annuel */}
+              {/* Plan Hebdomadaire */}
               <TouchableOpacity 
                 style={[
-                  styles.planCard, 
-                  styles.bestValueCard,
-                  selectedPlan === 'annual' && styles.selectedPlanCard
+                  styles.planOption,
+                  selectedPlan === 'weekly' && styles.selectedPlanOption
                 ]}
-                onPress={() => setSelectedPlan('annual')}
+                onPress={() => setSelectedPlan('weekly')}
               >
-                <View style={styles.discountBadge}>
-                  <Text style={styles.discountText}>-50%</Text>
-                </View>
-                <View style={styles.planHeader}>
-                  <Text style={styles.planName}>Annuel</Text>
-                  <Text style={styles.bestOfferText}>MEILLEURE OFFRE</Text>
-                </View>
-                <Text style={styles.annualPrice}>30€</Text>
-                  <Text style={styles.planPeriod}>an</Text>
-                <Text style={styles.monthlyEquivalent}>2,50€/mois</Text>
-                <Text style={styles.savingInCard}>Économise 29,88€</Text>
-                <View style={styles.planFeatures}>
-                  <View style={styles.feature}>
-                    <Check size={16} color={Colors.success} />
-                    <Text style={styles.featureText}>Illimité</Text>
+                <View style={styles.planContent}>
+                  <View style={styles.planHeader}>
+                    <Text style={styles.planTitle}>Hebdomadaire</Text>
                   </View>
+                  <Text style={styles.planPrice}>2,99€ par semaine</Text>
+                </View>
+                <View style={styles.radioButton}>
+                  {selectedPlan === 'weekly' && <View style={styles.radioButtonInner} />}
                 </View>
               </TouchableOpacity>
-            </ScrollView>
+            </View>
 
-            <LinearGradient
-              colors={[Colors.primary, '#8B4A52']}
-              style={styles.ctaButton}
-            >
-              <TouchableOpacity
-                style={styles.ctaButtonInner}
-                onPress={() => {
-                  const priceId = selectedPlan === 'weekly' ? weeklyProduct?.priceId :
-                                 selectedPlan === 'monthly' ? premiumProduct?.priceId :
-                                 annualProduct?.priceId;
-                  handleBuyPremium(priceId || '');
-                }}
-                disabled={loading}
-              >
-                <Text style={styles.ctaButtonText}>
-                  {selectedPlan === 'weekly' ? 'Choisir Hebdomadaire' :
-                   selectedPlan === 'monthly' ? 'Choisir Mensuel' :
-                   'Choisir Annuel'}
-                </Text>
-              </TouchableOpacity>
-            </LinearGradient>
+            <View style={styles.freeTrialToggle}>
+              <Text style={styles.freeTrialText}>✓ Essai gratuit 7 jours inclus</Text>
+            </View>
+
+            <Button
+              title="Commencer l'essai gratuit"
+              onPress={() => {
+                const priceId = selectedPlan === 'weekly' ? weeklyProduct?.priceId :
+                               selectedPlan === 'monthly' ? premiumProduct?.priceId :
+                               annualProduct?.priceId;
+                handleBuyPremium(priceId || '');
+              }}
+              variant="primary"
+              size="large"
+              fullWidth
+              loading={loading}
+            />
 
             <View style={styles.trustBadges}>
               <Text style={styles.trustText}>✓ 7 jours gratuits</Text>
               <Text style={styles.trustText}>✓ Annulation facile</Text>
               <Text style={styles.trustText}>✓ Paiement sécurisé</Text>
             </View>
-          </View>
+          </>
         )}
 
         <View style={styles.footer}>
@@ -532,169 +511,101 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.sm,
     color: Colors.textSecondary,
   },
-  pricingSection: {
-    marginBottom: 32,
-  },
   pricingSectionTitle: {
-    fontSize: Typography.sizes.lg,
+    fontSize: Typography.sizes.xl,
     fontWeight: Typography.weights.bold,
     color: Colors.textPrimary,
     textAlign: 'center',
     marginBottom: 20,
   },
-  plansScrollView: {
-    marginBottom: 20,
-  },
-  plansContainer: {
-    flexDirection: 'row',
+  plansListContainer: {
     paddingHorizontal: 16,
+    marginTop: 20,
+    marginBottom: 24,
   },
-  planCard: {
-    width: width * 0.31,
-    backgroundColor: Colors.softGray,
+  planOption: {
+    backgroundColor: '#F5F5F5',
     borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 8,
-    marginHorizontal: width * 0.01,
-    position: 'relative',
-    minHeight: 180,
+    padding: 16,
+    marginBottom: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 4,
     borderWidth: 2,
-    borderColor: '#E0E0E0',
+    borderColor: 'transparent',
   },
-  selectedPlanCard: {
+  recommendedPlan: {
+    backgroundColor: '#FFF9E6',
+    borderColor: '#D4AF37',
+  },
+  selectedPlanOption: {
     borderColor: '#D4AF37',
     borderWidth: 3,
-    transform: [{ scale: 1.05 }],
-    shadowColor: Colors.primary,
-    shadowOpacity: 0.2,
   },
-  bestValueCard: {
-    borderColor: '#D4AF37',
-    backgroundColor: '#FFFEF5',
-  },
-  discountBadge: {
-    position: 'absolute',
-    top: -8,
-    right: 8,
-    backgroundColor: '#D4AF37',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    shadowColor: '#D4AF37',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  discountText: {
-    fontSize: Typography.sizes.xs,
-    fontWeight: Typography.weights.bold,
-    color: Colors.darkGray,
+  planContent: {
+    flex: 1,
   },
   planHeader: {
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  planName: {
-    fontSize: Typography.sizes.sm,
-    fontWeight: Typography.weights.bold,
-    color: Colors.textPrimary,
-    marginBottom: 2,
-  },
-  popularBadge: {
-    backgroundColor: Colors.primary,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  popularText: {
-    fontSize: Typography.sizes.xs,
-    fontWeight: Typography.weights.semibold,
-    color: Colors.accent,
-  },
-  bestOfferText: {
-    fontSize: Typography.sizes.xs,
-    fontWeight: Typography.weights.bold,
-    color: '#D4AF37',
-    letterSpacing: 0.5,
-  },
-  planPrice: {
-    fontSize: 20,
-    fontWeight: Typography.weights.bold,
-    color: Colors.primary,
-    textAlign: 'center',
-    marginBottom: 2,
-  },
-  planPeriod: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  annualPrice: {
-    fontSize: 20,
-    fontWeight: Typography.weights.bold,
-    color: Colors.primary,
-    textAlign: 'center',
-    marginBottom: 2,
-  },
-  monthlyEquivalent: {
-    fontSize: Typography.sizes.sm,
-    color: '#D4AF37',
-    fontWeight: Typography.weights.semibold,
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  savingInCard: {
-    fontSize: Typography.sizes.xs,
-    color: Colors.success,
-    fontWeight: Typography.weights.bold,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  planFeatures: {
-    alignItems: 'center',
-  },
-  feature: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
   },
-  featureText: {
-    fontSize: Typography.sizes.sm,
+  planTitle: {
+    fontSize: Typography.sizes.base,
+    fontWeight: Typography.weights.semibold,
     color: Colors.textPrimary,
-    marginLeft: 8,
   },
-  ctaButton: {
-    borderRadius: 16,
-    marginBottom: 24,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+  saveBadge: {
+    backgroundColor: '#FF4444',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
   },
-  ctaButtonInner: {
-    paddingVertical: 18,
-    paddingHorizontal: 32,
+  saveText: {
+    color: Colors.accent,
+    fontSize: 10,
+    fontWeight: Typography.weights.bold,
+  },
+  planPrice: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.textSecondary,
+  },
+  planEquivalent: {
+    fontSize: Typography.sizes.xs,
+    color: Colors.success,
+    marginTop: 2,
+  },
+  radioButton: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  ctaButtonText: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.bold,
-    color: Colors.accent,
+  radioButtonInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: Colors.primary,
+  },
+  freeTrialToggle: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  freeTrialText: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.success,
+    fontWeight: Typography.weights.semibold,
   },
   trustBadges: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingHorizontal: 16,
-    marginBottom: 16,
+    marginTop: 16,
+    marginBottom: 24,
   },
   trustText: {
     fontSize: Typography.sizes.xs,
