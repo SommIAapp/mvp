@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
+import { useRecommendations } from '@/hooks/useRecommendations';
 import * as ImagePicker from 'expo-image-picker';
 
 // Custom error for user cancellations
@@ -44,6 +45,7 @@ interface RestaurantRecommendation {
 
 export function useRestaurantMode() {
   const { user, updateUsageCount } = useAuth();
+  const { getRestaurantOCR, getRestaurantRecommendations: getUnifiedRestaurantRecommendations } = useRecommendations();
   const [currentSession, setCurrentSession] = useState<RestaurantSession | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,60 +89,20 @@ export function useRestaurantMode() {
       // Convertir image en base64
       const base64 = await convertImageToBase64(finalImageUri);
 
-      // Appeler Edge Function OCR
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.access_token) {
-        throw new Error('Session non valide');
-      }
-
-      console.log('📸 Calling OCR service...');
-      
-      const response = await fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/restaurant-ocr`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          image_base64: base64,
-          user_id: user?.id,
-        }),
-      });
-
-      if (!response.ok) {
-        let errorMessage = 'Erreur analyse image';
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
-        } catch (parseError) {
-          // If JSON parsing fails, try to get text response or use generic message
-          try {
-            const errorText = await response.text();
-            errorMessage = errorText || `Erreur serveur (${response.status})`;
-          } catch (textError) {
-            errorMessage = `Erreur serveur (${response.status})`;
-          }
-        }
-        throw new Error(errorMessage);
-      }
-
-      const result = await response.json();
-      
-      if (!result.success) {
-        throw new Error(result.error || 'Erreur inconnue');
-      }
+      // Utiliser la fonction unifiée pour l'OCR
+      console.log('📸 Calling unified OCR service...');
+      const ocrResult = await getRestaurantOCR(base64, user?.id || '');
 
       const restaurantSession: RestaurantSession = {
-        id: result.session_id,
-        restaurant_name: result.restaurant_name,
-        extracted_wines: result.extracted_wines,
-        confidence_score: result.confidence_score,
+        id: ocrResult.id,
+        restaurant_name: ocrResult.restaurant_name,
+        extracted_wines: ocrResult.extracted_wines,
+        confidence_score: ocrResult.confidence_score,
         session_active: true,
       };
 
       setCurrentSession(restaurantSession);
-      console.log('✅ OCR completed, session created:', restaurantSession.id);
+      console.log('✅ Unified OCR completed, session created:', restaurantSession.id);
       
       // Update usage count after successful scan
       if (user) {
@@ -182,41 +144,13 @@ export function useRestaurantMode() {
     try {
       const session = currentSession || await getSessionById(sessionId!);
       
-      // Appeler Edge Function modifiée avec contexte restaurant
-      const { data: { session: authSession } } = await supabase.auth.getSession();
-      
-      if (!authSession?.access_token) {
-        throw new Error('Session non valide');
-      }
-
-      console.log('🤖 Getting restaurant recommendations for:', dishDescription);
-      
-      const response = await fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/wine-recommendations`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authSession.access_token}`,
-        },
-        body: JSON.stringify({
-          dish_description: dishDescription,
-          restaurant_mode: true,
-          restaurant_session_id: session.id,
-          available_wines: session.extracted_wines,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur recommandations restaurant');
-      }
-
-      const result = await response.json();
-      
-      if (!result.success) {
-        throw new Error(result.error || 'Erreur génération recommandations');
-      }
-
-      const recommendations = result.recommendations || [];
+      // Utiliser la fonction unifiée pour les recommandations restaurant
+      console.log('🤖 Getting unified restaurant recommendations for:', dishDescription);
+      const recommendations = await getUnifiedRestaurantRecommendations(
+        dishDescription,
+        session.id,
+        session.extracted_wines
+      );
       
       // Sauvegarder recommandation
       await saveRestaurantRecommendation(session.id, dishDescription, recommendations);
