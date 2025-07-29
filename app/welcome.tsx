@@ -59,14 +59,15 @@ export default function WelcomeScreen() {
           />
           
           <Button
-        <Image
-          source={require('../assets/images/appstorelogo.png')}
-          style={styles.logoImage}
-          resizeMode="contain"
-        />
+            title="Se connecter"
+            onPress={() => router.push('/auth/signin')}
+            variant="secondary"
+            size="large"
+            fullWidth
+          />
+        </View>
       </View>
     </ScrollView>
-  )
   );
 }
 
