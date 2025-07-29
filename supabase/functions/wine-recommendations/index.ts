@@ -400,55 +400,6 @@ async function getNormalModeRecommendations(dish: string, budget?: number) {
    }
  }
 
- // FALLBACK DATABASE (MODE NORMAL) - Mise à jour pour mvp_wines
- async function getDatabaseFallbackRecommendations(dish: string, budget?: number) {
-   let query = supabase
-     .from('mvp_wines')
-     .select('*')
-     .not('carrefour_price', 'is', null)
-     .order('quality_score', { ascending: false });
-
-   if (budget) {
-     query = query.lte('carrefour_price', budget);
-   }
-
-   const { data: wines, error } = await query.limit(50);
-   
-   if (error) throw error;
-   if (!wines || wines.length === 0) {
-     throw new Error('Aucun vin trouvé pour ces critères');
-   }
-
-   // Transformer en format recommandation
-   return wines.slice(0, 3).map((wine, index) => ({
-     id: wine.id,
-     name: wine.name,
-     producer: wine.producer || 'Producteur inconnu',
-     region: wine.region || 'Région inconnue',
-     price_estimate: wine.carrefour_price || 0, // Compatibilité frontend
-     rating: wine.quality_score || 80,
-     category: getCategoryFromPrice(wine.carrefour_price || 0),
-     color: mapWineColor(wine.color),
-     reasoning: `Ce vin s'accorde parfaitement avec ${dish} grâce à ses caractéristiques uniques.`,
-     grapeVarieties: [], // Non disponible dans mvp_wines
-     foodPairings: [], // Non disponible dans mvp_wines
-     vintage: wine.vintage || undefined,
-     appellation: undefined, // Non disponible dans mvp_wines
-   }));
- }
-
- function getCategoryFromPrice(price: number): string {
-}
-
- function mapWineColor(color: string | null): string {
-   switch (color) {
-     case 'rouge': return 'rouge';
-     case 'blanc': return 'blanc';
-     case 'rosé': return 'rose';
-     case 'sparkling': return 'sparkling';
-     default: return 'rouge';
-   }
- }
 function getMockRestaurantRecommendations(dish: string, availableWines: any[]) {
   // Sélectionner les 3 premiers vins et créer des recommandations
   const selectedWines = availableWines.slice(0, 3);
@@ -479,13 +430,13 @@ function generateMockReasoning(dish: string, wine: any): string {
 // FALLBACK DATABASE (MODE NORMAL)
 async function getDatabaseFallbackRecommendations(dish: string, budget?: number) {
   let query = supabase
-    .from('wines')
+    .from('mvp_wines')
     .select('*')
-    .not('price_estimate', 'is', null)
-    .order('global_wine_score', { ascending: false });
+    .not('carrefour_price', 'is', null)
+    .order('quality_score', { ascending: false });
 
   if (budget) {
-    query = query.lte('price_estimate', budget);
+    query = query.lte('carrefour_price', budget);
   }
 
   const { data: wines, error } = await query.limit(50);
@@ -501,15 +452,15 @@ async function getDatabaseFallbackRecommendations(dish: string, budget?: number)
     name: wine.name,
     producer: wine.producer || 'Producteur inconnu',
     region: wine.region || 'Région inconnue',
-    price_estimate: wine.price_estimate || 0,
-    rating: wine.global_wine_score || 80,
-    category: getCategoryFromPrice(wine.price_estimate || 0),
+    price_estimate: wine.carrefour_price || 0, // Compatibilité frontend
+    rating: wine.quality_score || 80,
+    category: getCategoryFromPrice(wine.carrefour_price || 0),
     color: mapWineColor(wine.color),
     reasoning: `Ce vin s'accorde parfaitement avec ${dish} grâce à ses caractéristiques uniques.`,
-    grapeVarieties: wine.grape_varieties || [],
-    foodPairings: wine.food_pairings || [],
+    grapeVarieties: [], // Non disponible dans mvp_wines
+    foodPairings: [], // Non disponible dans mvp_wines
     vintage: wine.vintage || undefined,
-    appellation: wine.appellation || undefined,
+    appellation: undefined, // Non disponible dans mvp_wines
   }));
 }
 
@@ -521,8 +472,8 @@ function getCategoryFromPrice(price: number): string {
 
 function mapWineColor(color: string | null): string {
   switch (color) {
-    case 'red': return 'rouge';
-    case 'white': return 'blanc';
+    case 'rouge': return 'rouge';
+    case 'blanc': return 'blanc';
     case 'rosé': return 'rose';
     case 'sparkling': return 'sparkling';
     default: return 'rouge';
