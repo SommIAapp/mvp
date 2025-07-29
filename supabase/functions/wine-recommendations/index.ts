@@ -360,7 +360,7 @@ async function getNormalModeRecommendations(dish: string, budget?: number) {
        producer: wine.producer || 'Producteur inconnu',
        region: wine.region || 'Région inconnue',
        price_estimate: wine.carrefour_price || 0, // Compatibilité frontend
-       rating: wine.quality_score || 80,
+       rating: Math.round((wine.quality_score || 80) / 20) * 20, // Ensure rating is on 100-point scale
        category: this.getCategoryFromPrice(wine.carrefour_price || 0),
        color: this.mapWineColor(wine.color),
        reasoning: this.generateReasoning(dish, wine, color),
@@ -388,15 +388,85 @@ async function getNormalModeRecommendations(dish: string, budget?: number) {
    }
 
    private generateReasoning(dish: string, wine: any, color: string): string {
-     const reasonings = {
-       rouge: `Ce ${wine.name} s'accorde parfaitement avec ${dish}. Ses arômes de ${wine.region} et sa structure équilibrée complètent idéalement les saveurs du plat.`,
-       blanc: `L'élégance de ce ${wine.name} de ${wine.region} sublime ${dish}. Sa fraîcheur et ses notes minérales créent un accord harmonieux.`,
-       rose: `Ce ${wine.name} apporte la fraîcheur parfaite pour ${dish}. Ses notes fruitées de ${wine.region} équilibrent merveilleusement le plat.`,
-       sparkling: `Les bulles fines de ce ${wine.name} subliment ${dish}. Son effervescence et son élégance créent un moment d'exception.`,
-       mixed: `Ce ${wine.name} de ${wine.region} accompagne délicieusement ${dish} grâce à ses caractéristiques uniques.`
-     };
+     const price = wine.carrefour_price || 0;
+     const category = this.getCategoryFromPrice(price);
+     const dishLower = dish.toLowerCase();
      
-     return reasonings[color as keyof typeof reasonings] || reasonings.mixed;
+     // Préfixe selon la catégorie de prix
+     let priceIntro = '';
+     if (category === 'economique') {
+       priceIntro = `Pour moins de ${Math.ceil(price)}€, ce `;
+     } else if (category === 'qualite-prix') {
+       priceIntro = 'Un excellent rapport qualité-prix, ce ';
+     } else {
+       priceIntro = 'Une cuvée d\'exception, ce ';
+     }
+     
+     // Caractéristiques selon le type de vin
+     let wineCharacteristics = '';
+     switch (color) {
+       case 'rouge':
+         wineCharacteristics = 'rouge aux tanins équilibrés et aux arômes de fruits rouges';
+         break;
+       case 'blanc':
+         wineCharacteristics = 'blanc aux notes minérales et à la fraîcheur élégante';
+         break;
+       case 'rose':
+         wineCharacteristics = 'rosé aux notes fruitées et à la vivacité rafraîchissante';
+         break;
+       case 'sparkling':
+         wineCharacteristics = 'effervescent aux bulles fines et à l\'élégance pétillante';
+         break;
+       default:
+         wineCharacteristics = 'vin aux caractéristiques harmonieuses';
+     }
+     
+     // Accord spécifique selon le plat
+     let pairingExplanation = '';
+     if (dishLower.includes('saumon') || dishLower.includes('poisson')) {
+       if (color === 'blanc') {
+         pairingExplanation = 'Sa fraîcheur iodée et ses notes d\'agrumes subliment la chair délicate du poisson.';
+       } else if (color === 'rose') {
+         pairingExplanation = 'Sa vivacité et ses arômes fruités créent un contraste parfait avec les saveurs marines.';
+       } else {
+         pairingExplanation = 'Il accompagne délicatement les saveurs marines sans les masquer.';
+       }
+     } else if (dishLower.includes('viande') || dishLower.includes('bœuf') || dishLower.includes('agneau') || dishLower.includes('entrecôte')) {
+       if (color === 'rouge') {
+         pairingExplanation = 'Sa structure tannique et ses arômes profonds s\'harmonisent parfaitement avec la richesse de la viande.';
+       } else {
+         pairingExplanation = 'Il apporte une fraîcheur bienvenue qui équilibre la puissance de la viande.';
+       }
+     } else if (dishLower.includes('fromage')) {
+       if (color === 'rouge') {
+         pairingExplanation = 'Son onctuosité et sa structure complètent l\'intensité des fromages affinés.';
+       } else if (color === 'blanc') {
+         pairingExplanation = 'Sa minéralité et sa fraîcheur créent un équilibre parfait avec l\'onctuosité du fromage.';
+       } else {
+         pairingExplanation = 'Il crée un équilibre délicat avec les saveurs lactées.';
+       }
+     } else if (dishLower.includes('volaille') || dishLower.includes('poulet')) {
+       if (color === 'blanc') {
+         pairingExplanation = 'Sa finesse et son élégance accompagnent parfaitement la délicatesse de la volaille.';
+       } else if (color === 'rouge') {
+         pairingExplanation = 'Ses tanins souples et ses arômes fruités s\'accordent harmonieusement avec la volaille.';
+       } else {
+         pairingExplanation = 'Il accompagne avec finesse les saveurs subtiles de la volaille.';
+       }
+     } else if (dishLower.includes('salade') || dishLower.includes('légume')) {
+       pairingExplanation = 'Sa fraîcheur et sa vivacité subliment les saveurs végétales et apportent une belle harmonie.';
+     } else if (dishLower.includes('dessert') || dishLower.includes('chocolat')) {
+       if (color === 'sparkling') {
+         pairingExplanation = 'Ses bulles délicates et son effervescence créent un final gourmand exceptionnel.';
+       } else {
+         pairingExplanation = 'Sa douceur et ses arômes fruités accompagnent délicatement les saveurs sucrées.';
+       }
+     } else {
+       // Accord générique
+       pairingExplanation = `Il s'accorde harmonieusement avec ${dish}, créant un équilibre parfait entre le vin et le plat.`;
+     }
+     
+     return `${priceIntro}${wineCharacteristics} de ${wine.region || 'France'} s'accorde parfaitement avec ${dish}. ${pairingExplanation}`;
    }
  }
 
