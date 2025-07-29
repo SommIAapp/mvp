@@ -169,12 +169,286 @@ async function getNormalModeRecommendations(dish: string, budget?: number) {
     return getDatabaseFallbackRecommendations(dish, budget);
   }
 
-  // Logique existante pour mode normal...
-  // (Garder la logique existante du fichier original)
-  return getDatabaseFallbackRecommendations(dish, budget);
+  // Utiliser l'optimiseur de vins pour le mode normal
+  const optimizer = new WineOptimizer();
+  return await optimizer.getOptimizedRecommendations(dish, budget);
+ }
+
+ // CLASSE OPTIMISEUR DE VINS
+ class WineOptimizer {
+   private wines: any[] = [];
+   private readonly DIVERSITY_WEIGHT = 0.3;
+   private readonly QUALITY_WEIGHT = 0.4;
+   private readonly PRICE_WEIGHT = 0.3;
+
+   async getOptimizedRecommendations(dish: string, budget?: number) {
+     console.log('🍷 WineOptimizer: Starting optimization for:', dish);
+     
+     // Charger et filtrer les vins
+     await this.loadAndFilterWines(budget);
+     console.log('📊 WineOptimizer: Loaded wines:', this.wines.length);
+     
+     if (this.wines.length === 0) {
+       throw new Error('Aucun vin trouvé pour ces critères');
+     }
+
+     // Traiter avec priorité diversité
+     const recommendations = await this.processWinesWithDiversityPriority(dish, budget);
+     console.log('✅ WineOptimizer: Generated recommendations:', recommendations.length);
+     
+     return recommendations;
+   }
+
+   private async loadAndFilterWines(budget?: number) {
+     let query = supabase
+       .from('mvp_wines')
+       .select('*')
+       .order('quality_score', { ascending: false });
+
+     const { data: wines, error } = await query.limit(200);
+     
+     if (error) {
+       console.error('❌ Error loading wines:', error);
+       throw error;
+     }
+
+     if (!wines || wines.length === 0) {
+       throw new Error('Aucun vin disponible');
+     }
+
+     // Filtrer par budget si spécifié
+     if (budget) {
+       const budgetMin = Math.max(1, budget * 0.7);
+       const budgetMax = budget * 1.2;
+       
+       this.wines = wines.filter(wine => 
+         wine.carrefour_price && 
+         wine.carrefour_price >= budgetMin && 
+         wine.carrefour_price <= budgetMax
+       );
+       
+       console.log(`💰 Budget filter: ${wines.length} → ${this.wines.length} wines`);
+     } else {
+       this.wines = wines;
+     }
+   }
+
+   private async processWinesWithDiversityPriority(dish: string, budget?: number) {
+     // Grouper par couleur pour assurer la diversité
+     const winesByColor = this.groupWinesByColor();
+     const recommendations: any[] = [];
+
+     // Sélectionner le meilleur de chaque couleur
+     for (const [color, colorWines] of Object.entries(winesByColor)) {
+       if (recommendations.length >= 3) break;
+       
+       const bestWine = this.selectBestWineForDish(colorWines as any[], dish, color);
+       if (bestWine) {
+         recommendations.push(this.formatWineRecommendation(bestWine, dish, color));
+       }
+     }
+
+     // Compléter avec les meilleurs vins restants si nécessaire
+     while (recommendations.length < 3 && this.wines.length > recommendations.length) {
+       const remainingWines = this.wines.filter(wine => 
+         !recommendations.some(rec => rec.id === wine.id)
+       );
+       
+       if (remainingWines.length === 0) break;
+       
+       const bestRemaining = this.selectBestWineForDish(remainingWines, dish, 'mixed');
+       if (bestRemaining) {
+         recommendations.push(this.formatWineRecommendation(bestRemaining, dish, 'mixed'));
+       }
+     }
+
+     return recommendations.slice(0, 3);
+   }
+
+   private groupWinesByColor() {
+     const groups: { [key: string]: any[] } = {};
+     
+     for (const wine of this.wines) {
+       const color = wine.color || 'unknown';
+       if (!groups[color]) groups[color] = [];
+       groups[color].push(wine);
+     }
+     
+     return groups;
+   }
+
+   private selectBestWineForDish(wines: any[], dish: string, color: string) {
+     if (wines.length === 0) return null;
+     
+     // Calculer un score composite pour chaque vin
+     const scoredWines = wines.map(wine => ({
+       ...wine,
+       composite_score: this.calculateCompositeScore(wine, dish, color)
+     }));
+     
+     // Trier par score et retourner le meilleur
+     scoredWines.sort((a, b) => b.composite_score - a.composite_score);
+     return scoredWines[0];
+   }
+
+   private calculateCompositeScore(wine: any, dish: string, color: string): number {
+     let score = 0;
+     
+     // Score qualité (40%)
+     const qualityScore = (wine.quality_score || 50) / 100;
+     score += qualityScore * this.QUALITY_WEIGHT;
+     
+     // Score accord plat (30%)
+     const pairingScore = this.calculatePairingScore(wine, dish, color);
+     score += pairingScore * this.DIVERSITY_WEIGHT;
+     
+     // Score prix (30%) - favoriser les bons rapports qualité/prix
+     const priceScore = this.calculateBudgetAwarePrice(wine);
+     score += priceScore * this.PRICE_WEIGHT;
+     
+     return score;
+   }
+
+   private calculatePairingScore(wine: any, dish: string, color: string): number {
+     const dishLower = dish.toLowerCase();
+     let score = 0.5; // Score de base
+     
+     // Logique d'accord selon la couleur
+     if (color === 'rouge') {
+       if (dishLower.includes('viande') || dishLower.includes('bœuf') || 
+           dishLower.includes('agneau') || dishLower.includes('canard')) {
+         score += 0.4;
+       } else if (dishLower.includes('fromage') || dishLower.includes('sauce')) {
+         score += 0.2;
+       }
+     } else if (color === 'blanc') {
+       if (dishLower.includes('poisson') || dishLower.includes('fruits de mer') ||
+           dishLower.includes('volaille')) {
+         score += 0.4;
+       } else if (dishLower.includes('salade') || dishLower.includes('légume')) {
+         score += 0.2;
+       }
+     } else if (color === 'rosé') {
+       if (dishLower.includes('salade') || dishLower.includes('charcuterie') ||
+           dishLower.includes('grillé')) {
+         score += 0.3;
+       }
+     }
+     
+     return Math.min(score, 1.0);
+   }
+
+   private calculateBudgetAwarePrice(wine: any): number {
+     const price = wine.carrefour_price || 0;
+     
+     // Favoriser les vins entre 10-30€ (bon rapport qualité/prix)
+     if (price >= 10 && price <= 30) {
+       return 1.0;
+     } else if (price < 10) {
+       return 0.7; // Vins économiques
+     } else if (price <= 50) {
+       return 0.8; // Vins premium
+     } else {
+       return 0.6; // Vins très chers
+     }
+   }
+
+   private formatWineRecommendation(wine: any, dish: string, color: string) {
+     return {
+       id: wine.id,
+       name: wine.name,
+       producer: wine.producer || 'Producteur inconnu',
+       region: wine.region || 'Région inconnue',
+       price_estimate: wine.carrefour_price || 0, // Compatibilité frontend
+       rating: wine.quality_score || 80,
+       category: this.getCategoryFromPrice(wine.carrefour_price || 0),
+       color: this.mapWineColor(wine.color),
+       reasoning: this.generateReasoning(dish, wine, color),
+       grapeVarieties: [], // Non disponible dans mvp_wines
+       foodPairings: [], // Non disponible dans mvp_wines
+       vintage: wine.vintage || undefined,
+       appellation: undefined, // Non disponible dans mvp_wines
+     };
+   }
+
+   private getCategoryFromPrice(price: number): string {
+     if (price <= 15) return 'economique';
+     if (price <= 30) return 'qualite-prix';
+     return 'premium';
+   }
+
+   private mapWineColor(color: string | null): string {
+     switch (color) {
+       case 'rouge': return 'rouge';
+       case 'blanc': return 'blanc';
+       case 'rosé': return 'rose';
+       case 'sparkling': return 'sparkling';
+       default: return 'rouge';
+     }
+   }
+
+   private generateReasoning(dish: string, wine: any, color: string): string {
+     const reasonings = {
+       rouge: `Ce ${wine.name} s'accorde parfaitement avec ${dish}. Ses arômes de ${wine.region} et sa structure équilibrée complètent idéalement les saveurs du plat.`,
+       blanc: `L'élégance de ce ${wine.name} de ${wine.region} sublime ${dish}. Sa fraîcheur et ses notes minérales créent un accord harmonieux.`,
+       rose: `Ce ${wine.name} apporte la fraîcheur parfaite pour ${dish}. Ses notes fruitées de ${wine.region} équilibrent merveilleusement le plat.`,
+       sparkling: `Les bulles fines de ce ${wine.name} subliment ${dish}. Son effervescence et son élégance créent un moment d'exception.`,
+       mixed: `Ce ${wine.name} de ${wine.region} accompagne délicieusement ${dish} grâce à ses caractéristiques uniques.`
+     };
+     
+     return reasonings[color as keyof typeof reasonings] || reasonings.mixed;
+   }
+ }
+
+ // FALLBACK DATABASE (MODE NORMAL) - Mise à jour pour mvp_wines
+ async function getDatabaseFallbackRecommendations(dish: string, budget?: number) {
+   let query = supabase
+     .from('mvp_wines')
+     .select('*')
+     .not('carrefour_price', 'is', null)
+     .order('quality_score', { ascending: false });
+
+   if (budget) {
+     query = query.lte('carrefour_price', budget);
+   }
+
+   const { data: wines, error } = await query.limit(50);
+   
+   if (error) throw error;
+   if (!wines || wines.length === 0) {
+     throw new Error('Aucun vin trouvé pour ces critères');
+   }
+
+   // Transformer en format recommandation
+   return wines.slice(0, 3).map((wine, index) => ({
+     id: wine.id,
+     name: wine.name,
+     producer: wine.producer || 'Producteur inconnu',
+     region: wine.region || 'Région inconnue',
+     price_estimate: wine.carrefour_price || 0, // Compatibilité frontend
+     rating: wine.quality_score || 80,
+     category: getCategoryFromPrice(wine.carrefour_price || 0),
+     color: mapWineColor(wine.color),
+     reasoning: `Ce vin s'accorde parfaitement avec ${dish} grâce à ses caractéristiques uniques.`,
+     grapeVarieties: [], // Non disponible dans mvp_wines
+     foodPairings: [], // Non disponible dans mvp_wines
+     vintage: wine.vintage || undefined,
+     appellation: undefined, // Non disponible dans mvp_wines
+   }));
+ }
+
+ function getCategoryFromPrice(price: number): string {
 }
 
-// MOCK DATA POUR RESTAURANT MODE
+ function mapWineColor(color: string | null): string {
+   switch (color) {
+     case 'rouge': return 'rouge';
+     case 'blanc': return 'blanc';
+     case 'rosé': return 'rose';
+     case 'sparkling': return 'sparkling';
+     default: return 'rouge';
+   }
+ }
 function getMockRestaurantRecommendations(dish: string, availableWines: any[]) {
   // Sélectionner les 3 premiers vins et créer des recommandations
   const selectedWines = availableWines.slice(0, 3);
