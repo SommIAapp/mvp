@@ -10,7 +10,8 @@ import {
   Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Camera, User } from 'lucide-react-native';
+import { Camera, User, Image as ImageIcon } from 'lucide-react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
@@ -26,7 +27,7 @@ const BUDGET_OPTIONS = [5, 10, 20, 30];
 export default function HomeScreen() {
   const router = useRouter();
   const { user, profile, loading, canMakeRecommendation, updateUsageCount } = useAuth();
-  const { getRecommendations } = useRecommendations();
+  const { getRecommendations, getRecommendationsFromPhoto } = useRecommendations();
   const [dishDescription, setDishDescription] = useState('');
   const [budget, setBudget] = useState<number | null>(null);
   const [recommendationLoading, setRecommendationLoading] = useState(false);
@@ -148,8 +149,207 @@ export default function HomeScreen() {
   };
 
   const handleCameraPress = () => {
-    // TODO: Implement camera functionality
-    Alert.alert('Appareil photo', 'Fonctionnalité bientôt disponible !');
+    Alert.alert(
+      'Mode Photo',
+      'Comment souhaitez-vous ajouter votre photo ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { text: '📸 Prendre une photo', onPress: handlePhotoRecommendations },
+        { text: '🖼️ Choisir depuis galerie', onPress: handleGalleryRecommendations },
+      ]
+    );
+  };
+
+  const handlePhotoRecommendations = async () => {
+    console.log('📸 handlePhotoRecommendations - Starting photo recommendation request');
+    
+    if (!canMakeRecommendation()) {
+      console.log('🚫 handlePhotoRecommendations - Quota exceeded, showing paywall');
+      
+      let reason: 'daily_limit' | 'trial_expired' | 'trial_signup' = 'daily_limit';
+      
+      if (!profile) {
+        reason = 'trial_signup';
+      } else if (profile.subscription_plan === 'free' && !profile.trial_start_date) {
+        reason = 'trial_signup';
+      } else if (profile.subscription_plan === 'trial' && (profile.daily_count || 0) >= 1) {
+        reason = 'daily_limit';
+      } else if (profile.subscription_plan === 'trial' || profile.subscription_plan === 'free') {
+        reason = 'trial_expired';
+      }
+      
+      router.push({
+        pathname: '/subscription',
+        params: { reason }
+      });
+      return;
+    }
+
+    try {
+      // Request camera permissions
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert('Permission requise', 'L\'accès à la caméra est nécessaire pour prendre une photo de votre plat.');
+        return;
+      }
+
+      // Launch camera
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+        base64: true,
+      });
+
+      if (result.canceled) {
+        console.log('📸 handlePhotoRecommendations - User cancelled photo');
+        return;
+      }
+
+      if (!result.assets[0].base64) {
+        Alert.alert('Erreur', 'Impossible de traiter l\'image. Veuillez réessayer.');
+        return;
+      }
+
+      setRecommendationLoading(true);
+
+      console.log('🤖 handlePhotoRecommendations - Calling photo recommendation service');
+      
+      const recommendations = await getRecommendationsFromPhoto(
+        result.assets[0].base64,
+        budget || undefined
+      );
+
+      console.log('✅ handlePhotoRecommendations - Photo recommendations received:', recommendations);
+
+      // Update usage count for non-premium users
+      if (profile?.subscription_plan !== 'premium') {
+        console.log('📈 handlePhotoRecommendations - Updating usage count');
+        try {
+          await updateUsageCount();
+          console.log('✅ handlePhotoRecommendations - Usage count updated successfully');
+        } catch (usageError) {
+          console.error('❌ handlePhotoRecommendations - Usage count update failed:', usageError);
+          Alert.alert('Erreur', `Impossible de mettre à jour le compteur d'utilisation: ${usageError.message}`);
+          setRecommendationLoading(false);
+          return;
+        }
+      }
+
+      setRecommendationLoading(false);
+      console.log('🎉 handlePhotoRecommendations - Success! Navigating to results');
+      router.push({
+        pathname: '/recommendations',
+        params: {
+          dish: 'Photo de plat',
+          budget: budget?.toString() || '',
+          recommendations: JSON.stringify(recommendations),
+          photoMode: 'true',
+        },
+      });
+    } catch (error) {
+      console.error('💥 handlePhotoRecommendations - Error:', error);
+      setRecommendationLoading(false);
+      Alert.alert('Erreur', `Impossible de générer les recommandations: ${error.message}`);
+    }
+  };
+
+  const handleGalleryRecommendations = async () => {
+    console.log('🖼️ handleGalleryRecommendations - Starting gallery recommendation request');
+    
+    if (!canMakeRecommendation()) {
+      console.log('🚫 handleGalleryRecommendations - Quota exceeded, showing paywall');
+      
+      let reason: 'daily_limit' | 'trial_expired' | 'trial_signup' = 'daily_limit';
+      
+      if (!profile) {
+        reason = 'trial_signup';
+      } else if (profile.subscription_plan === 'free' && !profile.trial_start_date) {
+        reason = 'trial_signup';
+      } else if (profile.subscription_plan === 'trial' && (profile.daily_count || 0) >= 1) {
+        reason = 'daily_limit';
+      } else if (profile.subscription_plan === 'trial' || profile.subscription_plan === 'free') {
+        reason = 'trial_expired';
+      }
+      
+      router.push({
+        pathname: '/subscription',
+        params: { reason }
+      });
+      return;
+    }
+
+    try {
+      // Request media library permissions
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert('Permission requise', 'L\'accès à la galerie est nécessaire pour choisir une photo de votre plat.');
+        return;
+      }
+
+      // Launch image library
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+        base64: true,
+      });
+
+      if (result.canceled) {
+        console.log('🖼️ handleGalleryRecommendations - User cancelled selection');
+        return;
+      }
+
+      if (!result.assets[0].base64) {
+        Alert.alert('Erreur', 'Impossible de traiter l\'image. Veuillez réessayer.');
+        return;
+      }
+
+      setRecommendationLoading(true);
+
+      console.log('🤖 handleGalleryRecommendations - Calling photo recommendation service');
+      
+      const recommendations = await getRecommendationsFromPhoto(
+        result.assets[0].base64,
+        budget || undefined
+      );
+
+      console.log('✅ handleGalleryRecommendations - Photo recommendations received:', recommendations);
+
+      // Update usage count for non-premium users
+      if (profile?.subscription_plan !== 'premium') {
+        console.log('📈 handleGalleryRecommendations - Updating usage count');
+        try {
+          await updateUsageCount();
+          console.log('✅ handleGalleryRecommendations - Usage count updated successfully');
+        } catch (usageError) {
+          console.error('❌ handleGalleryRecommendations - Usage count update failed:', usageError);
+          Alert.alert('Erreur', `Impossible de mettre à jour le compteur d'utilisation: ${usageError.message}`);
+          setRecommendationLoading(false);
+          return;
+        }
+      }
+
+      setRecommendationLoading(false);
+      console.log('🎉 handleGalleryRecommendations - Success! Navigating to results');
+      router.push({
+        pathname: '/recommendations',
+        params: {
+          dish: 'Photo de plat',
+          budget: budget?.toString() || '',
+          recommendations: JSON.stringify(recommendations),
+          photoMode: 'true',
+        },
+      });
+    } catch (error) {
+      console.error('💥 handleGalleryRecommendations - Error:', error);
+      setRecommendationLoading(false);
+      Alert.alert('Erreur', `Impossible de générer les recommandations: ${error.message}`);
+    }
   };
 
   return (
@@ -176,6 +376,9 @@ export default function HomeScreen() {
           <Text style={styles.greeting}>
             Bonjour {profile?.full_name || user?.email?.split('@')[0]}, que manges-tu ?
           </Text>
+          <Text style={styles.photoHint}>
+            💡 Nouveau : Prenez une photo de votre plat pour des recommandations ultra-précises !
+          </Text>
         </View>
 
         <View style={styles.inputSection}>
@@ -193,6 +396,33 @@ export default function HomeScreen() {
               onPress={handleCameraPress}
             >
               <Camera size={24} color={Colors.accent} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.photoModeSection}>
+          <Text style={styles.photoModeTitle}>Mode Photo</Text>
+          <Text style={styles.photoModeDescription}>
+            Laissez l'IA analyser votre plat directement
+          </Text>
+          
+          <View style={styles.photoButtons}>
+            <TouchableOpacity 
+              style={styles.photoModeButton}
+              onPress={handlePhotoRecommendations}
+              disabled={recommendationLoading}
+            >
+              <Camera size={24} color={Colors.accent} />
+              <Text style={styles.photoModeButtonText}>Photographier</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.photoModeButton}
+              onPress={handleGalleryRecommendations}
+              disabled={recommendationLoading}
+            >
+              <ImageIcon size={24} color={Colors.accent} />
+              <Text style={styles.photoModeButtonText}>Galerie</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -240,7 +470,8 @@ export default function HomeScreen() {
 
         <View style={styles.ctaSection}>
           <Button
-            title={recommendationLoading ? "Recommandation en cours..." : "Trouver mes vins"}
+            title={recommendationLoading ? "Recommandation en cours..." : "Trouver mes vins (texte)"}
+            style={styles.modeIndicator}
             onPress={handleGetRecommendations}
             variant="primary"
             size="large"
@@ -318,6 +549,14 @@ const styles = StyleSheet.create({
     fontWeight: Typography.weights.medium,
     color: Colors.textPrimary,
     lineHeight: Typography.sizes.lg * Typography.lineHeights.relaxed,
+    marginBottom: 8,
+  },
+  photoHint: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.secondary,
+    fontWeight: Typography.weights.medium,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
   inputSection: {
     marginBottom: 32,
@@ -348,6 +587,55 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 4,
+  },
+  photoModeSection: {
+    marginBottom: 32,
+    backgroundColor: Colors.softGray,
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: Colors.darkGray,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  photoModeTitle: {
+    fontSize: Typography.sizes.base,
+    fontWeight: Typography.weights.semibold,
+    color: Colors.textPrimary,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  photoModeDescription: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  photoButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  photoModeButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    shadowColor: Colors.darkGray,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  photoModeButtonText: {
+    fontSize: Typography.sizes.sm,
+    fontWeight: Typography.weights.semibold,
+    color: Colors.accent,
+    marginLeft: 8,
   },
   budgetSection: {
     marginBottom: 40,
@@ -395,5 +683,8 @@ const styles = StyleSheet.create({
   },
   ctaSection: {
     paddingBottom: 32,
+  },
+  modeIndicator: {
+    // Style for the main button to indicate text mode
   },
 });
