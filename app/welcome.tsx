@@ -19,13 +19,11 @@ export default function WelcomeScreen() {
         style={styles.header}
       >
         <View style={styles.heroContent}>
-          <View style={styles.logoContainer}>
-            <Image
-              source={require('../assets/images/sommia-logo.png')}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
-          </View>
+          <Image
+            source={require('../assets/images/appstorelogo.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
           <Text style={styles.title}>SOMMIA</Text>
           <Text style={styles.subtitle}>Découvre l'accord idéal</Text>
         </View>
@@ -88,7 +86,7 @@ const styles = StyleSheet.create({
   logoImage: {
     width: 120,
     height: 120,
-    marginBottom: 16,
+    marginBottom: 24,
   },
   title: {
     fontSize: Typography.sizes.xxl,
