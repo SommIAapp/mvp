@@ -69,7 +69,7 @@ export function useRecommendations() {
     budget?: number,
     timestamp?: number,
   ): Promise<WineRecommendation[]> => {
-    console.log('🚀 STARTING API CALL pour:', dishDescription);
+    console.log('🚀 STARTING TEXT_ONLY MODE for:', dishDescription);
     console.log('🔄 getRecommendations - Starting with params:', {
       dishDescription,
       budget,
@@ -91,7 +91,7 @@ export function useRecommendations() {
         user_budget: budget
       });
       
-      console.log('🍷 getRecommendations - Fetched wines:', wines);
+      console.log('🍷 getRecommendations - TEXT_ONLY mode completed, wines:', wines.length);
 
       // Save recommendation to history first
       if (user) {
@@ -118,7 +118,9 @@ export function useRecommendations() {
     photoBase64: string,
     budget?: number
   ): Promise<WineRecommendation[]> => {
-    console.log('📸 getRecommendationsFromPhoto - Starting photo analysis');
+    console.log('📸 STARTING DISH_PHOTO MODE - Photo analysis');
+    console.log('📸 Photo base64 length:', photoBase64.length);
+    console.log('💰 Photo mode budget:', budget);
     
     setLoading(true);
     setError(null);
@@ -130,6 +132,7 @@ export function useRecommendations() {
         user_budget: budget
       });
 
+      console.log('📸 getRecommendationsFromPhoto - DISH_PHOTO mode completed, wines:', wines.length);
       if (user) {
         await saveRecommendationToHistory(user.id, 'Photo de plat', budget, wines, 'dish_photo');
         await updateUsageCount();
@@ -150,7 +153,9 @@ export function useRecommendations() {
     menuPhotoBase64: string,
     userId: string
   ): Promise<RestaurantSession> => {
-    console.log('🔍 getRestaurantOCR - Starting menu OCR analysis');
+    console.log('🔍 STARTING RESTAURANT_OCR MODE - Menu OCR analysis');
+    console.log('🔍 Menu photo base64 length:', menuPhotoBase64.length);
+    console.log('👤 OCR for user:', userId);
     
     setLoading(true);
     setError(null);
@@ -162,6 +167,9 @@ export function useRecommendations() {
         user_id: userId
       });
 
+      console.log('🔍 getRestaurantOCR - RESTAURANT_OCR mode completed');
+      console.log('🏪 Restaurant detected:', result.restaurant_name);
+      console.log('🍷 Wines extracted:', result.extracted_wines?.length || 0);
       // Update usage count for OCR
       if (user) {
         await updateUsageCount();
@@ -182,7 +190,10 @@ export function useRecommendations() {
     sessionId: string,
     availableWines: any[]
   ): Promise<RestaurantRecommendation[]> => {
-    console.log('🍽️ getRestaurantRecommendations - Starting restaurant recommendations');
+    console.log('🍽️ STARTING RESTAURANT_RECO MODE - Restaurant recommendations');
+    console.log('🍽️ Dish:', dish);
+    console.log('🏪 Session ID:', sessionId);
+    console.log('🍷 Available wines count:', availableWines.length);
     
     setLoading(true);
     setError(null);
@@ -195,6 +206,8 @@ export function useRecommendations() {
         available_wines: availableWines
       });
 
+      console.log('🍽️ getRestaurantRecommendations - RESTAURANT_RECO mode completed');
+      console.log('🎯 Restaurant recommendations count:', recommendations.length);
       return recommendations as RestaurantRecommendation[];
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur recommandations restaurant';
@@ -211,7 +224,9 @@ export function useRecommendations() {
              RestaurantOCRRequest |
              RestaurantRecoRequest
   ): Promise<any> => {
+    const startTime = Date.now();
     console.log('🔍 fetchUnifiedRecommendations - Starting API call with mode:', request.mode);
+    console.log('📋 fetchUnifiedRecommendations - Full request:', JSON.stringify(request, null, 2));
     
     // Get current session for authorization
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -236,7 +251,6 @@ export function useRecommendations() {
     };
     
     console.log('📍 URL appelée:', apiUrl);
-    console.log('📝 Request body:', JSON.stringify(requestBody, null, 2));
     console.log('📋 fetchUnifiedRecommendations - Headers:', JSON.stringify(headers, null, 2));
     console.log('⏰ fetchUnifiedRecommendations - Timestamp:', new Date().toISOString());
     
@@ -249,7 +263,9 @@ export function useRecommendations() {
         body: JSON.stringify(requestBody)
       });
       
+      const responseTime = Date.now() - startTime;
       console.log('📊 Response status:', response.status);
+      console.log('⏱️ Response time:', responseTime + 'ms');
       console.log('📡 fetchUnifiedRecommendations - Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
@@ -259,19 +275,18 @@ export function useRecommendations() {
       }
       
       const apiResult = await response.json();
-      console.log('🎯 API Response data:', JSON.stringify(apiResult, null, 2));
+      console.log('🎯 API Response for mode', request.mode + ':', JSON.stringify(apiResult, null, 2));
       
       // Check if we got the new algorithm response
       if (apiResult.algorithm) {
-        console.log('🔍 Algorithm version:', apiResult.algorithm);
-        console.log('✅ Using algorithm:', apiResult.algorithm);
+        console.log('🤖 Algorithm version detected:', apiResult.algorithm);
       } else {
-        console.log('❌ NO ALGORITHM VERSION in response - using fallback?');
+        console.log('⚠️ NO ALGORITHM VERSION in response - using fallback?');
       }
       
       // Handle different response formats based on mode
       if (request.mode === 'restaurant_ocr') {
-        // OCR mode returns session data
+        console.log('🔍 Processing restaurant_ocr response');
         return {
           id: apiResult.session_id,
           restaurant_name: apiResult.restaurant_name,
@@ -279,10 +294,10 @@ export function useRecommendations() {
           confidence_score: apiResult.confidence_score
         };
       } else if (request.mode === 'restaurant_reco') {
-        // Restaurant recommendations mode
+        console.log('🍽️ Processing restaurant_reco response');
         return apiResult.recommendations || [];
       } else {
-        // Normal recommendations (text_only, dish_photo)
+        console.log('🍷 Processing', request.mode, 'recommendations response');
         const recommendations = apiResult.recommendations || apiResult;
         
         if (!Array.isArray(recommendations) || recommendations.length === 0) {
@@ -290,9 +305,9 @@ export function useRecommendations() {
           throw new Error('Aucune recommandation reçue de l\'API');
         }
         
-        console.log('🍷 fetchUnifiedRecommendations - Final recommendations count:', recommendations.length);
+        console.log('✅ Final recommendations count for', request.mode + ':', recommendations.length);
         recommendations.forEach((rec, index) => {
-          console.log(`🍷 Recommendation ${index + 1}:`, {
+          console.log(`🍷 ${request.mode} Recommendation ${index + 1}:`, {
             name: rec.name,
             producer: rec.producer,
             price: rec.price_estimate || rec.price,
@@ -305,11 +320,10 @@ export function useRecommendations() {
         return recommendations;
       }
       
-      console.log('✅ API CALL SUCCESSFUL - returning', recommendations.length, 'recommendations');
-      return recommendations;
+      console.log('✅ API CALL SUCCESSFUL for mode:', request.mode, '- Total time:', responseTime + 'ms');
       
     } catch (apiError) {
-      console.error('💥 fetchUnifiedRecommendations - API call failed:', apiError);
+      console.error('💥 fetchUnifiedRecommendations - API call failed for mode', request.mode + ':', apiError);
       console.error('🔍 Error details:', {
         message: apiError.message,
         stack: apiError.stack,
@@ -318,10 +332,10 @@ export function useRecommendations() {
       
       // Fallback to database if API fails
       if (request.mode === 'text_only') {
-        console.log('🗄️ fetchUnifiedRecommendations - Falling back to database');
+        console.log('🗄️ fetchUnifiedRecommendations - Falling back to database for text_only mode');
         return await fetchWineRecommendationsFromDatabase(request.dish_description, request.user_budget);
       } else {
-        // For other modes, don't fallback to database
+        console.log('❌ No fallback available for mode:', request.mode);
         throw apiError;
       }
     }

@@ -90,7 +90,7 @@ export function useRestaurantMode() {
       const base64 = await convertImageToBase64(finalImageUri);
 
       // Utiliser la fonction unifiée pour l'OCR
-      console.log('📸 Calling unified OCR service...');
+      console.log('📸 Calling RESTAURANT_OCR mode via unified service...');
       const ocrResult = await getRestaurantOCR(base64, user?.id || '');
 
       const restaurantSession: RestaurantSession = {
@@ -102,7 +102,7 @@ export function useRestaurantMode() {
       };
 
       setCurrentSession(restaurantSession);
-      console.log('✅ Unified OCR completed, session created:', restaurantSession.id);
+      console.log('✅ RESTAURANT_OCR mode completed, session created:', restaurantSession.id);
       
       // Update usage count after successful scan
       if (user) {
@@ -145,7 +145,7 @@ export function useRestaurantMode() {
       const session = currentSession || await getSessionById(sessionId!);
       
       // Utiliser la fonction unifiée pour les recommandations restaurant
-      console.log('🤖 Getting unified restaurant recommendations for:', dishDescription);
+      console.log('🤖 Calling RESTAURANT_RECO mode via unified service for:', dishDescription);
       const recommendations = await getUnifiedRestaurantRecommendations(
         dishDescription,
         session.id,
@@ -155,7 +155,7 @@ export function useRestaurantMode() {
       // Sauvegarder recommandation
       await saveRestaurantRecommendation(session.id, dishDescription, recommendations);
       
-      console.log('✅ Restaurant recommendations generated:', recommendations.length);
+      console.log('✅ RESTAURANT_RECO mode completed, recommendations:', recommendations.length);
       
       return recommendations;
 

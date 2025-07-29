@@ -49,7 +49,7 @@ export default function HomeScreen() {
   }
 
   const handleGetRecommendations = async () => {
-    console.log('🎯 handleGetRecommendations - Starting recommendation request');
+    console.log('🎯 handleGetRecommendations - Starting TEXT_ONLY recommendation request');
     console.log('👤 handleGetRecommendations - Current user:', user);
     console.log('📋 handleGetRecommendations - Current profile:', profile);
     
@@ -161,7 +161,7 @@ export default function HomeScreen() {
   };
 
   const handlePhotoRecommendations = async () => {
-    console.log('📸 handlePhotoRecommendations - Starting photo recommendation request');
+    console.log('📸 handlePhotoRecommendations - Starting DISH_PHOTO recommendation request');
     
     if (!canMakeRecommendation()) {
       console.log('🚫 handlePhotoRecommendations - Quota exceeded, showing paywall');
@@ -257,7 +257,7 @@ export default function HomeScreen() {
   };
 
   const handleGalleryRecommendations = async () => {
-    console.log('🖼️ handleGalleryRecommendations - Starting gallery recommendation request');
+    console.log('🖼️ handleGalleryRecommendations - Starting DISH_PHOTO (gallery) recommendation request');
     
     if (!canMakeRecommendation()) {
       console.log('🚫 handleGalleryRecommendations - Quota exceeded, showing paywall');
