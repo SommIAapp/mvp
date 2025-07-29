@@ -376,9 +376,6 @@ export default function HomeScreen() {
           <Text style={styles.greeting}>
             Bonjour {profile?.full_name || user?.email?.split('@')[0]}, que manges-tu ?
           </Text>
-          <Text style={styles.photoHint}>
-            💡 Nouveau : Prenez une photo de votre plat pour des recommandations ultra-précises !
-          </Text>
         </View>
 
         <View style={styles.inputSection}>
@@ -398,34 +395,11 @@ export default function HomeScreen() {
               <Camera size={24} color={Colors.accent} />
             </TouchableOpacity>
           </View>
+          <Text style={styles.inputHint}>
+            Décrivez votre plat ou utilisez l'appareil photo
+          </Text>
         </View>
 
-        <View style={styles.photoModeSection}>
-          <Text style={styles.photoModeTitle}>Mode Photo</Text>
-          <Text style={styles.photoModeDescription}>
-            Laissez l'IA analyser votre plat directement
-          </Text>
-          
-          <View style={styles.photoButtons}>
-            <TouchableOpacity 
-              style={styles.photoModeButton}
-              onPress={handlePhotoRecommendations}
-              disabled={recommendationLoading}
-            >
-              <Camera size={24} color={Colors.accent} />
-              <Text style={styles.photoModeButtonText}>Photographier</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.photoModeButton}
-              onPress={handleGalleryRecommendations}
-              disabled={recommendationLoading}
-            >
-              <ImageIcon size={24} color={Colors.accent} />
-              <Text style={styles.photoModeButtonText}>Galerie</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
 
         <View style={styles.budgetSection}>
           <Text style={styles.sectionTitle}>Budget par bouteille (optionnel)</Text>
@@ -470,8 +444,7 @@ export default function HomeScreen() {
 
         <View style={styles.ctaSection}>
           <Button
-            title={recommendationLoading ? "Recommandation en cours..." : "Trouver mes vins (texte)"}
-            style={styles.modeIndicator}
+            title={recommendationLoading ? "Recommandation en cours..." : "Obtenir des recommandations"}
             onPress={handleGetRecommendations}
             variant="primary"
             size="large"
@@ -551,13 +524,6 @@ const styles = StyleSheet.create({
     lineHeight: Typography.sizes.lg * Typography.lineHeights.relaxed,
     marginBottom: 8,
   },
-  photoHint: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.secondary,
-    fontWeight: Typography.weights.medium,
-    textAlign: 'center',
-    fontStyle: 'italic',
-  },
   inputSection: {
     marginBottom: 32,
   },
@@ -571,6 +537,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
+  },
+  inputHint: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
+    textAlign: 'center',
   },
   cameraButton: {
     position: 'absolute',
@@ -587,55 +559,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 4,
-  },
-  photoModeSection: {
-    marginBottom: 32,
-    backgroundColor: Colors.softGray,
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  photoModeTitle: {
-    fontSize: Typography.sizes.base,
-    fontWeight: Typography.weights.semibold,
-    color: Colors.textPrimary,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  photoModeDescription: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  photoButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  photoModeButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  photoModeButtonText: {
-    fontSize: Typography.sizes.sm,
-    fontWeight: Typography.weights.semibold,
-    color: Colors.accent,
-    marginLeft: 8,
   },
   budgetSection: {
     marginBottom: 40,
@@ -683,8 +606,5 @@ const styles = StyleSheet.create({
   },
   ctaSection: {
     paddingBottom: 32,
-  },
-  modeIndicator: {
-    // Style for the main button to indicate text mode
   },
 });
