@@ -222,7 +222,9 @@ export default function SubscriptionScreen() {
         ) : (
           <Text style={styles.title}>{contentConfig.title}</Text>
         )}
-        <Text style={styles.subtitle}>{contentConfig.subtitle}</Text>
+        {reason !== 'trial_signup' && (
+          <Text style={styles.subtitle}>{contentConfig.subtitle}</Text>
+        )}
         </View>
       </View>
 
@@ -290,7 +292,13 @@ export default function SubscriptionScreen() {
           <View style={styles.pricingSection}>
             <Text style={styles.pricingSectionTitle}>Choisis ton plan</Text>
             
-            <View style={styles.plansContainer}>
+            <ScrollView 
+              horizontal 
+              pagingEnabled 
+              showsHorizontalScrollIndicator={false}
+              style={styles.plansScrollView}
+              contentContainerStyle={styles.plansContainer}
+            >
               {/* Plan Hebdomadaire */}
               <TouchableOpacity 
                 style={[
@@ -302,18 +310,12 @@ export default function SubscriptionScreen() {
                 <View style={styles.planHeader}>
                   <Text style={styles.planName}>Hebdomadaire</Text>
                 </View>
-                <View style={styles.planPricing}>
-                  <Text style={styles.planPrice}>2,99€</Text>
+                <Text style={styles.planPrice}>2,99€</Text>
                   <Text style={styles.planPeriod}>sem</Text>
-                </View>
                 <View style={styles.planFeatures}>
                   <View style={styles.feature}>
                     <Check size={16} color={Colors.success} />
                     <Text style={styles.featureText}>Illimité</Text>
-                  </View>
-                  <View style={styles.feature}>
-                    <Check size={16} color={Colors.success} />
-                    <Text style={styles.featureText}>Détails</Text>
                   </View>
                 </View>
               </TouchableOpacity>
@@ -332,18 +334,12 @@ export default function SubscriptionScreen() {
                     <Text style={styles.popularText}>Populaire</Text>
                   </View>
                 </View>
-                <View style={styles.planPricing}>
-                  <Text style={styles.planPrice}>4,99€</Text>
+                <Text style={styles.planPrice}>4,99€</Text>
                   <Text style={styles.planPeriod}>mois</Text>
-                </View>
                 <View style={styles.planFeatures}>
                   <View style={styles.feature}>
                     <Check size={16} color={Colors.success} />
                     <Text style={styles.featureText}>Illimité</Text>
-                  </View>
-                  <View style={styles.feature}>
-                    <Check size={16} color={Colors.success} />
-                    <Text style={styles.featureText}>Détails</Text>
                   </View>
                 </View>
               </TouchableOpacity>
@@ -357,36 +353,25 @@ export default function SubscriptionScreen() {
                 ]}
                 onPress={() => setSelectedPlan('annual')}
               >
-                <View style={styles.bestValueBadge}>
-                  <Text style={styles.badgeText}>-50%</Text>
+                <View style={styles.discountBadge}>
+                  <Text style={styles.discountText}>-50%</Text>
                 </View>
                 <View style={styles.planHeader}>
                   <Text style={styles.planName}>Annuel</Text>
                   <Text style={styles.bestOfferText}>MEILLEURE OFFRE</Text>
                 </View>
-                <View style={styles.planPricing}>
-                  <Text style={styles.planPrice}>30€</Text>
+                <Text style={styles.annualPrice}>30€</Text>
                   <Text style={styles.planPeriod}>an</Text>
-                  <Text style={styles.equivalentPrice}>2,50€/mois</Text>
-                </View>
+                <Text style={styles.monthlyEquivalent}>2,50€/mois</Text>
+                <Text style={styles.savingInCard}>Économise 29,88€</Text>
                 <View style={styles.planFeatures}>
                   <View style={styles.feature}>
                     <Check size={16} color={Colors.success} />
                     <Text style={styles.featureText}>Illimité</Text>
                   </View>
-                  <View style={styles.feature}>
-                    <Check size={16} color={Colors.success} />
-                    <Text style={styles.featureText}>Détails</Text>
-                  </View>
                 </View>
               </TouchableOpacity>
-            </View>
-
-            {selectedPlan === 'annual' && (
-              <View style={styles.savingHighlight}>
-                <Text style={styles.savingText}>🎉 Économise 29,88€ par rapport au mensuel !</Text>
-              </View>
-            )}
+            </ScrollView>
 
             <LinearGradient
               colors={[Colors.primary, '#8B4A52']}
@@ -557,18 +542,23 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
   },
-  plansContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  plansScrollView: {
     marginBottom: 20,
   },
+  plansContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+  },
   planCard: {
-    width: '30%',
+    width: width * 0.31,
     backgroundColor: Colors.softGray,
     borderRadius: 12,
-    padding: 12,
-    marginHorizontal: '1.5%',
+    paddingVertical: 16,
+    paddingHorizontal: 8,
+    marginHorizontal: width * 0.01,
     position: 'relative',
+    minHeight: 180,
+    alignItems: 'center',
     shadowColor: Colors.darkGray,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
@@ -578,36 +568,41 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
   },
   selectedPlanCard: {
-    borderColor: Colors.secondary,
+    borderColor: '#D4AF37',
     borderWidth: 3,
     transform: [{ scale: 1.05 }],
     shadowColor: Colors.primary,
     shadowOpacity: 0.2,
   },
   bestValueCard: {
-    borderColor: Colors.secondary,
-    backgroundColor: '#FFFEF8',
+    borderColor: '#D4AF37',
+    backgroundColor: '#FFFEF5',
   },
-  bestValueBadge: {
+  discountBadge: {
     position: 'absolute',
     top: -8,
     right: 8,
-    backgroundColor: Colors.secondary,
+    backgroundColor: '#D4AF37',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
-    shadowColor: Colors.secondary,
+    shadowColor: '#D4AF37',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 3,
   },
+  discountText: {
+    fontSize: Typography.sizes.xs,
+    fontWeight: Typography.weights.bold,
+    color: Colors.darkGray,
+  },
   planHeader: {
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   planName: {
-    fontSize: Typography.sizes.base,
+    fontSize: Typography.sizes.sm,
     fontWeight: Typography.weights.bold,
     color: Colors.textPrimary,
     marginBottom: 2,
@@ -626,54 +621,54 @@ const styles = StyleSheet.create({
   bestOfferText: {
     fontSize: Typography.sizes.xs,
     fontWeight: Typography.weights.bold,
-    color: Colors.secondary,
+    color: '#D4AF37',
     letterSpacing: 0.5,
-  },
-  planPricing: {
-    alignItems: 'center',
-    marginBottom: 12,
   },
   planPrice: {
     fontSize: 20,
     fontWeight: Typography.weights.bold,
     color: Colors.primary,
+    textAlign: 'center',
+    marginBottom: 2,
   },
   planPeriod: {
     fontSize: 12,
     color: Colors.textSecondary,
-    marginTop: 2,
+    textAlign: 'center',
+    marginBottom: 8,
   },
-  equivalentPrice: {
+  annualPrice: {
+    fontSize: 20,
+    fontWeight: Typography.weights.bold,
+    color: Colors.primary,
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  monthlyEquivalent: {
     fontSize: Typography.sizes.sm,
-    color: Colors.secondary,
+    color: '#D4AF37',
     fontWeight: Typography.weights.semibold,
-    marginTop: 2,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  savingInCard: {
+    fontSize: Typography.sizes.xs,
+    color: Colors.success,
+    fontWeight: Typography.weights.bold,
+    textAlign: 'center',
+    marginBottom: 8,
   },
   planFeatures: {
-    marginBottom: 8,
+    alignItems: 'center',
   },
   feature: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
   },
   featureText: {
     fontSize: Typography.sizes.sm,
     color: Colors.textPrimary,
     marginLeft: 8,
-  },
-  savingHighlight: {
-    backgroundColor: Colors.softGray,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    alignItems: 'center',
-  },
-  savingText: {
-    fontSize: Typography.sizes.base,
-    color: Colors.success,
-    fontWeight: Typography.weights.bold,
-    textAlign: 'center',
   },
   ctaButton: {
     borderRadius: 16,
