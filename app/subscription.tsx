@@ -256,6 +256,17 @@ export default function SubscriptionScreen() {
               <Text style={styles.offerSubtitle}>Puis seulement 4,99€/mois</Text>
               <Text style={styles.offerDetail}>Annule à tout moment</Text>
             </View>
+
+            <View style={styles.buttonSection}>
+              <Button
+                title={(loading || contentConfig.loading) ? "Chargement..." : contentConfig.buttonTitle}
+                onPress={contentConfig.onPress}
+                variant="primary"
+                size="large"
+                fullWidth
+                loading={loading || contentConfig.loading}
+              />
+            </View>
           </>
         ) : (
           <View style={styles.benefitsSection}>
@@ -279,13 +290,7 @@ export default function SubscriptionScreen() {
           <View style={styles.pricingSection}>
             <Text style={styles.pricingSectionTitle}>Choisis ton plan</Text>
             
-            <ScrollView 
-              horizontal 
-              pagingEnabled 
-              showsHorizontalScrollIndicator={false}
-              style={styles.planCarousel}
-              contentContainerStyle={styles.carouselContent}
-            >
+            <View style={styles.plansContainer}>
               {/* Plan Hebdomadaire */}
               <TouchableOpacity 
                 style={[
@@ -299,16 +304,16 @@ export default function SubscriptionScreen() {
                 </View>
                 <View style={styles.planPricing}>
                   <Text style={styles.planPrice}>2,99€</Text>
-                  <Text style={styles.planPeriod}>par semaine</Text>
+                  <Text style={styles.planPeriod}>sem</Text>
                 </View>
                 <View style={styles.planFeatures}>
                   <View style={styles.feature}>
                     <Check size={16} color={Colors.success} />
-                    <Text style={styles.featureText}>Recommandations illimitées</Text>
+                    <Text style={styles.featureText}>Illimité</Text>
                   </View>
                   <View style={styles.feature}>
                     <Check size={16} color={Colors.success} />
-                    <Text style={styles.featureText}>Explications détaillées</Text>
+                    <Text style={styles.featureText}>Détails</Text>
                   </View>
                 </View>
               </TouchableOpacity>
@@ -329,16 +334,16 @@ export default function SubscriptionScreen() {
                 </View>
                 <View style={styles.planPricing}>
                   <Text style={styles.planPrice}>4,99€</Text>
-                  <Text style={styles.planPeriod}>par mois</Text>
+                  <Text style={styles.planPeriod}>mois</Text>
                 </View>
                 <View style={styles.planFeatures}>
                   <View style={styles.feature}>
                     <Check size={16} color={Colors.success} />
-                    <Text style={styles.featureText}>Recommandations illimitées</Text>
+                    <Text style={styles.featureText}>Illimité</Text>
                   </View>
                   <View style={styles.feature}>
                     <Check size={16} color={Colors.success} />
-                    <Text style={styles.featureText}>Explications détaillées</Text>
+                    <Text style={styles.featureText}>Détails</Text>
                   </View>
                 </View>
               </TouchableOpacity>
@@ -361,22 +366,27 @@ export default function SubscriptionScreen() {
                 </View>
                 <View style={styles.planPricing}>
                   <Text style={styles.planPrice}>30€</Text>
-                  <Text style={styles.planPeriod}>par an</Text>
+                  <Text style={styles.planPeriod}>an</Text>
                   <Text style={styles.equivalentPrice}>2,50€/mois</Text>
-                  <Text style={styles.savingText}>Économise 29,88€</Text>
                 </View>
                 <View style={styles.planFeatures}>
                   <View style={styles.feature}>
                     <Check size={16} color={Colors.success} />
-                    <Text style={styles.featureText}>Recommandations illimitées</Text>
+                    <Text style={styles.featureText}>Illimité</Text>
                   </View>
                   <View style={styles.feature}>
                     <Check size={16} color={Colors.success} />
-                    <Text style={styles.featureText}>Explications détaillées</Text>
+                    <Text style={styles.featureText}>Détails</Text>
                   </View>
                 </View>
               </TouchableOpacity>
-            </ScrollView>
+            </View>
+
+            {selectedPlan === 'annual' && (
+              <View style={styles.savingHighlight}>
+                <Text style={styles.savingText}>🎉 Économise 29,88€ par rapport au mensuel !</Text>
+              </View>
+            )}
 
             <LinearGradient
               colors={[Colors.primary, '#8B4A52']}
@@ -405,30 +415,6 @@ export default function SubscriptionScreen() {
               <Text style={styles.trustText}>✓ Annulation facile</Text>
               <Text style={styles.trustText}>✓ Paiement sécurisé</Text>
             </View>
-          </View>
-        )}
-
-        {reason === 'trial_signup' && (
-          <View style={styles.pricingSection}>
-            <View style={styles.pricingCard}>
-              <Text style={styles.trialText}>7 jours gratuits</Text>
-              <Text style={styles.priceText}>
-                Puis choisis entre €2,99/semaine, €4,99/mois ou €30/an
-              </Text>
-            </View>
-          </View>
-        )}
-
-        {reason === 'trial_signup' && (
-          <View style={styles.buttonSection}>
-            <Button
-              title={(loading || contentConfig.loading) ? "Chargement..." : contentConfig.buttonTitle}
-              onPress={contentConfig.onPress}
-              variant="primary"
-              size="large"
-              fullWidth
-              loading={loading || contentConfig.loading}
-            />
           </View>
         )}
 
@@ -571,18 +557,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
   },
-  planCarousel: {
-    marginBottom: 24,
-  },
-  carouselContent: {
-    paddingHorizontal: 12,
+  plansContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
   },
   planCard: {
-    width: width * 0.75,
+    width: '30%',
     backgroundColor: Colors.softGray,
-    borderRadius: 16,
-    padding: 24,
-    marginHorizontal: 8,
+    borderRadius: 12,
+    padding: 12,
+    marginHorizontal: '1.5%',
     position: 'relative',
     shadowColor: Colors.darkGray,
     shadowOffset: { width: 0, height: 4 },
@@ -590,10 +575,12 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: '#E0E0E0',
   },
   selectedPlanCard: {
-    borderColor: Colors.primary,
+    borderColor: Colors.secondary,
+    borderWidth: 3,
+    transform: [{ scale: 1.05 }],
     shadowColor: Colors.primary,
     shadowOpacity: 0.2,
   },
@@ -604,11 +591,11 @@ const styles = StyleSheet.create({
   bestValueBadge: {
     position: 'absolute',
     top: -8,
-    right: 16,
+    right: 8,
     backgroundColor: Colors.secondary,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
     shadowColor: Colors.secondary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
@@ -617,19 +604,19 @@ const styles = StyleSheet.create({
   },
   planHeader: {
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   planName: {
-    fontSize: Typography.sizes.lg,
+    fontSize: Typography.sizes.base,
     fontWeight: Typography.weights.bold,
     color: Colors.textPrimary,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   popularBadge: {
     backgroundColor: Colors.primary,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
   },
   popularText: {
     fontSize: Typography.sizes.xs,
@@ -644,17 +631,17 @@ const styles = StyleSheet.create({
   },
   planPricing: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 12,
   },
   planPrice: {
-    fontSize: Typography.sizes.xxl,
+    fontSize: 20,
     fontWeight: Typography.weights.bold,
     color: Colors.primary,
   },
   planPeriod: {
-    fontSize: Typography.sizes.base,
+    fontSize: 12,
     color: Colors.textSecondary,
-    marginTop: 4,
+    marginTop: 2,
   },
   equivalentPrice: {
     fontSize: Typography.sizes.sm,
@@ -662,24 +649,31 @@ const styles = StyleSheet.create({
     fontWeight: Typography.weights.semibold,
     marginTop: 2,
   },
-  savingText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.success,
-    fontWeight: Typography.weights.bold,
-    marginTop: 4,
-  },
   planFeatures: {
-    marginBottom: 20,
+    marginBottom: 8,
   },
   feature: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   featureText: {
     fontSize: Typography.sizes.sm,
     color: Colors.textPrimary,
     marginLeft: 8,
+  },
+  savingHighlight: {
+    backgroundColor: Colors.softGray,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  savingText: {
+    fontSize: Typography.sizes.base,
+    color: Colors.success,
+    fontWeight: Typography.weights.bold,
+    textAlign: 'center',
   },
   ctaButton: {
     borderRadius: 16,
@@ -712,19 +706,6 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center',
     flex: 1,
-  },
-  trialText: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.bold,
-    color: Colors.primary,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  priceText: {
-    fontSize: Typography.sizes.base,
-    fontWeight: Typography.weights.bold,
-    color: Colors.textPrimary,
-    textAlign: 'center',
   },
   buttonSection: {
     marginBottom: 24,
