@@ -22,6 +22,43 @@ export interface WineRecommendation {
   appellation?: string;
 }
 
+export interface PhotoRecommendationRequest {
+  mode: 'dish_photo';
+  dish_image_base64: string;
+  user_budget?: number;
+}
+
+export interface RestaurantOCRRequest {
+  mode: 'restaurant_ocr';
+  menu_image_base64: string;
+  user_id: string;
+}
+
+export interface RestaurantRecoRequest {
+  mode: 'restaurant_reco';
+  dish_description: string;
+  restaurant_session_id: string;
+  available_wines: any[];
+}
+
+export interface RestaurantSession {
+  id: string;
+  restaurant_name: string;
+  extracted_wines: any[];
+  confidence_score: number;
+}
+
+export interface RestaurantRecommendation {
+  wine_id: string;
+  name: string;
+  type: string;
+  price_display: string;
+  match_score: number;
+  reasoning: string;
+  restaurant_availability: boolean;
+  alternative_if_unavailable?: string;
+}
+
 export function useRecommendations() {
   const { user, updateUsageCount } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -48,13 +85,17 @@ export function useRecommendations() {
       await updatePopularDish(dishDescription);
 
       // Get wine recommendations from Edge Function
-      const wines = await fetchWineRecommendationsFromAPI(dishDescription, budget);
+      const wines = await fetchUnifiedRecommendations({
+        mode: 'text_only',
+        dish_description: dishDescription,
+        user_budget: budget
+      });
       
       console.log('🍷 getRecommendations - Fetched wines:', wines);
 
       // Save recommendation to history first
       if (user) {
-        await saveRecommendationToHistory(user.id, dishDescription, budget, wines);
+        await saveRecommendationToHistory(user.id, dishDescription, budget, wines, 'text_only');
         
         // Update usage count in user_profiles
         await updateUsageCount();
@@ -73,29 +114,118 @@ export function useRecommendations() {
     }
   };
 
-  const fetchWineRecommendationsFromAPI = async (
-    dishDescription: string,
+  const getRecommendationsFromPhoto = async (
+    photoBase64: string,
     budget?: number
   ): Promise<WineRecommendation[]> => {
-    console.log('🔍 fetchWineRecommendationsFromAPI - Starting API call for:', dishDescription);
-    console.log('💰 fetchWineRecommendationsFromAPI - Budget:', budget);
+    console.log('📸 getRecommendationsFromPhoto - Starting photo analysis');
+    
+    setLoading(true);
+    setError(null);
+
+    try {
+      const wines = await fetchUnifiedRecommendations({
+        mode: 'dish_photo',
+        dish_image_base64: photoBase64,
+        user_budget: budget
+      });
+
+      if (user) {
+        await saveRecommendationToHistory(user.id, 'Photo de plat', budget, wines, 'dish_photo');
+        await updateUsageCount();
+        await logRecommendationAnalytics(user.id, 'Photo de plat', budget, wines);
+      }
+
+      return wines;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erreur analyse photo';
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getRestaurantOCR = async (
+    menuPhotoBase64: string,
+    userId: string
+  ): Promise<RestaurantSession> => {
+    console.log('🔍 getRestaurantOCR - Starting menu OCR analysis');
+    
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await fetchUnifiedRecommendations({
+        mode: 'restaurant_ocr',
+        menu_image_base64: menuPhotoBase64,
+        user_id: userId
+      });
+
+      // Update usage count for OCR
+      if (user) {
+        await updateUsageCount();
+      }
+
+      return result as RestaurantSession;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erreur OCR menu';
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getRestaurantRecommendations = async (
+    dish: string,
+    sessionId: string,
+    availableWines: any[]
+  ): Promise<RestaurantRecommendation[]> => {
+    console.log('🍽️ getRestaurantRecommendations - Starting restaurant recommendations');
+    
+    setLoading(true);
+    setError(null);
+
+    try {
+      const recommendations = await fetchUnifiedRecommendations({
+        mode: 'restaurant_reco',
+        dish_description: dish,
+        restaurant_session_id: sessionId,
+        available_wines: availableWines
+      });
+
+      return recommendations as RestaurantRecommendation[];
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erreur recommandations restaurant';
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchUnifiedRecommendations = async (
+    request: { mode: 'text_only'; dish_description: string; user_budget?: number } |
+             PhotoRecommendationRequest |
+             RestaurantOCRRequest |
+             RestaurantRecoRequest
+  ): Promise<any> => {
+    console.log('🔍 fetchUnifiedRecommendations - Starting API call with mode:', request.mode);
     
     // Get current session for authorization
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
     if (sessionError || !session?.access_token) {
-      console.error('❌ fetchWineRecommendationsFromAPI - Session error:', sessionError);
+      console.error('❌ fetchUnifiedRecommendations - Session error:', sessionError);
       throw new Error('Session non valide');
     }
 
-    console.log('🔑 fetchWineRecommendationsFromAPI - Session token available:', !!session?.access_token);
+    console.log('🔑 fetchUnifiedRecommendations - Session token available:', !!session?.access_token);
 
     // Prepare API call
     const apiUrl = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/wine-recommendations`;
-    const requestBody = {
-      dish_description: dishDescription,
-      user_budget: budget || null,
-    };
+    const requestBody = request;
     
     const headers = {
       'Content-Type': 'application/json',
@@ -107,11 +237,11 @@ export function useRecommendations() {
     
     console.log('📍 URL appelée:', apiUrl);
     console.log('📝 Request body:', JSON.stringify(requestBody, null, 2));
-    console.log('📋 fetchWineRecommendationsFromAPI - Headers:', JSON.stringify(headers, null, 2));
-    console.log('⏰ fetchWineRecommendationsFromAPI - Timestamp:', new Date().toISOString());
+    console.log('📋 fetchUnifiedRecommendations - Headers:', JSON.stringify(headers, null, 2));
+    console.log('⏰ fetchUnifiedRecommendations - Timestamp:', new Date().toISOString());
     
     try {
-      console.log('🌐 fetchWineRecommendationsFromAPI - Making fetch request...');
+      console.log('🌐 fetchUnifiedRecommendations - Making fetch request...');
       
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -120,11 +250,11 @@ export function useRecommendations() {
       });
       
       console.log('📊 Response status:', response.status);
-      console.log('📡 fetchWineRecommendationsFromAPI - Response headers:', Object.fromEntries(response.headers.entries()));
+      console.log('📡 fetchUnifiedRecommendations - Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ fetchWineRecommendationsFromAPI - API error:', errorText);
+        console.error('❌ fetchUnifiedRecommendations - API error:', errorText);
         throw new Error(`API Error: ${response.status} - ${errorText}`);
       }
       
@@ -134,40 +264,52 @@ export function useRecommendations() {
       // Check if we got the new algorithm response
       if (apiResult.algorithm) {
         console.log('🔍 Algorithm version:', apiResult.algorithm);
-        if (apiResult.algorithm === 'SOMMIA Smart v2.0') {
-          console.log('✅ Using NEW algorithm v2.0!');
-        } else {
-          console.log('⚠️ Using OLD algorithm:', apiResult.algorithm);
-        }
+        console.log('✅ Using algorithm:', apiResult.algorithm);
       } else {
         console.log('❌ NO ALGORITHM VERSION in response - using fallback?');
       }
       
-      // Return the recommendations array
-      const recommendations = apiResult.recommendations || apiResult;
-      
-      if (!Array.isArray(recommendations) || recommendations.length === 0) {
-        console.error('❌ Invalid recommendations format:', typeof recommendations, recommendations);
-        throw new Error('Aucune recommandation reçue de l\'API');
-      }
-      
-      console.log('🍷 fetchWineRecommendationsFromAPI - Final recommendations count:', recommendations.length);
-      recommendations.forEach((rec, index) => {
-        console.log(`🍷 Recommendation ${index + 1}:`, {
-          name: rec.name,
-          producer: rec.producer,
-          price: rec.price_estimate || rec.price,
-          category: rec.category,
-          color: rec.color,
-          reasoning: rec.reasoning?.substring(0, 100) + '...'
+      // Handle different response formats based on mode
+      if (request.mode === 'restaurant_ocr') {
+        // OCR mode returns session data
+        return {
+          id: apiResult.session_id,
+          restaurant_name: apiResult.restaurant_name,
+          extracted_wines: apiResult.extracted_wines,
+          confidence_score: apiResult.confidence_score
+        };
+      } else if (request.mode === 'restaurant_reco') {
+        // Restaurant recommendations mode
+        return apiResult.recommendations || [];
+      } else {
+        // Normal recommendations (text_only, dish_photo)
+        const recommendations = apiResult.recommendations || apiResult;
+        
+        if (!Array.isArray(recommendations) || recommendations.length === 0) {
+          console.error('❌ Invalid recommendations format:', typeof recommendations, recommendations);
+          throw new Error('Aucune recommandation reçue de l\'API');
+        }
+        
+        console.log('🍷 fetchUnifiedRecommendations - Final recommendations count:', recommendations.length);
+        recommendations.forEach((rec, index) => {
+          console.log(`🍷 Recommendation ${index + 1}:`, {
+            name: rec.name,
+            producer: rec.producer,
+            price: rec.price_estimate || rec.price,
+            category: rec.category,
+            color: rec.color,
+            reasoning: rec.reasoning?.substring(0, 100) + '...'
+          });
         });
-      });
+        
+        return recommendations;
+      }
       
       console.log('✅ API CALL SUCCESSFUL - returning', recommendations.length, 'recommendations');
       return recommendations;
       
     } catch (apiError) {
-      console.error('💥 fetchWineRecommendationsFromAPI - API call failed:', apiError);
+      console.error('💥 fetchUnifiedRecommendations - API call failed:', apiError);
       console.error('🔍 Error details:', {
         message: apiError.message,
         stack: apiError.stack,
@@ -175,8 +317,13 @@ export function useRecommendations() {
       });
       
       // Fallback to database if API fails
-      console.log('🗄️ fetchWineRecommendationsFromAPI - Falling back to database');
-      return await fetchWineRecommendationsFromDatabase(dishDescription, budget);
+      if (request.mode === 'text_only') {
+        console.log('🗄️ fetchUnifiedRecommendations - Falling back to database');
+        return await fetchWineRecommendationsFromDatabase(request.dish_description, request.user_budget);
+      } else {
+        // For other modes, don't fallback to database
+        throw apiError;
+      }
     }
   };
 
@@ -275,7 +422,8 @@ export function useRecommendations() {
     userId: string,
     dishDescription: string,
     budget: number | undefined,
-    wines: WineRecommendation[]
+    wines: WineRecommendation[],
+    mode: string
   ) => {
     try {
       const { error } = await supabase
@@ -368,6 +516,9 @@ export function useRecommendations() {
 
   return {
     getRecommendations,
+    getRecommendationsFromPhoto,
+    getRestaurantOCR,
+    getRestaurantRecommendations,
     getRecommendationHistory,
     loading,
     error,
