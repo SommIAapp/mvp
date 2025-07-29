@@ -67,13 +67,11 @@ export default function SplashScreen() {
       style={styles.container}
     >
       <Animated.View style={[styles.content, animatedStyle]}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require('../assets/images/sommia-logo.png')}
-            style={styles.logoImage}
-            resizeMode="contain"
-          />
-        </View>
+        <Image
+          source={require('../assets/images/appstorelogo.png')}
+          style={styles.logoImage}
+          resizeMode="contain"
+        />
         <Text style={styles.title}>SOMMIA</Text>
         <Text style={styles.tagline}>Ton Sommelier Personnel</Text>
       </Animated.View>
@@ -90,28 +88,10 @@ const styles = StyleSheet.create({
   content: {
     alignItems: 'center',
   },
-  logoContainer: {
+  logoImage: {
     width: 120,
     height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: Colors.primary,
-    overflow: 'hidden', // Ensure image is clipped by border radius
-    borderWidth: 2, // Add border
-    borderColor: Colors.primary, // Border color
     marginBottom: 24,
-  },
-  logoImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40, // Half of width/height to make it circular
-    overflow: 'hidden', // Ensure content is clipped by borderRadius
-    borderRadius: 40, // Half of width/height to make it circular
-    overflow: 'hidden', // Ensure content is clipped by borderRadius
   },
   title: {
     fontSize: Typography.sizes.xxl,
