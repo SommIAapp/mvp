@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "EXPO_NO_TELEMETRY=1 expo start --port 8081",
+    "start": "EXPO_NO_TELEMETRY=1 expo start --port 8081 --reset-cache",
     "build:web": "expo export --platform web",
     "lint": "expo lint"
   },
