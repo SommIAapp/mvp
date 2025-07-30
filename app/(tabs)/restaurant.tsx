@@ -104,7 +104,9 @@ export default function RestaurantScreen() {
         console.error('Impossible de récupérer la session:', error);
       }
     }
+  };
 
+  useEffect(() => {
     checkSessionOnFocus();
     if (!authLoading && !canMakeRecommendation() && !hasNavigatedRef.current) {
       hasNavigatedRef.current = true;
