@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
-import { useRecommendations, getWineCardScan } from '@/hooks/useRecommendations';
+import { useRecommendations } from '@/hooks/useRecommendations';
 import * as ImagePicker from 'expo-image-picker';
 
 // Custom error for user cancellations
@@ -45,7 +45,7 @@ interface RestaurantRecommendation {
 
 export function useRestaurantMode() {
   const { user, updateUsageCount } = useAuth();
-  const { getRestaurantOCR, getRestaurantRecommendations: getUnifiedRestaurantRecommendations } = useRecommendations();
+  const { getRestaurantOCR, getRestaurantRecommendations: getUnifiedRestaurantRecommendations, getWineCardScan } = useRecommendations();
   const [currentSession, setCurrentSession] = useState<RestaurantSession | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
