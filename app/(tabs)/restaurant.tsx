@@ -95,16 +95,20 @@ export default function RestaurantScreen() {
   };
 
   const checkSessionOnFocus = async () => {
-      const { data: { session: authSession } } = await supabase.auth.getSession();
-      if (!authSession) {
-        console.log('Session perdue, tentative de récupération...');
-        try {
-          await supabase.auth.refreshSession();
-        } catch (error) {
-          console.error('Impossible de récupérer la session:', error);
-        }
+    const { data: { session: authSession } } = await supabase.auth.getSession();
+    if (!authSession) {
+      console.log('Session perdue, tentative de récupération...');
+      try {
+        await supabase.auth.refreshSession();
+      } catch (error) {
+        console.error('Impossible de récupérer la session:', error);
       }
-    };
+    }
+  };
+
+  // Handle navigation to subscription screen when user is not eligible
+  useEffect(() => {
+    checkSessionOnFocus();
     if (!authLoading && !canMakeRecommendation() && !hasNavigatedRef.current) {
       hasNavigatedRef.current = true;
       router.push({
@@ -113,10 +117,6 @@ export default function RestaurantScreen() {
       });
     }
   }, [authLoading, profile, canMakeRecommendation, router]);
-
-  // Handle navigation to subscription screen when user is not eligible
-  useEffect(() => {
-    checkSessionOnFocus();
 
   // Handle loading from history
   useEffect(() => {
