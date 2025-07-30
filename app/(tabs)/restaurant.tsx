@@ -14,6 +14,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Camera, Upload, Check, Wine, User, RotateCcw } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
@@ -51,6 +52,7 @@ export default function RestaurantScreen() {
   const [dishDescription, setDishDescription] = useState('');
   const [step, setStep] = useState<RestaurantStep>('scan');
   const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [appState, setAppState] = useState(AppState.currentState);
   const hasNavigatedRef = useRef(false);
   const hasLoadedFromHistoryRef = useRef(false);
 
@@ -63,7 +65,36 @@ export default function RestaurantScreen() {
 
   // Vérifier la session au retour de l'appareil photo
   useEffect(() => {
-    const checkSessionOnFocus = async () => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (appState.match(/inactive|background/) && nextAppState === 'active') {
+        console.log('App revenue au premier plan');
+        // Rafraîchir la session si nécessaire
+        checkAndRefreshSession();
+      }
+      setAppState(nextAppState);
+    });
+
+    return () => {
+      subscription?.remove();
+    };
+  }, [appState]);
+
+  const checkAndRefreshSession = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      console.log('Tentative de récupération de session...');
+      try {
+        const { data, error } = await supabase.auth.refreshSession();
+        if (error) throw error;
+        console.log('Session récupérée avec succès');
+      } catch (error) {
+        console.error('Impossible de récupérer la session:', error);
+        router.replace('/');
+      }
+    }
+  };
+
+  const checkSessionOnFocus = async () => {
       const { data: { session: authSession } } = await supabase.auth.getSession();
       if (!authSession) {
         console.log('Session perdue, tentative de récupération...');
@@ -74,18 +105,6 @@ export default function RestaurantScreen() {
         }
       }
     };
-    
-    // Vérifier quand l'app revient au premier plan
-    const subscription = AppState.addEventListener('change', (nextAppState) => {
-      if (nextAppState === 'active') {
-        checkSessionOnFocus();
-      }
-    });
-    
-    return () => subscription?.remove();
-  }, []);
-  // Handle navigation to subscription screen when user is not eligible
-  useEffect(() => {
     if (!authLoading && !canMakeRecommendation() && !hasNavigatedRef.current) {
       hasNavigatedRef.current = true;
       router.push({
@@ -94,6 +113,10 @@ export default function RestaurantScreen() {
       });
     }
   }, [authLoading, profile, canMakeRecommendation, router]);
+
+  // Handle navigation to subscription screen when user is not eligible
+  useEffect(() => {
+    checkSessionOnFocus();
 
   // Handle loading from history
   useEffect(() => {
@@ -148,6 +171,178 @@ export default function RestaurantScreen() {
   }, [params.fromHistory, params.sessionId, params.dish, params.restaurantName, setCurrentSession]);
 
   const handleScanCard = async () => {
+    try {
+      // Vérifier les permissions
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission refusée', 'L\'accès à la caméra est nécessaire');
+        return;
+      }
+
+      if (!canMakeRecommendation()) {
+        Alert.alert(
+          'Quota dépassé',
+          'Tu as atteint ta limite quotidienne. Passe à Premium pour des scans illimités !',
+          [
+            { text: 'Plus tard', style: 'cancel' },
+            { 
+              text: 'Voir Premium', 
+              onPress: () => router.push({
+                pathname: '/subscription',
+                params: { reason: 'daily_limit' }
+              })
+            }
+          ]
+        );
+        return;
+      }
+
+      // Sauvegarder l'état de session
+      const sessionBefore = await supabase.auth.getSession();
+      console.log('Session avant photo:', !!sessionBefore.data.session);
+
+      // Prendre la photo SANS base64 d'abord
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.7, // Qualité réduite
+        base64: false, // IMPORTANT: Ne pas demander base64 ici
+      });
+
+      if (result.canceled) {
+        console.log('📸 handleScanCard - User cancelled photo');
+        return;
+      }
+
+      // Afficher un loading pendant le traitement
+      Alert.alert('Traitement', 'Analyse de la carte en cours...', [], { cancelable: false });
+
+      // Compresser et convertir en base64 APRÈS
+      const manipResult = await ImageManipulator.manipulateAsync(
+        result.assets[0].uri,
+        [{ resize: { width: 800 } }], // Réduire largeur max à 800px
+        { 
+          compress: 0.6, // Compression à 60%
+          format: ImageManipulator.SaveFormat.JPEG,
+          base64: true // Demander base64 après compression
+        }
+      );
+
+      // Vérifier la session après traitement
+      const sessionAfter = await supabase.auth.getSession();
+      if (!sessionAfter.data.session) {
+        console.log('Session perdue, tentative de récupération...');
+        await supabase.auth.refreshSession();
+      }
+
+      // Envoyer l'image compressée
+      if (manipResult.base64) {
+        console.log('Taille base64:', manipResult.base64.length / 1024, 'KB');
+        const restaurantSession = await scanWineCard();
+        Alert.alert(
+          'Carte analysée !', 
+          `${restaurantSession.extracted_wines.length} vins détectés chez ${restaurantSession.restaurant_name}`,
+          [{ text: 'Continuer', onPress: () => setStep('dish') }]
+        );
+      }
+
+    } catch (error: any) {
+      console.error('Erreur scan:', error);
+      // Don't show alert for user cancellations
+      if (!(error instanceof UserCancellationError)) {
+        Alert.alert('Erreur', 'Impossible de traiter la photo');
+      }
+    }
+  };
+
+  const handlePickFromGallery = async () => {
+    try {
+      // Vérifier les permissions
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission refusée', 'L\'accès à la galerie est nécessaire');
+        return;
+      }
+
+      if (!canMakeRecommendation()) {
+        Alert.alert(
+          'Quota dépassé',
+          'Tu as atteint ta limite quotidienne. Passe à Premium pour des scans illimités !',
+          [
+            { text: 'Plus tard', style: 'cancel' },
+            { 
+              text: 'Voir Premium', 
+              onPress: () => router.push({
+                pathname: '/subscription',
+                params: { reason: 'daily_limit' }
+              })
+            }
+          ]
+        );
+        return;
+      }
+
+      // Sauvegarder l'état de session
+      const sessionBefore = await supabase.auth.getSession();
+      console.log('Session avant sélection:', !!sessionBefore.data.session);
+
+      // Sélectionner depuis la galerie SANS base64 d'abord
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.7, // Qualité réduite
+        base64: false, // IMPORTANT: Ne pas demander base64 ici
+      });
+
+      if (result.canceled) {
+        console.log('🖼️ handlePickFromGallery - User cancelled selection');
+        return;
+      }
+
+      // Afficher un loading pendant le traitement
+      Alert.alert('Traitement', 'Analyse de la carte en cours...', [], { cancelable: false });
+
+      // Compresser et convertir en base64 APRÈS
+      const manipResult = await ImageManipulator.manipulateAsync(
+        result.assets[0].uri,
+        [{ resize: { width: 800 } }], // Réduire largeur max à 800px
+        { 
+          compress: 0.6, // Compression à 60%
+          format: ImageManipulator.SaveFormat.JPEG,
+          base64: true // Demander base64 après compression
+        }
+      );
+
+      // Vérifier la session après traitement
+      const sessionAfter = await supabase.auth.getSession();
+      if (!sessionAfter.data.session) {
+        console.log('Session perdue, tentative de récupération...');
+        await supabase.auth.refreshSession();
+      }
+
+      // Envoyer l'image compressée
+      if (manipResult.base64) {
+        console.log('Taille base64:', manipResult.base64.length / 1024, 'KB');
+        const restaurantSession = await pickFromGallery();
+        Alert.alert(
+          'Carte analysée !', 
+          `${restaurantSession.extracted_wines.length} vins détectés chez ${restaurantSession.restaurant_name}`,
+          [{ text: 'Continuer', onPress: () => setStep('dish') }]
+        );
+      }
+
+    } catch (error: any) {
+      console.error('Erreur galerie:', error);
+      // Don't show alert for user cancellations
+      if (!(error instanceof UserCancellationError)) {
+        Alert.alert('Erreur', 'Impossible de traiter la photo');
+      }
+    }
+  };
+
+  const handleScanCardOld = async () => {
     if (!canMakeRecommendation()) {
       Alert.alert(
         'Quota dépassé',
@@ -229,7 +424,7 @@ export default function RestaurantScreen() {
     }
   };
 
-  const handlePickFromGallery = async () => {
+  const handlePickFromGalleryOld = async () => {
     if (!canMakeRecommendation()) {
       Alert.alert(
         'Quota dépassé',
