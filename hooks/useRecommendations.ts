@@ -597,8 +597,49 @@ export function useRecommendations() {
     getRecommendationsFromPhoto,
     getRestaurantOCR,
     getRestaurantRecommendations,
+    getWineCardScan,
     getRecommendationHistory,
     loading,
     error,
   };
 }
+
+// NOUVELLE FONCTION POUR SCAN CARTE RESTAURANT
+export const getWineCardScan = async (imageBase64: string, userId: string) => {
+  console.log('🔍 getWineCardScan appelé avec image de taille:', imageBase64.length);
+  console.log('👤 getWineCardScan pour user:', userId);
+  
+  if (!imageBase64) {
+    throw new Error('Image base64 requise');
+  }
+  
+  if (!userId) {
+    throw new Error('User ID requis');
+  }
+  
+  try {
+    console.log('🚀 getWineCardScan - Appel fetchUnifiedRecommendations avec mode restaurant_ocr');
+    
+    const result = await fetchUnifiedRecommendations({
+      mode: 'restaurant_ocr',
+      menu_image_base64: imageBase64,
+      user_id: userId
+    });
+    
+    console.log('✅ getWineCardScan - Résultat OCR reçu:', {
+      session_id: result.id,
+      restaurant_name: result.restaurant_name,
+      wines_count: result.extracted_wines?.length || 0
+    });
+    
+    return result;
+  } catch (error) {
+    console.error('❌ getWineCardScan - Erreur:', error);
+    console.error('🔍 getWineCardScan - Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
+    throw error;
+  }
+};

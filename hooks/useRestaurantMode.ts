@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
-import { useRecommendations } from '@/hooks/useRecommendations';
+import { useRecommendations, getWineCardScan } from '@/hooks/useRecommendations';
 import * as ImagePicker from 'expo-image-picker';
 
 // Custom error for user cancellations
@@ -57,17 +57,26 @@ export function useRestaurantMode() {
 
   // SCANNER CARTE DES VINS
   const scanWineCard = async (base64Image: string): Promise<RestaurantSession> => {
+    console.log('📸 scanWineCard - Début du scan avec image de taille:', base64Image?.length || 0);
+    console.log('👤 scanWineCard - User ID:', user?.id);
+    
     setLoading(true);
     setError(null);
 
     try {
       if (!base64Image) {
+        console.error('❌ scanWineCard - Image base64 manquante');
         throw new Error('Image base64 requise');
       }
 
-      // Utiliser la fonction unifiée pour l'OCR
-      console.log('📸 Calling RESTAURANT_OCR mode via unified service...');
-      const ocrResult = await getRestaurantOCR(base64Image, user?.id || '');
+      if (!user?.id) {
+        console.error('❌ scanWineCard - User ID manquant');
+        throw new Error('Utilisateur non connecté');
+      }
+
+      console.log('🔍 scanWineCard - Appel getWineCardScan...');
+      const ocrResult = await getWineCardScan(base64Image, user.id);
+      console.log('✅ scanWineCard - OCR terminé avec succès');
 
       const restaurantSession: RestaurantSession = {
         id: ocrResult.id,
@@ -78,17 +87,21 @@ export function useRestaurantMode() {
       };
 
       setCurrentSession(restaurantSession);
-      console.log('✅ RESTAURANT_OCR mode completed, session created:', restaurantSession.id);
+      console.log('✅ scanWineCard - Session créée:', restaurantSession.id);
       
       // Update usage count after successful scan
       if (user) {
+        console.log('📈 scanWineCard - Mise à jour du compteur d\'usage...');
         await updateUsageCount();
-        console.log('✅ Usage count updated after scan');
+        console.log('✅ scanWineCard - Compteur d\'usage mis à jour');
       }
       
       return restaurantSession;
 
     } catch (err) {
+      console.error('💥 scanWineCard - Erreur capturée:', err);
+      console.error('🔍 scanWineCard - Type d\'erreur:', err.constructor.name);
+      console.error('🔍 scanWineCard - Message:', err.message);
       const errorMessage = err instanceof Error ? err.message : 'Erreur scan';
       
       // Don't treat user cancellation as a critical error
@@ -101,6 +114,7 @@ export function useRestaurantMode() {
       }
       throw err;
     } finally {
+      console.log('🏁 scanWineCard - Fin du processus, loading = false');
       setLoading(false);
     }
   };
