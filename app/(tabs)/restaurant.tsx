@@ -9,6 +9,7 @@ import {
   Alert,
   Image,
   Dimensions,
+  AppState,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Camera, Upload, Check, Wine, User, RotateCcw } from 'lucide-react-native';
@@ -21,6 +22,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useRestaurantMode, UserCancellationError } from '@/hooks/useRestaurantMode';
 import { tempStore } from '@/utils/tempStore';
+import { supabase } from '@/lib/supabase';
 
 const { width } = Dimensions.get('window');
 
@@ -59,6 +61,29 @@ export default function RestaurantScreen() {
     };
   }, []);
 
+  // Vérifier la session au retour de l'appareil photo
+  useEffect(() => {
+    const checkSessionOnFocus = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.log('Session perdue, tentative de récupération...');
+        try {
+          await supabase.auth.refreshSession();
+        } catch (error) {
+          console.error('Impossible de récupérer la session:', error);
+        }
+      }
+    };
+    
+    // Vérifier quand l'app revient au premier plan
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active') {
+        checkSessionOnFocus();
+      }
+    });
+    
+    return () => subscription?.remove();
+  }, []);
   // Handle navigation to subscription screen when user is not eligible
   useEffect(() => {
     if (!authLoading && !canMakeRecommendation() && !hasNavigatedRef.current) {
@@ -142,6 +167,54 @@ export default function RestaurantScreen() {
     }
 
     try {
+      // Sauvegarder l'état avant la photo
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        Alert.alert('Erreur', 'Vous devez être connecté');
+        return;
+      }
+      
+      // Demander permission caméra
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert('Permission requise', 'L\'accès à la caméra est nécessaire pour prendre une photo de la carte des vins.');
+        return;
+      }
+
+      // Prendre la photo avec qualité réduite
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.5, // Réduire la qualité pour économiser la mémoire
+        base64: true,
+      });
+
+      if (result.canceled) {
+        console.log('📸 handleScanCard - User cancelled photo');
+        return;
+      }
+
+      if (!result.assets[0].base64) {
+        Alert.alert('Erreur', 'Impossible de traiter l\'image. Veuillez réessayer.');
+        return;
+      }
+
+      // Vérifier la session après la photo
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (!currentSession) {
+        console.log('Session perdue après photo, tentative de récupération...');
+        try {
+          await supabase.auth.refreshSession();
+        } catch (error) {
+          console.error('Impossible de récupérer la session après photo:', error);
+          Alert.alert('Erreur', 'Session expirée. Veuillez vous reconnecter.');
+          return;
+        }
+      }
+
+      // Continuer avec le scan
       const session = await scanWineCard();
       Alert.alert(
         'Carte analysée !', 
@@ -176,6 +249,54 @@ export default function RestaurantScreen() {
     }
 
     try {
+      // Sauvegarder l'état avant la sélection
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        Alert.alert('Erreur', 'Vous devez être connecté');
+        return;
+      }
+      
+      // Demander permission galerie
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert('Permission requise', 'L\'accès à la galerie est nécessaire pour choisir une photo de la carte des vins.');
+        return;
+      }
+
+      // Sélectionner depuis la galerie avec qualité réduite
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.5, // Réduire la qualité pour économiser la mémoire
+        base64: true,
+      });
+
+      if (result.canceled) {
+        console.log('🖼️ handlePickFromGallery - User cancelled selection');
+        return;
+      }
+
+      if (!result.assets[0].base64) {
+        Alert.alert('Erreur', 'Impossible de traiter l\'image. Veuillez réessayer.');
+        return;
+      }
+
+      // Vérifier la session après la sélection
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (!currentSession) {
+        console.log('Session perdue après sélection, tentative de récupération...');
+        try {
+          await supabase.auth.refreshSession();
+        } catch (error) {
+          console.error('Impossible de récupérer la session après sélection:', error);
+          Alert.alert('Erreur', 'Session expirée. Veuillez vous reconnecter.');
+          return;
+        }
+      }
+
+      // Continuer avec le scan
       const session = await pickFromGallery();
       Alert.alert(
         'Carte analysée !', 
