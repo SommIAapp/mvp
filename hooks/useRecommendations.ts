@@ -226,7 +226,26 @@ export function useRecommendations() {
   ): Promise<any> => {
     const startTime = Date.now();
     console.log('🔍 fetchUnifiedRecommendations - Starting API call with mode:', request.mode);
-    console.log('📋 fetchUnifiedRecommendations - Full request:', JSON.stringify(request, null, 2));
+    console.log('⏰ fetchUnifiedRecommendations - Start time:', new Date().toISOString());
+    
+    // Log request details based on mode
+    if (request.mode === 'dish_photo' && 'dish_image_base64' in request) {
+      console.log('📸 fetchUnifiedRecommendations - Dish photo mode');
+      console.log('📏 fetchUnifiedRecommendations - Base64 image size:', request.dish_image_base64.length, 'characters');
+      console.log('💰 fetchUnifiedRecommendations - Budget:', request.user_budget || 'No budget');
+    } else if (request.mode === 'restaurant_ocr' && 'menu_image_base64' in request) {
+      console.log('🔍 fetchUnifiedRecommendations - Restaurant OCR mode');
+      console.log('📏 fetchUnifiedRecommendations - Base64 image size:', request.menu_image_base64.length, 'characters');
+      console.log('👤 fetchUnifiedRecommendations - User ID:', request.user_id);
+    } else if (request.mode === 'restaurant_reco' && 'available_wines' in request) {
+      console.log('🍽️ fetchUnifiedRecommendations - Restaurant reco mode');
+      console.log('🍷 fetchUnifiedRecommendations - Available wines count:', request.available_wines.length);
+      console.log('🏪 fetchUnifiedRecommendations - Session ID:', request.restaurant_session_id);
+    } else if (request.mode === 'text_only') {
+      console.log('📝 fetchUnifiedRecommendations - Text only mode');
+      console.log('🍽️ fetchUnifiedRecommendations - Dish:', request.dish_description);
+      console.log('💰 fetchUnifiedRecommendations - Budget:', request.user_budget || 'No budget');
+    }
     
     // Get current session for authorization
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -240,7 +259,7 @@ export function useRecommendations() {
 
     // Prepare API call
     const apiUrl = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/wine-recommendations`;
-    const requestBody = request;
+    console.log('📍 fetchUnifiedRecommendations - API URL:', apiUrl);
     
     const headers = {
       'Content-Type': 'application/json',
@@ -250,32 +269,70 @@ export function useRecommendations() {
       'Expires': '0',
     };
     
-    console.log('📍 URL appelée:', apiUrl);
-    console.log('📋 fetchUnifiedRecommendations - Headers:', JSON.stringify(headers, null, 2));
-    console.log('⏰ fetchUnifiedRecommendations - Timestamp:', new Date().toISOString());
+    console.log('📋 fetchUnifiedRecommendations - Request headers prepared');
+    
+    // Calculate request body size
+    const requestBodyString = JSON.stringify(request);
+    const requestBodySize = new Blob([requestBodyString]).size;
+    console.log('📦 fetchUnifiedRecommendations - Request body size:', requestBodySize, 'bytes');
+    console.log('📦 fetchUnifiedRecommendations - Request body size:', (requestBodySize / 1024).toFixed(2), 'KB');
+    
+    if (requestBodySize > 1024 * 1024) { // > 1MB
+      console.warn('⚠️ fetchUnifiedRecommendations - Large request body detected:', (requestBodySize / 1024 / 1024).toFixed(2), 'MB');
+    }
     
     try {
       console.log('🌐 fetchUnifiedRecommendations - Making fetch request...');
+      const fetchStartTime = Date.now();
       
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers,
-        body: JSON.stringify(requestBody)
+        body: requestBodyString
       });
       
-      const responseTime = Date.now() - startTime;
-      console.log('📊 Response status:', response.status);
-      console.log('⏱️ Response time:', responseTime + 'ms');
+      const fetchEndTime = Date.now();
+      const fetchTime = fetchEndTime - fetchStartTime;
+      const totalTime = fetchEndTime - startTime;
+      
+      console.log('📊 fetchUnifiedRecommendations - Response status:', response.status);
+      console.log('📊 fetchUnifiedRecommendations - Response status text:', response.statusText);
+      console.log('⏱️ fetchUnifiedRecommendations - Fetch time:', fetchTime + 'ms');
+      console.log('⏱️ fetchUnifiedRecommendations - Total time:', totalTime + 'ms');
       console.log('📡 fetchUnifiedRecommendations - Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ fetchUnifiedRecommendations - API error:', errorText);
-        throw new Error(`API Error: ${response.status} - ${errorText}`);
+        console.error('❌ fetchUnifiedRecommendations - Response not OK');
+        let errorText;
+        try {
+          errorText = await response.text();
+          console.error('❌ fetchUnifiedRecommendations - Error response body:', errorText);
+        } catch (textError) {
+          console.error('❌ fetchUnifiedRecommendations - Could not read error response:', textError);
+          errorText = 'Could not read error response';
+        }
+        throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorText}`);
       }
       
-      const apiResult = await response.json();
-      console.log('🎯 API Response for mode', request.mode + ':', JSON.stringify(apiResult, null, 2));
+      console.log('✅ fetchUnifiedRecommendations - Response OK, parsing JSON...');
+      let apiResult;
+      try {
+        apiResult = await response.json();
+        console.log('✅ fetchUnifiedRecommendations - JSON parsed successfully');
+      } catch (jsonError) {
+        console.error('❌ fetchUnifiedRecommendations - JSON parsing error:', jsonError);
+        const responseText = await response.text();
+        console.error('❌ fetchUnifiedRecommendations - Raw response text:', responseText);
+        throw new Error(`JSON parsing error: ${jsonError.message}`);
+      }
+      
+      console.log('🎯 fetchUnifiedRecommendations - API Response for mode', request.mode + ':');
+      console.log('🎯 fetchUnifiedRecommendations - Response keys:', Object.keys(apiResult));
+      
+      // Log response size
+      const responseSize = JSON.stringify(apiResult).length;
+      console.log('📦 fetchUnifiedRecommendations - Response size:', responseSize, 'characters');
+      console.log('📦 fetchUnifiedRecommendations - Response size:', (responseSize / 1024).toFixed(2), 'KB');
       
       // Check if we got the new algorithm response
       if (apiResult.algorithm) {
@@ -287,6 +344,9 @@ export function useRecommendations() {
       // Handle different response formats based on mode
       if (request.mode === 'restaurant_ocr') {
         console.log('🔍 Processing restaurant_ocr response');
+        console.log('🔍 fetchUnifiedRecommendations - OCR session_id:', apiResult.session_id);
+        console.log('🔍 fetchUnifiedRecommendations - OCR restaurant_name:', apiResult.restaurant_name);
+        console.log('🔍 fetchUnifiedRecommendations - OCR extracted_wines count:', apiResult.extracted_wines?.length || 0);
         return {
           id: apiResult.session_id,
           restaurant_name: apiResult.restaurant_name,
@@ -295,6 +355,7 @@ export function useRecommendations() {
         };
       } else if (request.mode === 'restaurant_reco') {
         console.log('🍽️ Processing restaurant_reco response');
+        console.log('🍽️ fetchUnifiedRecommendations - Restaurant recommendations count:', apiResult.recommendations?.length || 0);
         return apiResult.recommendations || [];
       } else {
         console.log('🍷 Processing', request.mode, 'recommendations response');
@@ -306,28 +367,31 @@ export function useRecommendations() {
         }
         
         console.log('✅ Final recommendations count for', request.mode + ':', recommendations.length);
-        recommendations.forEach((rec, index) => {
-          console.log(`🍷 ${request.mode} Recommendation ${index + 1}:`, {
-            name: rec.name,
-            producer: rec.producer,
-            price: rec.price_estimate || rec.price,
-            category: rec.category,
-            color: rec.color,
-            reasoning: rec.reasoning?.substring(0, 100) + '...'
+        if (recommendations.length > 0) {
+          console.log(`🍷 ${request.mode} First recommendation sample:`, {
+            name: recommendations[0].name,
+            producer: recommendations[0].producer,
+            price: recommendations[0].price_estimate || recommendations[0].price,
+            category: recommendations[0].category,
+            color: recommendations[0].color,
+            reasoning: recommendations[0].reasoning?.substring(0, 50) + '...'
           });
-        });
+        }
         
         return recommendations;
       }
       
-      console.log('✅ API CALL SUCCESSFUL for mode:', request.mode, '- Total time:', responseTime + 'ms');
+      console.log('✅ fetchUnifiedRecommendations - API CALL SUCCESSFUL for mode:', request.mode, '- Total time:', totalTime + 'ms');
       
     } catch (apiError) {
+      const errorTime = Date.now() - startTime;
       console.error('💥 fetchUnifiedRecommendations - API call failed for mode', request.mode + ':', apiError);
+      console.error('💥 fetchUnifiedRecommendations - Error occurred after:', errorTime + 'ms');
       console.error('🔍 Error details:', {
         message: apiError.message,
         stack: apiError.stack,
-        name: apiError.name
+        name: apiError.name,
+        cause: apiError.cause
       });
       
       // Fallback to database if API fails
