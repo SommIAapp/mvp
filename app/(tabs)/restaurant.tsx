@@ -238,7 +238,7 @@ export default function RestaurantScreen() {
       // Envoyer l'image compressée
       if (manipResult.base64) {
         console.log('Taille base64:', manipResult.base64.length / 1024, 'KB');
-        const restaurantSession = await scanWineCard();
+        const restaurantSession = await scanWineCard(manipResult.base64);
         Alert.alert(
           'Carte analysée !', 
           `${restaurantSession.extracted_wines.length} vins détectés chez ${restaurantSession.restaurant_name}`,
@@ -324,7 +324,7 @@ export default function RestaurantScreen() {
       // Envoyer l'image compressée
       if (manipResult.base64) {
         console.log('Taille base64:', manipResult.base64.length / 1024, 'KB');
-        const restaurantSession = await pickFromGallery();
+        const restaurantSession = await scanWineCard(manipResult.base64);
         Alert.alert(
           'Carte analysée !', 
           `${restaurantSession.extracted_wines.length} vins détectés chez ${restaurantSession.restaurant_name}`,
@@ -337,170 +337,6 @@ export default function RestaurantScreen() {
       // Don't show alert for user cancellations
       if (!(error instanceof UserCancellationError)) {
         Alert.alert('Erreur', 'Impossible de traiter la photo');
-      }
-    }
-  };
-
-  const handleScanCardOld = async () => {
-    if (!canMakeRecommendation()) {
-      Alert.alert(
-        'Quota dépassé',
-        'Tu as atteint ta limite quotidienne. Passe à Premium pour des scans illimités !',
-        [
-          { text: 'Plus tard', style: 'cancel' },
-          { 
-            text: 'Voir Premium', 
-            onPress: () => router.push({
-              pathname: '/subscription',
-              params: { reason: 'daily_limit' }
-            })
-          }
-        ]
-      );
-      return;
-    }
-
-    try {
-      // Sauvegarder l'état avant la photo
-      const { data: { session: authSession } } = await supabase.auth.getSession();
-      if (!authSession) {
-        Alert.alert('Erreur', 'Vous devez être connecté');
-        return;
-      }
-      
-      // Demander permission caméra
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      
-      if (status !== 'granted') {
-        Alert.alert('Permission requise', 'L\'accès à la caméra est nécessaire pour prendre une photo de la carte des vins.');
-        return;
-      }
-
-      // Prendre la photo avec qualité réduite
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.5, // Réduire la qualité pour économiser la mémoire
-        base64: true,
-      });
-
-      if (result.canceled) {
-        console.log('📸 handleScanCard - User cancelled photo');
-        return;
-      }
-
-      if (!result.assets[0].base64) {
-        Alert.alert('Erreur', 'Impossible de traiter l\'image. Veuillez réessayer.');
-        return;
-      }
-
-      // Vérifier la session après la photo
-      const { data: { session: currentAuthSession } } = await supabase.auth.getSession();
-      if (!currentAuthSession) {
-        console.log('Session perdue après photo, tentative de récupération...');
-        try {
-          await supabase.auth.refreshSession();
-        } catch (error) {
-          console.error('Impossible de récupérer la session après photo:', error);
-          Alert.alert('Erreur', 'Session expirée. Veuillez vous reconnecter.');
-          return;
-        }
-      }
-
-      // Continuer avec le scan
-      const session = await scanWineCard();
-      Alert.alert(
-        'Carte analysée !', 
-        `${session.extracted_wines.length} vins détectés chez ${session.restaurant_name}`,
-        [{ text: 'Continuer', onPress: () => setStep('dish') }]
-      );
-    } catch (error: any) {
-      // Don't show alert for user cancellations
-      if (!(error instanceof UserCancellationError)) {
-        Alert.alert('Erreur', error.message);
-      }
-    }
-  };
-
-  const handlePickFromGalleryOld = async () => {
-    if (!canMakeRecommendation()) {
-      Alert.alert(
-        'Quota dépassé',
-        'Tu as atteint ta limite quotidienne. Passe à Premium pour des scans illimités !',
-        [
-          { text: 'Plus tard', style: 'cancel' },
-          { 
-            text: 'Voir Premium', 
-            onPress: () => router.push({
-              pathname: '/subscription',
-              params: { reason: 'daily_limit' }
-            })
-          }
-        ]
-      );
-      return;
-    }
-
-    try {
-      // Sauvegarder l'état avant la sélection
-      const { data: { session: authSession } } = await supabase.auth.getSession();
-      if (!authSession) {
-        Alert.alert('Erreur', 'Vous devez être connecté');
-        return;
-      }
-      
-      // Demander permission galerie
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
-      if (status !== 'granted') {
-        Alert.alert('Permission requise', 'L\'accès à la galerie est nécessaire pour choisir une photo de la carte des vins.');
-        return;
-      }
-
-      // Sélectionner depuis la galerie avec qualité réduite
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.5, // Réduire la qualité pour économiser la mémoire
-        base64: true,
-      });
-
-      if (result.canceled) {
-        console.log('🖼️ handlePickFromGallery - User cancelled selection');
-        return;
-      }
-
-      if (!result.assets[0].base64) {
-        Alert.alert('Erreur', 'Impossible de traiter l\'image. Veuillez réessayer.');
-        return;
-      }
-
-      // Vérifier la session après la sélection
-      const { data: { session: currentAuthSession } } = await supabase.auth.getSession();
-      if (!currentAuthSession) {
-        console.log('Session perdue après sélection, tentative de récupération...');
-        try {
-          await supabase.auth.refreshSession();
-        } catch (error) {
-          console.error('Impossible de récupérer la session après sélection:', error);
-          Alert.alert('Erreur', 'Session expirée. Veuillez vous reconnecter.');
-          return;
-        }
-      }
-
-      // Continuer avec le scan
-      const session = await pickFromGallery();
-      Alert.alert(
-        'Carte analysée !', 
-        `${session.extracted_wines.length} vins détectés chez ${session.restaurant_name}`,
-        [{ text: 'Continuer', onPress: () => setStep('dish') }]
-      );
-    } catch (error: any) {
-      // Don't show alert for user cancellations
-      if (!(error instanceof UserCancellationError)) {
-        Alert.alert('Erreur', error.message);
       }
     }
   };

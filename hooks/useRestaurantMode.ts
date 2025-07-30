@@ -56,42 +56,18 @@ export function useRestaurantMode() {
   };
 
   // SCANNER CARTE DES VINS
-  const scanWineCard = async (imageUri?: string): Promise<RestaurantSession> => {
+  const scanWineCard = async (base64Image: string): Promise<RestaurantSession> => {
     setLoading(true);
     setError(null);
 
     try {
-      let finalImageUri = imageUri;
-      
-      if (!finalImageUri) {
-        // Demander permission caméra
-        const { status } = await ImagePicker.requestCameraPermissionsAsync();
-        
-        if (status !== 'granted') {
-          throw new Error('Permission caméra requise');
-        }
-
-        // Ouvrir caméra
-        const result = await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: true,
-          aspect: [4, 3],
-          quality: 0.8,
-        });
-
-        if (result.canceled) {
-          throw new UserCancellationError('Scan annulé');
-        }
-
-        finalImageUri = result.assets[0].uri;
+      if (!base64Image) {
+        throw new Error('Image base64 requise');
       }
-
-      // Convertir image en base64
-      const base64 = await convertImageToBase64(finalImageUri);
 
       // Utiliser la fonction unifiée pour l'OCR
       console.log('📸 Calling RESTAURANT_OCR mode via unified service...');
-      const ocrResult = await getRestaurantOCR(base64, user?.id || '');
+      const ocrResult = await getRestaurantOCR(base64Image, user?.id || '');
 
       const restaurantSession: RestaurantSession = {
         id: ocrResult.id,
@@ -218,24 +194,7 @@ export function useRestaurantMode() {
   };
 
   const pickFromGallery = async (): Promise<RestaurantSession> => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
-    if (status !== 'granted') {
-      throw new Error('Permission galerie requise');
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.8,
-    });
-
-    if (result.canceled) {
-      throw new UserCancellationError('Sélection annulée');
-    }
-
-    return await scanWineCard(result.assets[0].uri);
+    throw new Error('Cette fonction doit être appelée depuis le composant avec l\'image base64');
   };
 
   return {
@@ -280,20 +239,3 @@ export const getRestaurantRecommendationHistory = async (userId: string) => {
 
 // Export the custom error for use in components
 export { UserCancellationError };
-
-// UTILITAIRE CONVERSION IMAGE
-async function convertImageToBase64(imageUri: string): Promise<string> {
-  const response = await fetch(imageUri);
-  const blob = await response.blob();
-  
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result as string;
-      const base64 = result.split(',')[1]; // Enlever data:image/jpeg;base64,
-      resolve(base64);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
