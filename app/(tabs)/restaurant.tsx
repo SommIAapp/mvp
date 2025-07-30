@@ -164,12 +164,40 @@ export default function RestaurantScreen() {
         }
         // Fallback to scan step if parsing fails
         setStep('scan');
+      }
+    }
+  }, [params]);
 
   const handleScanCard = async () => {
-
-        quality: 0.5,
+    try {
       console.log('📸 handleScanCard - Début de la prise de photo');
       
+      const restaurantSession = await scanWineCard();
+      
+      Alert.alert(
+        'Carte analysée !', 
+        `${restaurantSession.extracted_wines.length} vins détectés chez ${restaurantSession.restaurant_name}`,
+        [{ text: 'Continuer', onPress: () => setStep('dish') }]
+      );
+
+    } catch (error: any) {
+      console.error('💥 handleScanCard - Erreur capturée:', error);
+      
+      // Don't show alert for user cancellations
+      if (!(error instanceof UserCancellationError)) {
+        Alert.alert('Erreur', `Impossible de traiter la photo: ${error.message}`);
+      }
+    }
+  };
+
+  const handlePickFromGallery = async () => {
+    try {
+      console.log('🖼️ handlePickFromGallery - Début de la sélection galerie');
+      
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: false,
+        quality: 0.5,
         base64: false, // CRITICAL: false ici pour éviter crash Android !
       });
 
@@ -210,6 +238,8 @@ export default function RestaurantScreen() {
       console.log('📏 handlePickFromGallery - Taille base64:', manipResult.base64.length, 'caractères');
       console.log('📏 handlePickFromGallery - Taille base64:', (manipResult.base64.length / 1024).toFixed(2), 'KB');
       
+      const restaurantSession = await pickFromGallery(manipResult.base64);
+      
       Alert.alert(
         'Carte analysée !', 
         `${restaurantSession.extracted_wines.length} vins détectés chez ${restaurantSession.restaurant_name}`,
@@ -231,6 +261,7 @@ export default function RestaurantScreen() {
     }
   };
 
+  const handleGetRecommendations = async () => {
     try {
       console.log('🖼️ handlePickFromGallery - Début de la sélection galerie');
       
@@ -245,6 +276,12 @@ export default function RestaurantScreen() {
   const handleNewSearch = () => {
     setStep('scan');
     setDishDescription('');
+    setRecommendations([]);
+    clearSession();
+  };
+
+  // ÉCRAN 1: SCAN
+  if (step === 'scan') {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
@@ -260,6 +297,7 @@ export default function RestaurantScreen() {
             style={styles.profileButton}
             onPress={() => router.push('/(tabs)/profile')}
           >
+            <User size={24} color={Colors.primary} />
           </TouchableOpacity>
         </View>
 
@@ -269,6 +307,7 @@ export default function RestaurantScreen() {
             <Text style={styles.subtitle}>Scannez la carte des vins de votre restaurant</Text>
           </View>
 
+          <View style={styles.scanSection}>
             <View style={styles.scanCard}>
               <Camera size={64} color={Colors.primary} strokeWidth={1} />
               <Text style={styles.scanTitle}>Photographier la carte des vins</Text>
@@ -420,11 +459,12 @@ export default function RestaurantScreen() {
 
             <View style={styles.newSearchSection}>
               <Button
-                title={restaurantLoading ? "Analyse en cours..." : "Scanner la carte"}
+                title="Nouvelle recherche"
                 onPress={handleNewSearch}
                 variant="primary"
                 size="medium"
-                loading={restaurantLoading}
+                fullWidth
+                icon={<RotateCcw size={20} color={Colors.white} />}
               />
             </View>
           </View>
@@ -619,4 +659,25 @@ const styles = StyleSheet.create({
   },
   reasoning: {
     fontSize: Typography.sizes.base,
+    color: Colors.textSecondary,
+    marginBottom: 16,
+    lineHeight: 22,
+  },
+  newSearchSection: {
+    marginTop: 24,
+    paddingTop: 24,
+    borderTopWidth: 1,
+    borderTopColor: Colors.lightGray,
+  },
+  errorCard: {
+    backgroundColor: Colors.error,
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 16,
+  },
+  errorText: {
+    color: Colors.white,
+    fontSize: Typography.sizes.base,
+    textAlign: 'center',
+  },
 });
