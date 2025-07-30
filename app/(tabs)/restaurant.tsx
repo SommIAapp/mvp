@@ -40,7 +40,7 @@ export default function RestaurantScreen() {
   const { user, profile, canMakeRecommendation, loading: authLoading } = useAuth();
   const { 
     currentSession,
-    loading,
+    loading: restaurantLoading,
     error,
     setCurrentSession,
     scanWineCard,
@@ -649,12 +649,12 @@ export default function RestaurantScreen() {
             />
 
             <Button
-              title={loading ? "Recherche en cours..." : "Trouver l'accord parfait"}
+              title={restaurantLoading ? "Recherche en cours..." : "Trouver l'accord parfait"}
               onPress={handleGetRecommendations}
               variant="primary"
               size="large"
               fullWidth
-              loading={loading}
+              loading={restaurantLoading}
               disabled={!dishDescription.trim()}
             />
           </View>
@@ -718,11 +718,11 @@ export default function RestaurantScreen() {
 
             <View style={styles.newSearchSection}>
               <Button
-                title="Nouvelle recherche"
+                title={restaurantLoading ? "Analyse en cours..." : "Scanner la carte"}
                 onPress={handleNewSearch}
                 variant="primary"
                 size="medium"
-                fullWidth
+                loading={restaurantLoading}
               />
             </View>
           </View>
