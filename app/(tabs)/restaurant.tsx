@@ -14,7 +14,6 @@ import {
 import { useRouter } from 'expo-router';
 import { Camera, Upload, Check, Wine, User, RotateCcw } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { MediaType } from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
@@ -207,7 +206,6 @@ export default function RestaurantScreen() {
       
       // Photo SANS base64 pour éviter le crash Android
       const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: MediaType.Images,
         allowsEditing: true,
         aspect: [4, 3],
         quality: 0.5,
@@ -312,7 +310,6 @@ export default function RestaurantScreen() {
       
       // Sélection SANS base64 pour éviter le crash Android
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: MediaType.Images,
         allowsEditing: true,
         aspect: [4, 3],
         quality: 0.5,
