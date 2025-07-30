@@ -575,12 +575,12 @@ export default function RestaurantScreen() {
               
               <View style={styles.scanButtons}>
                 <Button
-                  title={loading ? "Analyse en cours..." : "Scanner la carte"}
+                  title={restaurantLoading ? "Analyse en cours..." : "Scanner la carte"}
                   onPress={handleScanCard}
                   variant="primary"
                   size="large"
                   fullWidth
-                  loading={loading}
+                  loading={restaurantLoading}
                 />
                 
                 <Button
@@ -589,7 +589,7 @@ export default function RestaurantScreen() {
                   variant="outline"
                   size="medium"
                   fullWidth
-                  loading={loading}
+                  loading={restaurantLoading}
                 />
               </View>
             </View>
