@@ -170,15 +170,21 @@ export default function RestaurantScreen() {
   }, [params.fromHistory, params.sessionId, params.dish, params.restaurantName, setCurrentSession]);
 
   const handleScanCard = async () => {
+    console.log('📸 handleScanCard - Début de la prise de photo');
+    
     try {
       // Vérifier les permissions
+      console.log('🔐 handleScanCard - Vérification des permissions caméra...');
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
+        console.error('❌ handleScanCard - Permission caméra refusée');
         Alert.alert('Permission refusée', 'L\'accès à la caméra est nécessaire');
         return;
       }
+      console.log('✅ handleScanCard - Permissions caméra accordées');
 
       if (!canMakeRecommendation()) {
+        console.log('🚫 handleScanCard - Quota dépassé');
         Alert.alert(
           'Quota dépassé',
           'Tu as atteint ta limite quotidienne. Passe à Premium pour des scans illimités !',
@@ -196,6 +202,7 @@ export default function RestaurantScreen() {
         return;
       }
 
+      console.log('📱 handleScanCard - Lancement de la caméra...');
       // Sauvegarder l'état de session
       const sessionBefore = await supabase.auth.getSession();
       console.log('Session avant photo:', !!sessionBefore.data.session);
@@ -205,7 +212,7 @@ export default function RestaurantScreen() {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.7, // Qualité réduite
+        quality: 0.5, // Qualité réduite pour éviter les crashes
         base64: false, // IMPORTANT: Ne pas demander base64 ici
       });
 
@@ -213,10 +220,14 @@ export default function RestaurantScreen() {
         console.log('📸 handleScanCard - User cancelled photo');
         return;
       }
+      
+      console.log('✅ handleScanCard - Photo prise avec succès');
+      console.log('📏 handleScanCard - URI de l\'image:', result.assets[0].uri);
 
       // Afficher un loading pendant le traitement
       Alert.alert('Traitement', 'Analyse de la carte en cours...', [], { cancelable: false });
 
+      console.log('🔄 handleScanCard - Compression de l\'image...');
       // Compresser et convertir en base64 APRÈS
       const manipResult = await ImageManipulator.manipulateAsync(
         result.assets[0].uri,
@@ -227,6 +238,9 @@ export default function RestaurantScreen() {
           base64: true // Demander base64 après compression
         }
       );
+      
+      console.log('✅ handleScanCard - Image compressée');
+      console.log('📏 handleScanCard - Taille base64:', manipResult.base64?.length || 0, 'caractères');
 
       // Vérifier la session après traitement
       const sessionAfter = await supabase.auth.getSession();
@@ -237,6 +251,8 @@ export default function RestaurantScreen() {
 
       // Envoyer l'image compressée
       if (manipResult.base64) {
+        console.log('🚀 handleScanCard - Envoi vers scanWineCard...');
+        console.log('📦 handleScanCard - Taille finale base64:', (manipResult.base64.length / 1024).toFixed(2), 'KB');
         console.log('Taille base64:', manipResult.base64.length / 1024, 'KB');
         const restaurantSession = await scanWineCard(manipResult.base64);
         Alert.alert(
@@ -244,10 +260,17 @@ export default function RestaurantScreen() {
           `${restaurantSession.extracted_wines.length} vins détectés chez ${restaurantSession.restaurant_name}`,
           [{ text: 'Continuer', onPress: () => setStep('dish') }]
         );
+      } else {
+        console.error('❌ handleScanCard - Pas de base64 après compression');
+        throw new Error('Impossible de traiter l\'image');
       }
 
     } catch (error: any) {
-      console.error('Erreur scan:', error);
+      console.error('💥 handleScanCard - Erreur capturée:', error);
+      console.error('🔍 handleScanCard - Type d\'erreur:', error.constructor.name);
+      console.error('🔍 handleScanCard - Message:', error.message);
+      console.error('🔍 handleScanCard - Stack:', error.stack);
+      
       // Don't show alert for user cancellations
       if (!(error instanceof UserCancellationError)) {
         Alert.alert('Erreur', 'Impossible de traiter la photo');
@@ -256,6 +279,8 @@ export default function RestaurantScreen() {
   };
 
   const handlePickFromGallery = async () => {
+    console.log('🖼️ handlePickFromGallery - Début de la sélection galerie');
+    
     try {
       // Vérifier les permissions
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -291,7 +316,7 @@ export default function RestaurantScreen() {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.7, // Qualité réduite
+        quality: 0.5, // Qualité réduite pour éviter les crashes
         base64: false, // IMPORTANT: Ne pas demander base64 ici
       });
 
@@ -300,6 +325,8 @@ export default function RestaurantScreen() {
         return;
       }
 
+      console.log('✅ handlePickFromGallery - Image sélectionnée avec succès');
+      
       // Afficher un loading pendant le traitement
       Alert.alert('Traitement', 'Analyse de la carte en cours...', [], { cancelable: false });
 
@@ -324,6 +351,7 @@ export default function RestaurantScreen() {
       // Envoyer l'image compressée
       if (manipResult.base64) {
         console.log('Taille base64:', manipResult.base64.length / 1024, 'KB');
+        console.log('🚀 handlePickFromGallery - Envoi vers scanWineCard...');
         const restaurantSession = await scanWineCard(manipResult.base64);
         Alert.alert(
           'Carte analysée !', 
@@ -333,7 +361,10 @@ export default function RestaurantScreen() {
       }
 
     } catch (error: any) {
-      console.error('Erreur galerie:', error);
+      console.error('💥 handlePickFromGallery - Erreur capturée:', error);
+      console.error('🔍 handlePickFromGallery - Type d\'erreur:', error.constructor.name);
+      console.error('🔍 handlePickFromGallery - Message:', error.message);
+      
       // Don't show alert for user cancellations
       if (!(error instanceof UserCancellationError)) {
         Alert.alert('Erreur', 'Impossible de traiter la photo');
