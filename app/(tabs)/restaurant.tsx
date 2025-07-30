@@ -15,7 +15,6 @@ import { useRouter } from 'expo-router';
 import { Camera, Upload, Check, Wine, User, RotateCcw } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
@@ -24,6 +23,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useRestaurantMode, UserCancellationError } from '@/hooks/useRestaurantMode';
 import { tempStore } from '@/utils/tempStore';
+import { supabase } from '@/lib/supabase';
 
 const { width } = Dimensions.get('window');
 
@@ -55,7 +55,6 @@ export default function RestaurantScreen() {
   const [appState, setAppState] = useState(AppState.currentState);
   const hasNavigatedRef = useRef(false);
   const hasLoadedFromHistoryRef = useRef(false);
-
   useEffect(() => {
     console.log('🍽️ Restaurant: Component mounted');
     return () => {
@@ -165,116 +164,12 @@ export default function RestaurantScreen() {
         }
         // Fallback to scan step if parsing fails
         setStep('scan');
-      }
-    }
-  }, [params.fromHistory, params.sessionId, params.dish, params.restaurantName, setCurrentSession]);
 
   const handleScanCard = async () => {
-    console.log('📸 handleScanCard - Début de la prise de photo');
-    
-    try {
-      // Vérifier les permissions
-      console.log('🔐 handleScanCard - Vérification des permissions caméra...');
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      if (status !== 'granted') {
-        console.error('❌ handleScanCard - Permission caméra refusée');
-        Alert.alert('Permission refusée', 'L\'accès à la caméra est nécessaire');
-        return;
-      }
-      console.log('✅ handleScanCard - Permissions caméra accordées');
 
-      console.log('📱 handleScanCard - Lancement de la caméra...');
-      
-      // Photo SANS base64 pour éviter le crash Android
-      const result = await ImagePicker.launchCameraAsync({
-        allowsEditing: true,
-        aspect: [4, 3],
         quality: 0.5,
-        base64: false, // CRITICAL: false ici pour éviter crash Android !
-      });
-
-      if (result.canceled) {
-        console.log('📸 handleScanCard - User cancelled photo');
-        return;
-      }
+      console.log('📸 handleScanCard - Début de la prise de photo');
       
-      if (!result.assets[0]) {
-        console.error('❌ handleScanCard - Pas d\'asset dans le résultat');
-        throw new Error('Aucune image capturée');
-      }
-
-      console.log('✅ handleScanCard - Photo prise avec succès');
-      console.log('📏 handleScanCard - URI de l\'image:', result.assets[0].uri);
-
-      // Afficher un loading pendant le traitement
-      Alert.alert('Traitement', 'Analyse de la carte en cours...', [], { cancelable: false });
-
-      console.log('🔄 handleScanCard - Compression et conversion base64...');
-      // Base64 avec ImageManipulator SEULEMENT (plus sûr pour Android)
-      const manipResult = await ImageManipulator.manipulateAsync(
-        result.assets[0].uri,
-        [{ resize: { width: 600 } }], // Réduire à 600px max pour éviter crash
-        { 
-          compress: 0.4, // Compression plus forte
-          format: ImageManipulator.SaveFormat.JPEG,
-          base64: true // base64 ICI seulement
-        }
-      );
-      
-      if (!manipResult.base64) {
-        console.error('❌ handleScanCard - Pas de base64 après manipulation');
-        throw new Error('Impossible de convertir l\'image');
-      }
-
-      console.log('✅ handleScanCard - Image compressée');
-      console.log('📏 handleScanCard - Taille base64:', manipResult.base64.length, 'caractères');
-      console.log('📏 handleScanCard - Taille base64:', (manipResult.base64.length / 1024).toFixed(2), 'KB');
-
-      console.log('🚀 handleScanCard - Envoi vers scanWineCard...');
-      const restaurantSession = await scanWineCard(manipResult.base64);
-      
-      Alert.alert(
-        'Carte analysée !', 
-        `${restaurantSession.extracted_wines.length} vins détectés chez ${restaurantSession.restaurant_name}`,
-        [{ text: 'Continuer', onPress: () => setStep('dish') }]
-      );
-
-    } catch (error: any) {
-      console.error('💥 handleScanCard - Erreur capturée:', error);
-      console.error('🔍 handleScanCard - Type d\'erreur:', error.constructor.name);
-      console.error('🔍 handleScanCard - Message:', error.message);
-      if (error.stack) {
-        console.error('🔍 handleScanCard - Stack:', error.stack);
-      }
-      
-      // Don't show alert for user cancellations
-      if (!(error instanceof UserCancellationError)) {
-        Alert.alert('Erreur', `Impossible de traiter la photo: ${error.message}`);
-      }
-    }
-  };
-
-  const handlePickFromGallery = async () => {
-    console.log('🖼️ handlePickFromGallery - Début de la sélection galerie');
-    
-    try {
-      // Vérifier les permissions
-      console.log('🔐 handlePickFromGallery - Vérification des permissions galerie...');
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        console.error('❌ handlePickFromGallery - Permission galerie refusée');
-        Alert.alert('Permission refusée', 'L\'accès à la galerie est nécessaire');
-        return;
-      }
-      console.log('✅ handlePickFromGallery - Permissions galerie accordées');
-
-      console.log('🖼️ handlePickFromGallery - Lancement de la galerie...');
-      
-      // Sélection SANS base64 pour éviter le crash Android
-      const result = await ImagePicker.launchImageLibraryAsync({
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.5,
         base64: false, // CRITICAL: false ici pour éviter crash Android !
       });
 
@@ -314,9 +209,6 @@ export default function RestaurantScreen() {
       console.log('✅ handlePickFromGallery - Image compressée');
       console.log('📏 handlePickFromGallery - Taille base64:', manipResult.base64.length, 'caractères');
       console.log('📏 handlePickFromGallery - Taille base64:', (manipResult.base64.length / 1024).toFixed(2), 'KB');
-
-      console.log('🚀 handlePickFromGallery - Envoi vers scanWineCard...');
-      const restaurantSession = await scanWineCard(manipResult.base64);
       
       Alert.alert(
         'Carte analysée !', 
@@ -339,13 +231,9 @@ export default function RestaurantScreen() {
     }
   };
 
-  const handleGetRecommendations = async () => {
-    if (!dishDescription.trim()) {
-      Alert.alert('Erreur', 'Veuillez décrire votre plat');
-      return;
-    }
-
     try {
+      console.log('🖼️ handlePickFromGallery - Début de la sélection galerie');
+      
       const results = await getRestaurantRecommendations(dishDescription);
       setRecommendations(results);
       setStep('results');
@@ -357,23 +245,6 @@ export default function RestaurantScreen() {
   const handleNewSearch = () => {
     setStep('scan');
     setDishDescription('');
-    setRecommendations([]);
-    clearSession();
-  };
-
-  // Show loading while auth is being checked
-  if (authLoading) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <LoadingSpinner text="Chargement..." />
-        </View>
-      </View>
-    );
-  }
-
-  // ÉCRAN 1: SCAN CARTE
-  if (step === 'scan') {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
@@ -389,7 +260,6 @@ export default function RestaurantScreen() {
             style={styles.profileButton}
             onPress={() => router.push('/(tabs)/profile')}
           >
-            <User size={24} color={Colors.primary} />
           </TouchableOpacity>
         </View>
 
@@ -399,7 +269,6 @@ export default function RestaurantScreen() {
             <Text style={styles.subtitle}>Scannez la carte des vins de votre restaurant</Text>
           </View>
 
-          <View style={styles.scanSection}>
             <View style={styles.scanCard}>
               <Camera size={64} color={Colors.primary} strokeWidth={1} />
               <Text style={styles.scanTitle}>Photographier la carte des vins</Text>
@@ -750,27 +619,4 @@ const styles = StyleSheet.create({
   },
   reasoning: {
     fontSize: Typography.sizes.base,
-    color: Colors.textSecondary,
-    lineHeight: Typography.sizes.base * 1.5,
-    marginBottom: 16,
-  },
-  errorCard: {
-    backgroundColor: Colors.error,
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 16,
-  },
-  errorText: {
-    color: Colors.accent,
-    fontSize: Typography.sizes.base,
-    textAlign: 'center',
-  },
-  newSearchSection: {
-    marginBottom: 24,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
 });
