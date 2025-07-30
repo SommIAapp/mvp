@@ -198,7 +198,7 @@ export default function RestaurantScreen() {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: false,
         quality: 0.5,
-        base64: false, // CRITICAL: false ici pour éviter crash Android !
+        base64: false // CRITICAL: false ici pour éviter crash Android !
       });
 
       if (result.canceled) {
