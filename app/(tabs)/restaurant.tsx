@@ -24,7 +24,6 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useRestaurantMode, UserCancellationError } from '@/hooks/useRestaurantMode';
 import { tempStore } from '@/utils/tempStore';
-import { supabase } from '@/lib/supabase';
 
 const { width } = Dimensions.get('window');
 
@@ -56,12 +55,9 @@ export default function RestaurantScreen() {
   const [appState, setAppState] = useState(AppState.currentState);
   const hasNavigatedRef = useRef(false);
   const hasLoadedFromHistoryRef = useRef(false);
-  const [remainingQuota, setRemainingQuota] = useState<number | null>(null);
 
   useEffect(() => {
     console.log('🍽️ Restaurant: Component mounted');
-    loadCachedWines();
-    checkQuotaBeforeScan();
     return () => {
       console.log('🍽️ Restaurant: Component unmounted');
     };
@@ -173,100 +169,7 @@ export default function RestaurantScreen() {
     }
   }, [params.fromHistory, params.sessionId, params.dish, params.restaurantName, setCurrentSession]);
 
-  const checkQuotaBeforeScan = async () => {
-    try {
-      // Utiliser le profil existant du contexte auth
-      if (profile) {
-        const dailyUsed = profile.daily_count || 0;
-        const dailyLimit = profile.subscription_plan === 'premium' ? 999 : 3; // Premium = illimité, autres = 3
-        const remaining = dailyLimit - dailyUsed;
-        setRemainingQuota(remaining);
-        
-        if (remaining <= 0 && profile.subscription_plan !== 'premium') {
-          Alert.alert(
-            'Limite quotidienne atteinte',
-            'Vous avez utilisé tous vos scans gratuits du jour. Passez à Premium pour un usage illimité !',
-            [
-              { 
-                text: 'Voir Premium', 
-                onPress: () => router.push({
-                  pathname: '/subscription',
-                  params: { reason: 'daily_limit' }
-                }),
-                style: 'default'
-              },
-              { text: 'Plus tard', style: 'cancel' }
-            ]
-          );
-          return false;
-        }
-        return true;
-      }
-      return true;
-    } catch (error) {
-      console.error('Erreur vérification quota:', error);
-      return true; // En cas d'erreur, on laisse passer
-    }
-  };
-
-  const saveScannedWinesToCache = async (session: any) => {
-    try {
-      await AsyncStorage.setItem('lastScannedWines', JSON.stringify({
-        sessionId: session.id,
-        restaurantName: session.restaurant_name,
-        wines: session.extracted_wines,
-        date: new Date().toISOString()
-      }));
-      console.log('✅ Carte sauvegardée dans le cache');
-    } catch (error) {
-      console.error('Erreur sauvegarde cache:', error);
-    }
-  };
-
-  const loadCachedWines = async () => {
-    try {
-      const cached = await AsyncStorage.getItem('lastScannedWines');
-      if (cached) {
-        const data = JSON.parse(cached);
-        // Vérifier si le cache date de moins de 24h
-        const cacheDate = new Date(data.date);
-        const now = new Date();
-        const hoursDiff = (now.getTime() - cacheDate.getTime()) / (1000 * 60 * 60);
-        
-        if (hoursDiff < 24) {
-          Alert.alert(
-            'Carte précédente disponible',
-            `Voulez-vous utiliser la carte de ${data.restaurantName} scannée récemment ?`,
-            [
-              {
-                text: 'Utiliser',
-                onPress: () => {
-                  const cachedSession: RestaurantSession = {
-                    id: data.sessionId,
-                    restaurant_name: data.restaurantName,
-                    extracted_wines: data.wines,
-                    confidence_score: 0.85,
-                    session_active: true,
-                  };
-                  setCurrentSession(cachedSession);
-                  setStep('dish');
-                }
-              },
-              { text: 'Nouveau scan', style: 'cancel' }
-            ]
-          );
-        }
-      }
-    } catch (error) {
-      console.error('Erreur chargement cache:', error);
-    }
-  };
-
   const handleScanCard = async () => {
-    // Vérifier le quota avant de lancer la caméra
-    const canScan = await checkQuotaBeforeScan();
-    if (!canScan) return;
-    
     console.log('📸 handleScanCard - Début de la prise de photo');
     
     try {
@@ -279,25 +182,6 @@ export default function RestaurantScreen() {
         return;
       }
       console.log('✅ handleScanCard - Permissions caméra accordées');
-
-      if (!canMakeRecommendation()) {
-        console.log('🚫 handleScanCard - Quota dépassé');
-        Alert.alert(
-          'Quota dépassé',
-          'Tu as atteint ta limite quotidienne. Passe à Premium pour des scans illimités !',
-          [
-            { text: 'Plus tard', style: 'cancel' },
-            { 
-              text: 'Voir Premium', 
-              onPress: () => router.push({
-                pathname: '/subscription',
-                params: { reason: 'daily_limit' }
-              })
-            }
-          ]
-        );
-        return;
-      }
 
       console.log('📱 handleScanCard - Lancement de la caméra...');
       
@@ -349,9 +233,6 @@ export default function RestaurantScreen() {
       console.log('🚀 handleScanCard - Envoi vers scanWineCard...');
       const restaurantSession = await scanWineCard(manipResult.base64);
       
-      // Sauvegarder dans le cache après un scan réussi
-      await saveScannedWinesToCache(restaurantSession);
-      
       Alert.alert(
         'Carte analysée !', 
         `${restaurantSession.extracted_wines.length} vins détectés chez ${restaurantSession.restaurant_name}`,
@@ -374,10 +255,6 @@ export default function RestaurantScreen() {
   };
 
   const handlePickFromGallery = async () => {
-    // Vérifier le quota avant de lancer la galerie
-    const canScan = await checkQuotaBeforeScan();
-    if (!canScan) return;
-    
     console.log('🖼️ handlePickFromGallery - Début de la sélection galerie');
     
     try {
@@ -390,25 +267,6 @@ export default function RestaurantScreen() {
         return;
       }
       console.log('✅ handlePickFromGallery - Permissions galerie accordées');
-
-      if (!canMakeRecommendation()) {
-        console.log('🚫 handlePickFromGallery - Quota dépassé');
-        Alert.alert(
-          'Quota dépassé',
-          'Tu as atteint ta limite quotidienne. Passe à Premium pour des scans illimités !',
-          [
-            { text: 'Plus tard', style: 'cancel' },
-            { 
-              text: 'Voir Premium', 
-              onPress: () => router.push({
-                pathname: '/subscription',
-                params: { reason: 'daily_limit' }
-              })
-            }
-          ]
-        );
-        return;
-      }
 
       console.log('🖼️ handlePickFromGallery - Lancement de la galerie...');
       
@@ -459,9 +317,6 @@ export default function RestaurantScreen() {
 
       console.log('🚀 handlePickFromGallery - Envoi vers scanWineCard...');
       const restaurantSession = await scanWineCard(manipResult.base64);
-      
-      // Sauvegarder dans le cache après un scan réussi
-      await saveScannedWinesToCache(restaurantSession);
       
       Alert.alert(
         'Carte analysée !', 
@@ -551,26 +406,6 @@ export default function RestaurantScreen() {
               <Text style={styles.scanSubtitle}>
                 L'IA va extraire automatiquement tous les vins disponibles
               </Text>
-              
-              {remainingQuota !== null && profile?.subscription_plan !== 'premium' && (
-                <View style={styles.quotaContainer}>
-                  <Text style={styles.quotaText}>
-                    Scans restants aujourd'hui : {remainingQuota}/3
-                  </Text>
-                  {remainingQuota === 0 && (
-                    <TouchableOpacity 
-                      style={styles.premiumBadge}
-                      onPress={() => router.push({
-                        pathname: '/subscription',
-                        params: { reason: 'daily_limit' }
-                      })}
-                    >
-                      <Text style={styles.premiumText}>Passer à Premium</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              )}
-              
               <View style={styles.scanButtons}>
                 <Button
                   title={restaurantLoading ? "Analyse en cours..." : "Scanner la carte"}
@@ -579,7 +414,6 @@ export default function RestaurantScreen() {
                   size="large"
                   fullWidth
                   loading={restaurantLoading}
-                  disabled={remainingQuota === 0 && profile?.subscription_plan !== 'premium'}
                 />
                 
                 <Button
@@ -589,7 +423,6 @@ export default function RestaurantScreen() {
                   size="medium"
                   fullWidth
                   loading={restaurantLoading}
-                  disabled={remainingQuota === 0 && profile?.subscription_plan !== 'premium'}
                 />
               </View>
             </View>
@@ -939,36 +772,5 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  quotaContainer: {
-    backgroundColor: Colors.softGray,
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.textLight,
-  },
-  quotaText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.textSecondary,
-    fontWeight: Typography.weights.medium,
-  },
-  premiumBadge: {
-    backgroundColor: Colors.secondary,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginTop: 8,
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  premiumText: {
-    color: Colors.darkGray,
-    fontWeight: Typography.weights.bold,
-    fontSize: Typography.sizes.xs,
   },
 });
