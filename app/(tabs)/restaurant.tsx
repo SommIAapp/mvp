@@ -64,8 +64,8 @@ export default function RestaurantScreen() {
   // Vérifier la session au retour de l'appareil photo
   useEffect(() => {
     const checkSessionOnFocus = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      const { data: { session: authSession } } = await supabase.auth.getSession();
+      if (!authSession) {
         console.log('Session perdue, tentative de récupération...');
         try {
           await supabase.auth.refreshSession();
@@ -168,8 +168,8 @@ export default function RestaurantScreen() {
 
     try {
       // Sauvegarder l'état avant la photo
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      const { data: { session: authSession } } = await supabase.auth.getSession();
+      if (!authSession) {
         Alert.alert('Erreur', 'Vous devez être connecté');
         return;
       }
@@ -202,8 +202,8 @@ export default function RestaurantScreen() {
       }
 
       // Vérifier la session après la photo
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      if (!currentSession) {
+      const { data: { session: currentAuthSession } } = await supabase.auth.getSession();
+      if (!currentAuthSession) {
         console.log('Session perdue après photo, tentative de récupération...');
         try {
           await supabase.auth.refreshSession();
@@ -250,8 +250,8 @@ export default function RestaurantScreen() {
 
     try {
       // Sauvegarder l'état avant la sélection
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      const { data: { session: authSession } } = await supabase.auth.getSession();
+      if (!authSession) {
         Alert.alert('Erreur', 'Vous devez être connecté');
         return;
       }
@@ -284,8 +284,8 @@ export default function RestaurantScreen() {
       }
 
       // Vérifier la session après la sélection
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      if (!currentSession) {
+      const { data: { session: currentAuthSession } } = await supabase.auth.getSession();
+      if (!currentAuthSession) {
         console.log('Session perdue après sélection, tentative de récupération...');
         try {
           await supabase.auth.refreshSession();
