@@ -104,10 +104,7 @@ export default function RestaurantScreen() {
         console.error('Impossible de récupérer la session:', error);
       }
     }
-  };
 
-  // Handle navigation to subscription screen when user is not eligible
-  useEffect(() => {
     checkSessionOnFocus();
     if (!authLoading && !canMakeRecommendation() && !hasNavigatedRef.current) {
       hasNavigatedRef.current = true;
