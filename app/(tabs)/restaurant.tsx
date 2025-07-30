@@ -172,7 +172,57 @@ export default function RestaurantScreen() {
     try {
       console.log('📸 handleScanCard - Début de la prise de photo');
       
-      const restaurantSession = await scanWineCard();
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission refusée', 'L\'accès à la caméra est nécessaire');
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.5,
+        base64: false
+      });
+
+      if (result.canceled) {
+        console.log('📸 handleScanCard - User cancelled camera');
+        return;
+      }
+
+      if (!result.assets[0]) {
+        console.error('❌ handleScanCard - Pas d\'asset dans le résultat');
+        throw new Error('Aucune image capturée');
+      }
+
+      console.log('✅ handleScanCard - Image capturée avec succès');
+      console.log('📏 handleScanCard - URI de l\'image:', result.assets[0].uri);
+      
+      // Afficher un loading pendant le traitement
+      Alert.alert('Traitement', 'Analyse de la carte en cours...', [], { cancelable: false });
+
+      console.log('🔄 handleScanCard - Compression et conversion base64...');
+      // Base64 avec ImageManipulator SEULEMENT (plus sûr pour Android)
+      const manipResult = await ImageManipulator.manipulateAsync(
+        result.assets[0].uri,
+        [{ resize: { width: 600 } }], // Réduire à 600px max pour éviter crash
+        { 
+          compress: 0.4, // Compression plus forte
+          format: ImageManipulator.SaveFormat.JPEG,
+          base64: true // base64 ICI seulement
+        }
+      );
+
+      if (!manipResult.base64) {
+        console.error('❌ handleScanCard - Pas de base64 après manipulation');
+        throw new Error('Impossible de convertir l\'image');
+      }
+
+      console.log('✅ handleScanCard - Image compressée');
+      console.log('📏 handleScanCard - Taille base64:', manipResult.base64.length, 'caractères');
+      console.log('📏 handleScanCard - Taille base64:', (manipResult.base64.length / 1024).toFixed(2), 'KB');
+      
+      const restaurantSession = await scanWineCard(manipResult.base64);
       
       Alert.alert(
         'Carte analysée !', 
