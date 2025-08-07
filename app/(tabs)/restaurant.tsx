@@ -15,6 +15,7 @@ import { useRouter } from 'expo-router';
 import { Camera, Upload, Check, Wine, User, RotateCcw } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
@@ -23,7 +24,6 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useRestaurantMode, UserCancellationError } from '@/hooks/useRestaurantMode';
 import { tempStore } from '@/utils/tempStore';
-import { supabase } from '@/lib/supabase';
 
 const { width } = Dimensions.get('window');
 
@@ -55,6 +55,7 @@ export default function RestaurantScreen() {
   const [appState, setAppState] = useState(AppState.currentState);
   const hasNavigatedRef = useRef(false);
   const hasLoadedFromHistoryRef = useRef(false);
+
   useEffect(() => {
     console.log('🍽️ Restaurant: Component mounted');
     return () => {
@@ -166,38 +167,45 @@ export default function RestaurantScreen() {
         setStep('scan');
       }
     }
-  }, [params]);
+  }, [params.fromHistory, params.sessionId, params.dish, params.restaurantName, setCurrentSession]);
 
   const handleScanCard = async () => {
+    console.log('📸 handleScanCard - Début de la prise de photo');
+    
     try {
-      console.log('📸 handleScanCard - Début de la prise de photo');
-      
+      // Vérifier les permissions
+      console.log('🔐 handleScanCard - Vérification des permissions caméra...');
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
+        console.error('❌ handleScanCard - Permission caméra refusée');
         Alert.alert('Permission refusée', 'L\'accès à la caméra est nécessaire');
         return;
       }
+      console.log('✅ handleScanCard - Permissions caméra accordées');
 
+      console.log('📱 handleScanCard - Lancement de la caméra...');
+      
+      // Photo SANS base64 pour éviter le crash Android
       const result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
         aspect: [4, 3],
         quality: 0.5,
-        base64: false
+        base64: false, // CRITICAL: false ici pour éviter crash Android !
       });
 
       if (result.canceled) {
-        console.log('📸 handleScanCard - User cancelled camera');
+        console.log('📸 handleScanCard - User cancelled photo');
         return;
       }
-
+      
       if (!result.assets[0]) {
         console.error('❌ handleScanCard - Pas d\'asset dans le résultat');
         throw new Error('Aucune image capturée');
       }
 
-      console.log('✅ handleScanCard - Image capturée avec succès');
+      console.log('✅ handleScanCard - Photo prise avec succès');
       console.log('📏 handleScanCard - URI de l\'image:', result.assets[0].uri);
-      
+
       // Afficher un loading pendant le traitement
       Alert.alert('Traitement', 'Analyse de la carte en cours...', [], { cancelable: false });
 
@@ -212,7 +220,7 @@ export default function RestaurantScreen() {
           base64: true // base64 ICI seulement
         }
       );
-
+      
       if (!manipResult.base64) {
         console.error('❌ handleScanCard - Pas de base64 après manipulation');
         throw new Error('Impossible de convertir l\'image');
@@ -221,7 +229,8 @@ export default function RestaurantScreen() {
       console.log('✅ handleScanCard - Image compressée');
       console.log('📏 handleScanCard - Taille base64:', manipResult.base64.length, 'caractères');
       console.log('📏 handleScanCard - Taille base64:', (manipResult.base64.length / 1024).toFixed(2), 'KB');
-      
+
+      console.log('🚀 handleScanCard - Envoi vers scanWineCard...');
       const restaurantSession = await scanWineCard(manipResult.base64);
       
       Alert.alert(
@@ -232,6 +241,11 @@ export default function RestaurantScreen() {
 
     } catch (error: any) {
       console.error('💥 handleScanCard - Erreur capturée:', error);
+      console.error('🔍 handleScanCard - Type d\'erreur:', error.constructor.name);
+      console.error('🔍 handleScanCard - Message:', error.message);
+      if (error.stack) {
+        console.error('🔍 handleScanCard - Stack:', error.stack);
+      }
       
       // Don't show alert for user cancellations
       if (!(error instanceof UserCancellationError)) {
@@ -241,14 +255,27 @@ export default function RestaurantScreen() {
   };
 
   const handlePickFromGallery = async () => {
+    console.log('🖼️ handlePickFromGallery - Début de la sélection galerie');
+    
     try {
-      console.log('🖼️ handlePickFromGallery - Début de la sélection galerie');
+      // Vérifier les permissions
+      console.log('🔐 handlePickFromGallery - Vérification des permissions galerie...');
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        console.error('❌ handlePickFromGallery - Permission galerie refusée');
+        Alert.alert('Permission refusée', 'L\'accès à la galerie est nécessaire');
+        return;
+      }
+      console.log('✅ handlePickFromGallery - Permissions galerie accordées');
+
+      console.log('🖼️ handlePickFromGallery - Lancement de la galerie...');
       
+      // Sélection SANS base64 pour éviter le crash Android
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: false,
+        allowsEditing: true,
+        aspect: [4, 3],
         quality: 0.5,
-        base64: false // CRITICAL: false ici pour éviter crash Android !
+        base64: false, // CRITICAL: false ici pour éviter crash Android !
       });
 
       if (result.canceled) {
@@ -287,8 +314,9 @@ export default function RestaurantScreen() {
       console.log('✅ handlePickFromGallery - Image compressée');
       console.log('📏 handlePickFromGallery - Taille base64:', manipResult.base64.length, 'caractères');
       console.log('📏 handlePickFromGallery - Taille base64:', (manipResult.base64.length / 1024).toFixed(2), 'KB');
-      
-      const restaurantSession = await pickFromGallery(manipResult.base64);
+
+      console.log('🚀 handlePickFromGallery - Envoi vers scanWineCard...');
+      const restaurantSession = await scanWineCard(manipResult.base64);
       
       Alert.alert(
         'Carte analysée !', 
@@ -312,9 +340,12 @@ export default function RestaurantScreen() {
   };
 
   const handleGetRecommendations = async () => {
+    if (!dishDescription.trim()) {
+      Alert.alert('Erreur', 'Veuillez décrire votre plat');
+      return;
+    }
+
     try {
-      console.log('🖼️ handlePickFromGallery - Début de la sélection galerie');
-      
       const results = await getRestaurantRecommendations(dishDescription);
       setRecommendations(results);
       setStep('results');
@@ -330,7 +361,18 @@ export default function RestaurantScreen() {
     clearSession();
   };
 
-  // ÉCRAN 1: SCAN
+  // Show loading while auth is being checked
+  if (authLoading) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <LoadingSpinner text="Chargement..." />
+        </View>
+      </View>
+    );
+  }
+
+  // ÉCRAN 1: SCAN CARTE
   if (step === 'scan') {
     return (
       <View style={styles.container}>
@@ -509,12 +551,11 @@ export default function RestaurantScreen() {
 
             <View style={styles.newSearchSection}>
               <Button
-                title="Nouvelle recherche"
+                title={restaurantLoading ? "Analyse en cours..." : "Scanner la carte"}
                 onPress={handleNewSearch}
                 variant="primary"
                 size="medium"
-                fullWidth
-                icon={<RotateCcw size={20} color={Colors.white} />}
+                loading={restaurantLoading}
               />
             </View>
           </View>
@@ -710,14 +751,8 @@ const styles = StyleSheet.create({
   reasoning: {
     fontSize: Typography.sizes.base,
     color: Colors.textSecondary,
+    lineHeight: Typography.sizes.base * 1.5,
     marginBottom: 16,
-    lineHeight: 22,
-  },
-  newSearchSection: {
-    marginTop: 24,
-    paddingTop: 24,
-    borderTopWidth: 1,
-    borderTopColor: Colors.lightGray,
   },
   errorCard: {
     backgroundColor: Colors.error,
@@ -726,8 +761,16 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   errorText: {
-    color: Colors.white,
+    color: Colors.accent,
     fontSize: Typography.sizes.base,
     textAlign: 'center',
+  },
+  newSearchSection: {
+    marginBottom: 24,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
