@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity, Dimensions
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Sparkles, Wine, Smartphone, RotateCcw, X, Check, ArrowLeft, Camera, DollarSign, BookOpen } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Video } from 'expo-av';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
@@ -212,18 +213,20 @@ export default function SubscriptionScreen() {
         )}
         
         <View style={styles.headerContent}>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{contentConfig.badge}</Text>
-        </View>
         {reason === 'trial_signup' ? (
           <Text style={styles.mainTitle}>
             Trouve le vin parfait{'\n'}pour chaque plat
           </Text>
         ) : (
-          <Text style={styles.title}>{contentConfig.title}</Text>
+          <>
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{contentConfig.badge}</Text>
+            </View>
+            <Text style={styles.title}>{contentConfig.title}</Text>
+          </>
         )}
         {reason !== 'trial_signup' && (
-          <Text style={styles.subtitle}>{contentConfig.subtitle}</Text>
+          <Text style={styles.title}>{contentConfig.title}</Text>
         )}
         </View>
       </View>
@@ -231,11 +234,13 @@ export default function SubscriptionScreen() {
       <View style={styles.content}>
         {reason === 'trial_signup' ? (
           <>
-            {/* GIF de démo directement */}
-            <Image 
-              source={require('../assets/images/0810(1).gif')} 
+            <Video
+              source={require('../assets/images/0810(1).gif')}
               style={styles.demoGif}
               resizeMode="contain"
+              shouldPlay
+              isLooping
+              isMuted
             />
 
             <View style={styles.offerBox}>
@@ -617,7 +622,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginVertical: 32,
     borderRadius: 20,
-    backgroundColor: Colors.softGray, // Placeholder pendant chargement
     // Ombres pour iOS
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
