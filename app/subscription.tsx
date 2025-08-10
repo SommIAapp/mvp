@@ -4,7 +4,6 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Sparkles, Wine, Smartphone, RotateCcw, X, Check, ArrowLeft, Camera, DollarSign, BookOpen } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Video } from 'expo-av';
-import { Image } from 'expo-image';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
@@ -238,8 +237,7 @@ export default function SubscriptionScreen() {
             <Image
               source={require('@/assets/images/0810(1).gif')}
               style={styles.demoGif}
-              contentFit="contain"
-              transition={1000}
+              resizeMode="contain"
             />
 
             <View style={styles.offerBox}>
