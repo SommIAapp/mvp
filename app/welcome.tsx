@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions, Image } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Sparkles, Clock, Wine } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -13,22 +14,39 @@ export default function WelcomeScreen() {
   const router = useRouter();
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <LinearGradient
-        colors={[Colors.primary, '#8B4A52']}
-        style={styles.header}
-      >
-        <View style={styles.heroContent}>
-          <Image
-            source={require('../assets/images/appstorelogo.png')}
-            style={styles.logoImage}
-            resizeMode="contain"
-          />
-          <Text style={styles.title}>SOMMIA</Text>
+    <View style={styles.container}>
+      <View style={styles.topSection}>
+        <LinearGradient
+          colors={[Colors.primary, '#8B4A52']}
+          style={styles.gradientBackground}
+        >
+          <View style={styles.heroContent}>
+            <Image
+              source={require('../assets/images/appstorelogo.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
+            <Text style={styles.title}>SOMMIA</Text>
+          </View>
+        </LinearGradient>
+        
+        {/* Wave Transition */}
+        <View style={styles.waveContainer}>
+          <Svg
+            height="40"
+            width={width}
+            viewBox={`0 0 ${width} 40`}
+            style={styles.wave}
+          >
+            <Path
+              d={`M0,20 Q${width/4},0 ${width/2},15 T${width},20 L${width},40 L0,40 Z`}
+              fill="#FEFEFE"
+            />
+          </Svg>
         </View>
-      </LinearGradient>
+      </View>
 
-      <View style={styles.content}>
+      <View style={styles.bottomSection}>
         <View style={styles.descriptionSection}>
         </View>
 
@@ -53,20 +71,43 @@ export default function WelcomeScreen() {
           />
         </View>
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.accent,
   },
-  header: {
-    height: height * 0.5,
+  topSection: {
+    height: height * 0.6,
+    position: 'relative',
+  },
+  gradientBackground: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 24,
+  },
+  waveContainer: {
+    position: 'absolute',
+    bottom: -1,
+    left: 0,
+    width: width,
+    height: 40,
+    overflow: 'hidden',
+    zIndex: 5,
+  },
+  wave: {
+    width: '100%',
+    height: '100%',
+  },
+  bottomSection: {
+    flex: 1,
+    backgroundColor: Colors.accent,
+    paddingHorizontal: 24,
+    paddingTop: 32,
+    paddingBottom: 40,
   },
   heroContent: {
     alignItems: 'center',
@@ -88,12 +129,6 @@ const styles = StyleSheet.create({
     fontWeight: Typography.weights.semibold,
     color: Colors.accent,
     textAlign: 'center',
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 32,
-    paddingBottom: 40,
   },
   descriptionSection: {
     marginBottom: 40,
