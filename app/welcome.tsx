@@ -25,26 +25,14 @@ export default function WelcomeScreen() {
             resizeMode="contain"
           />
           <Text style={styles.title}>SOMMIA</Text>
-          <Text style={styles.subtitle}>Découvre l'accord idéal</Text>
         </View>
       </LinearGradient>
 
       <View style={styles.content}>
         <View style={styles.descriptionSection}>
-          <Text style={styles.description}>
-            Trouve le vin parfait pour ton plat en 10 secondes avec notre recommendation experte
-          </Text>
         </View>
 
         <View style={styles.featuresSection}>
-          <View style={styles.feature}>
-            <Wine size={24} color={Colors.secondary} />
-            <Text style={styles.featureText}>Accords parfaits selon ton budget</Text>
-          </View>
-          <View style={styles.feature}>
-            <Clock size={24} color={Colors.secondary} />
-            <Text style={styles.featureText}>Résultats instantanés</Text>
-          </View>
         </View>
 
         <View style={styles.buttonSection}>
