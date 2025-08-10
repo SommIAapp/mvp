@@ -228,7 +228,7 @@ export default function SubscriptionScreen() {
         {reason !== 'trial_signup' && (
           <Text style={styles.subtitle}>{contentConfig.subtitle}</Text>
         )}
-        </View>
+      </View>
       </View>
 
       <View style={styles.content}>
