@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity, Dimensions, Image } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Sparkles, Wine, Smartphone, RotateCcw, X, Check, ArrowLeft, Camera, DollarSign, BookOpen } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -231,27 +231,12 @@ export default function SubscriptionScreen() {
       <View style={styles.content}>
         {reason === 'trial_signup' ? (
           <>
-            <View style={styles.benefitsSection}>
-              <View style={styles.benefit}>
-                <Wine size={32} color={Colors.secondary} />
-                <Text style={styles.benefitText}>Recommandations IA personnalisées</Text>
-              </View>
-              
-              <View style={styles.benefit}>
-                <Camera size={32} color={Colors.secondary} />
-                <Text style={styles.benefitText}>Analyse photo de tes plats</Text>
-              </View>
-              
-              <View style={styles.benefit}>
-                <DollarSign size={32} color={Colors.secondary} />
-                <Text style={styles.benefitText}>Économise sur chaque bouteille</Text>
-              </View>
-              
-              <View style={styles.benefit}>
-                <BookOpen size={32} color={Colors.secondary} />
-                <Text style={styles.benefitText}>Apprends avec un sommelier virtuel</Text>
-              </View>
-            </View>
+            {/* GIF de démo directement */}
+            <Image 
+              source={require('../assets/images/0810(1).gif')} 
+              style={styles.demoGif}
+              resizeMode="contain"
+            />
 
             <View style={styles.offerBox}>
               <Text style={styles.offerTitle}>Essai gratuit 7 jours</Text>
@@ -624,6 +609,22 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.xs,
     color: Colors.textLight,
     textAlign: 'center',
+  },
+  demoGif: {
+    width: width - 48, // Largeur écran moins padding
+    height: width * 0.8, // Ratio carré/rectangulaire
+    maxHeight: 350,
+    alignSelf: 'center',
+    marginVertical: 32,
+    borderRadius: 20,
+    backgroundColor: Colors.softGray, // Placeholder pendant chargement
+    // Ombres pour iOS
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    // Ombre pour Android
+    elevation: 10,
   },
   checkoutLoadingContainer: {
     flex: 1,
