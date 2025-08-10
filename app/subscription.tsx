@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     paddingHorizontal: 24,
     paddingTop: 80,
-    paddingBottom: 32,
+    paddingBottom: 16,
   },
   backButton: {
     width: 44,
@@ -610,12 +610,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   demoGif: {
-    width: width - 24,
-    height: height * 0.5,
-    maxHeight: 500,
+    width: width - 20,
+    height: height * 0.55,
+    maxHeight: 600,
     alignSelf: 'center',
-    marginTop: 60,
-    marginBottom: 40,
+    marginTop: 20,
+    marginBottom: 30,
     borderRadius: 20,
   },
   trialText: {
