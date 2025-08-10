@@ -622,13 +622,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginVertical: 32,
     borderRadius: 20,
-    // Ombres pour iOS
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    // Ombre pour Android
-    elevation: 10,
   },
   checkoutLoadingContainer: {
     flex: 1,
