@@ -13,7 +13,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/lib/supabase';
 import { stripeProducts } from '@/src/stripe-config';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 type PaywallReason = 'trial_signup' | 'daily_limit' | 'trial_expired' | 'premium_upgrade';
 
@@ -226,6 +226,9 @@ export default function SubscriptionScreen() {
           </>
         )}
         {reason !== 'trial_signup' && (
+          <Text style={styles.subtitle}>{contentConfig.subtitle}</Text>
+        )}
+        </View>
       </View>
 
       <View style={styles.content}>
@@ -435,6 +438,13 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: Typography.sizes.lg,
     color: Colors.textSecondary,
+    textAlign: 'center',
+  },
+  mainTitle: {
+    fontSize: Typography.sizes.xxl,
+    fontWeight: Typography.weights.bold,
+    color: Colors.textPrimary,
+    marginBottom: 8,
     textAlign: 'center',
   },
   content: {
