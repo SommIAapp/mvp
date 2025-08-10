@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, Image } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import Animated, { 
   useSharedValue, 
@@ -62,10 +61,7 @@ export default function SplashScreen() {
   }));
 
   return (
-    <LinearGradient
-      colors={[Colors.primary, '#8B4A52', '#A66B73']}
-      style={styles.container}
-    >
+    <View style={[styles.container, { backgroundColor: '#6B2B3A' }]}>
       <Animated.View style={[styles.content, animatedStyle]}>
         <Image
           source={require('../assets/images/appstorelogo.png')}
@@ -74,7 +70,7 @@ export default function SplashScreen() {
         />
         <Text style={styles.title}>SOMMIA</Text>
       </Animated.View>
-    </LinearGradient>
+    </View>
   );
 }
 
