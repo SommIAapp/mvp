@@ -215,7 +215,7 @@ export default function SubscriptionScreen() {
         <View style={styles.headerContent}>
         {reason === 'trial_signup' ? (
           <Text style={styles.mainTitle}>
-            Trouve le vin parfait{'\n'}pour chaque plat
+            Trouve le vin parfait
           </Text>
         ) : (
           <>
@@ -235,7 +235,7 @@ export default function SubscriptionScreen() {
         {reason === 'trial_signup' ? (
           <>
             <Image
-              source={require('@/assets/images/0810(1).gif')}
+              source={require('@/assets/images/vdsub.gif')}
               style={styles.demoGif}
               resizeMode="contain"
             />
@@ -613,11 +613,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   demoGif: {
-    width: width - 48, // Largeur écran moins padding
-    height: width * 0.8, // Ratio carré/rectangulaire
-    maxHeight: 350,
+    width: width - 32,      // Réduit le padding (était 48)
+    height: width * 0.9,    // Augmente la hauteur (était 0.8)
+    maxHeight: 400,         // Augmente la hauteur max (était 350)
     alignSelf: 'center',
-    marginVertical: 32,
+    marginVertical: 24,     // Réduit l'espace vertical (était 32)
     borderRadius: 20,
   },
   checkoutLoadingContainer: {
