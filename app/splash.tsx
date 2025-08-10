@@ -73,7 +73,6 @@ export default function SplashScreen() {
           resizeMode="contain"
         />
         <Text style={styles.title}>SOMMIA</Text>
-        <Text style={styles.tagline}>Ton Sommelier Personnel</Text>
       </Animated.View>
     </LinearGradient>
   );
@@ -99,11 +98,5 @@ const styles = StyleSheet.create({
     color: Colors.accent,
     marginBottom: 8,
     letterSpacing: 2,
-  },
-  tagline: {
-    fontSize: Typography.sizes.base,
-    color: Colors.accent,
-    opacity: 0.9,
-    textAlign: 'center',
   },
 });
