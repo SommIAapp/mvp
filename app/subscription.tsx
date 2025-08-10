@@ -213,11 +213,7 @@ export default function SubscriptionScreen() {
         )}
         
         <View style={styles.headerContent}>
-        {reason === 'trial_signup' ? (
-          <Text style={styles.mainTitle}>
-            Trouve le vin parfait
-          </Text>
-        ) : (
+        {reason !== 'trial_signup' && (
           <>
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{contentConfig.badge}</Text>
