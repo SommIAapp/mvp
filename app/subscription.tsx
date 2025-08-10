@@ -226,9 +226,6 @@ export default function SubscriptionScreen() {
           </>
         )}
         {reason !== 'trial_signup' && (
-          <Text style={styles.title}>{contentConfig.title}</Text>
-        )}
-        </View>
       </View>
 
       <View style={styles.content}>
@@ -240,15 +237,13 @@ export default function SubscriptionScreen() {
               resizeMode="contain"
             />
 
-            <View style={styles.offerBox}>
-              <Text style={styles.offerTitle}>Essai gratuit 7 jours</Text>
-              <Text style={styles.offerSubtitle}>Puis seulement 4,99€/mois</Text>
-              <Text style={styles.offerDetail}>Annule à tout moment</Text>
-            </View>
+            <Text style={styles.trialText}>
+              Essai gratuit 7 jours
+            </Text>
 
             <View style={styles.buttonSection}>
               <Button
-                title={(loading || contentConfig.loading) ? "Chargement..." : contentConfig.buttonTitle}
+                title={(loading || contentConfig.loading) ? "Chargement..." : "Commencer"}
                 onPress={contentConfig.onPress}
                 variant="primary"
                 size="large"
@@ -410,14 +405,6 @@ const styles = StyleSheet.create({
   headerContent: {
     flex: 1,
     alignItems: 'center',
-  },
-  mainTitle: {
-    fontSize: Typography.sizes.xxl + 4,
-    fontWeight: Typography.weights.bold,
-    color: Colors.textPrimary,
-    textAlign: 'center',
-    marginBottom: 16,
-    lineHeight: Typography.sizes.xxl * 1.2,
   },
   badge: {
     flexDirection: 'row',
@@ -613,12 +600,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   demoGif: {
-    width: width - 32,      // Réduit le padding (était 48)
-    height: width * 0.9,    // Augmente la hauteur (était 0.8)
-    maxHeight: 400,         // Augmente la hauteur max (était 350)
+    width: width - 24,
+    height: height * 0.5,
+    maxHeight: 500,
     alignSelf: 'center',
-    marginVertical: 24,     // Réduit l'espace vertical (était 32)
+    marginTop: 60,
+    marginBottom: 40,
     borderRadius: 20,
+  },
+  trialText: {
+    fontSize: Typography.sizes.xl,
+    fontWeight: Typography.weights.bold,
+    color: Colors.primary,
+    textAlign: 'center',
+    marginBottom: 32,
   },
   checkoutLoadingContainer: {
     flex: 1,
