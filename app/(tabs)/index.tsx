@@ -361,25 +361,21 @@ export default function HomeScreen() {
           colors={['#6B2B3A', '#8B4B5A']}
           style={styles.headerGradient}
         >
-          {/* Logo et Avatar */}
-          <View style={styles.headerTop}>
-            <View style={styles.logoContainer}>
-              <View style={styles.logoBox}>
-                <Text style={styles.logoS}>S</Text>
-              </View>
-              <Text style={styles.logoText}>SOMMIA</Text>
-            </View>
-            <TouchableOpacity 
-              style={styles.avatarButton}
-              onPress={() => router.push('/(tabs)/profile')}
-            >
-              <User size={24} color="white" />
-            </TouchableOpacity>
-          </View>
+          {/* Titre SOMMIA centré */}
+          <Text style={styles.headerTitle}>SOMMIA</Text>
+          
+          {/* Avatar à droite */}
+          <TouchableOpacity 
+            style={styles.avatarButton}
+            onPress={() => router.push('/(tabs)/profile')}
+          >
+            <User size={24} color="white" />
+          </TouchableOpacity>
 
-          {/* Greeting */}
-          <Text style={styles.greeting}>Bonjour {firstName}</Text>
-          <Text style={styles.question}>Qu'est-ce qu'on mange aujourd'hui ?</Text>
+          {/* Question principale */}
+          <Text style={styles.mainQuestion}>
+            Quel est ton plat ? Je trouve le vin idéal
+          </Text>
         </LinearGradient>
 
         {/* Vague SVG */}
@@ -402,7 +398,7 @@ export default function HomeScreen() {
         <View style={styles.inputCard}>
           <TextInput
             style={styles.input}
-            placeholder="Décris ton plat..."
+            placeholder="Décris ton plat ou prends-le en photo"
             placeholderTextColor="#999"
             value={dishDescription}
             onChangeText={setDishDescription}
@@ -477,37 +473,19 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 40,
+    position: 'relative',
   },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logoBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  logoS: {
-    fontSize: 20,
+  headerTitle: {
+    fontSize: 24,
     fontWeight: '700',
     color: 'white',
-  },
-  logoText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: 'white',
+    textAlign: 'center',
     letterSpacing: 1,
   },
   avatarButton: {
+    position: 'absolute',
+    top: 60,
+    right: 20,
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -515,17 +493,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  greeting: {
-    fontSize: 16,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 24,
-  },
-  question: {
-    fontSize: 26,
+  mainQuestion: {
+    fontSize: 24,
     fontWeight: '700',
     color: 'white',
-    marginTop: 4,
+    textAlign: 'center',
     lineHeight: 32,
+    paddingHorizontal: 40,
+    marginTop: 20,
+    marginBottom: 40,
   },
   wave: {
     position: 'absolute',
