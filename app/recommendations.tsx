@@ -36,10 +36,22 @@ export default function RecommendationsScreen() {
   const [currentWine, setCurrentWine] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(1));
+  const [showSwipeHint, setShowSwipeHint] = useState(true);
 
   useEffect(() => {
     loadRecommendations();
   }, []);
+
+  useEffect(() => {
+    // Faire disparaître l'indicateur après 3 secondes
+    if (recommendations.length > 1 && showSwipeHint) {
+      const timer = setTimeout(() => {
+        setShowSwipeHint(false);
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [recommendations.length, showSwipeHint]);
 
   const loadRecommendations = async () => {
     setLoading(true);
@@ -110,11 +122,13 @@ export default function RecommendationsScreen() {
 
   const nextWine = () => {
     const nextIndex = (currentWine + 1) % recommendations.length;
+    setShowSwipeHint(false);
     goToWine(nextIndex);
   };
 
   const prevWine = () => {
     const prevIndex = (currentWine - 1 + recommendations.length) % recommendations.length;
+    setShowSwipeHint(false);
     goToWine(prevIndex);
   };
 
@@ -290,12 +304,19 @@ export default function RecommendationsScreen() {
         </View>
 
         {/* Indicateur de swipe au premier usage */}
-        {recommendations.length > 1 && currentWine === 0 && (
-          <View style={styles.swipeHint}>
+        {recommendations.length > 1 && currentWine === 0 && showSwipeHint && (
+          <Animated.View 
+            style={[
+              styles.swipeHint,
+              {
+                opacity: fadeAnim // Utilise la même animation de fade
+              }
+            ]}
+          >
             <Text style={styles.swipeHintText}>
               ← Swipe pour voir plus →
             </Text>
-          </View>
+          </Animated.View>
         )}
       </View>
 
