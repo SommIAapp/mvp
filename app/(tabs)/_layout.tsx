@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Tabs } from 'expo-router';
-import { Chrome as Home, Clock, User, Utensils } from 'lucide-react-native';
+import { House, Clock, User, Utensils } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 
@@ -38,7 +38,7 @@ export default function TabLayout() {
         options={{
           title: 'Maison',
           tabBarIcon: ({ size, color }) => (
-            <Home size={size} color={color} />
+            <House size={size} color={color} />
           ),
         }}
       />
