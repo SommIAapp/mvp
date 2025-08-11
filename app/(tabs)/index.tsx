@@ -371,23 +371,18 @@ export default function HomeScreen() {
           >
             <User size={24} color="white" />
           </TouchableOpacity>
-
-          {/* Question principale */}
-          <Text style={styles.mainQuestion}>
-            Quel est ton plat ? Je trouve le vin idéal
-          </Text>
         </LinearGradient>
 
         {/* Vague SVG */}
         <Svg
-          height="40"
+          height="30"
           width="100%"
-          viewBox="0 0 400 40"
+          viewBox="0 0 400 30"
           style={styles.wave}
           preserveAspectRatio="none"
         >
           <Path
-            d="M0,20 Q100,0 200,15 T400,20 L400,40 L0,40 Z"
+            d="M0,15 Q100,0 200,10 T400,15 L400,30 L0,30 Z"
             fill="#FAF6F0"
           />
         </Svg>
@@ -472,15 +467,17 @@ const styles = StyleSheet.create({
   headerGradient: {
     paddingTop: 60,
     paddingHorizontal: 20,
-    paddingBottom: 40,
+    paddingBottom: 30,
     position: 'relative',
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 36,
     fontWeight: '700',
     color: 'white',
     textAlign: 'center',
-    letterSpacing: 1,
+    letterSpacing: 1.5,
+    marginTop: 60,
+    marginBottom: 40,
   },
   avatarButton: {
     position: 'absolute',
@@ -492,16 +489,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  mainQuestion: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: 'white',
-    textAlign: 'center',
-    lineHeight: 32,
-    paddingHorizontal: 40,
-    marginTop: 20,
-    marginBottom: 40,
   },
   wave: {
     position: 'absolute',
