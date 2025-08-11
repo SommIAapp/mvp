@@ -73,6 +73,10 @@ export default function RecommendationsScreen() {
       case 'white':
         return ['#C4B590', '#D4C5A0'];
       case 'sparkling':
+      case 'champagne':
+      case 'pétillant':
+      case 'mousseux':
+      case 'crémant':
         return ['#D4AF37', '#E4BF47'];
       default:
         return ['#6B2B3A', '#8B4B5A'];
@@ -114,6 +118,12 @@ export default function RecommendationsScreen() {
       case 'blanc':
       case 'white':
         return require('@/assets/images/blanc.png/blanc.png');
+      case 'sparkling':
+      case 'champagne':
+      case 'pétillant':
+      case 'mousseux':
+      case 'crémant':
+        return require('@/assets/images/champagne.png/champagne.png');
       default:
         return require('@/assets/images/rouge.png/rouge.png');
     }
@@ -236,8 +246,11 @@ export default function RecommendationsScreen() {
               styles.dot,
               currentWine === index && styles.activeDot,
               currentWine === index && {
-                backgroundColor: wine.color === 'rosé' ? '#F5B5A3' : 
-                                wine.color === 'rouge' ? '#A0616A' : '#D4C5A0'
+                backgroundColor: 
+                  wine.color === 'rosé' ? '#F5B5A3' : 
+                  wine.color === 'rouge' ? '#A0616A' : 
+                  wine.color === 'blanc' ? '#D4C5A0' :
+                  wine.color === 'sparkling' ? '#D4AF37' : '#D4C5A0'
               }
             ]}
           />
@@ -268,7 +281,8 @@ export default function RecommendationsScreen() {
               <Text style={styles.infoValue}>
                 {wine.color === 'rosé' ? 'Rosé' : 
                  wine.color === 'rouge' ? 'Rouge' : 
-                 wine.color === 'blanc' ? 'Blanc' : wine.color}
+                 wine.color === 'blanc' ? 'Blanc' : 
+                 wine.color === 'sparkling' ? 'Pétillant' : wine.color}
               </Text>
             </View>
           </View>
