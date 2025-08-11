@@ -258,10 +258,10 @@ export default function ProfileScreen() {
               Déconnexion
             </Text>
           </TouchableOpacity>
+        </View>
       </ScrollView>
     </View>
   );
-    <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
 }
 
 const styles = StyleSheet.create({
