@@ -3,17 +3,20 @@ import {
   View, 
   Text, 
   StyleSheet, 
-  ScrollView, 
   TouchableOpacity,
-  RefreshControl 
+  Dimensions,
+  Image,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, Star, Camera } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { ArrowLeft, Camera } from 'lucide-react-native';
+import Svg, { Path } from 'react-native-svg';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
-import { Button } from '@/components/Button';
-import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useRecommendations, type WineRecommendation } from '@/hooks/useRecommendations';
+
+const { width, height } = Dimensions.get('window');
 
 export default function RecommendationsScreen() {
   const router = useRouter();
@@ -25,10 +28,12 @@ export default function RecommendationsScreen() {
     photoMode?: string;
     visionConfidence?: string;
   }>();
+  
   const { getRecommendations } = useRecommendations();
   const [recommendations, setRecommendations] = useState<WineRecommendation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [currentWine, setCurrentWine] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
     loadRecommendations();
@@ -36,16 +41,11 @@ export default function RecommendationsScreen() {
 
   const loadRecommendations = async () => {
     setLoading(true);
-    
     try {
       if (recommendationsParam) {
-        console.log('📚 loadRecommendations - Loading from', fromHistory === 'true' ? 'history' : 'params');
-        // Use passed recommendations
         const parsedRecommendations = JSON.parse(recommendationsParam);
         setRecommendations(parsedRecommendations);
       } else {
-        console.log('🤖 loadRecommendations - Fetching new recommendations');
-        // Fetch new recommendations
         const newRecommendations = await getRecommendations(
           dish,
           budget ? parseInt(budget) : undefined
@@ -60,176 +60,231 @@ export default function RecommendationsScreen() {
     }
   };
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadRecommendations();
-    setRefreshing(false);
-  };
-
-  const getCategoryColor = (category: string) => {
-    // Return background color based on wine color instead of category
-    return Colors.textSecondary; // This will be overridden by getWineColorBackground
-  };
-
-  const getWineColorBackground = (color: string) => {
-    switch (color) {
-      case 'blanc': return '#F5F5DC';
-      case 'rouge': return '#722F37';
-      case 'sparkling': return '#D4AF37';
-      case 'rosé': return '#FFB6C1';
-      default: return '#F5F5DC';
+  // Fonction pour obtenir le gradient selon la couleur du vin
+  const getHeaderGradient = (color: string) => {
+    switch(color.toLowerCase()) {
+      case 'rosé':
+      case 'rose':
+        return ['#E5A593', '#F5B5A3'];
+      case 'rouge':
+      case 'red':
+        return ['#90515A', '#A0616A'];
+      case 'blanc':
+      case 'white':
+        return ['#C4B590', '#D4C5A0'];
+      case 'sparkling':
+        return ['#D4AF37', '#E4BF47'];
+      default:
+        return ['#6B2B3A', '#8B4B5A'];
     }
   };
 
-  const getCategoryBadgeTextColor = (color: string) => {
-    switch (color) {
-      case 'blanc': return '#333';
-      case 'rouge': return '#FFF';
-      case 'sparkling': return '#333';
-      case 'rosé': return '#333';
-      default: return '#333';
+  // Navigation entre vins
+  const goToWine = (index: number) => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setCurrentWine(index);
+    setTimeout(() => setIsTransitioning(false), 300);
+  };
+
+  const nextWine = () => {
+    const nextIndex = (currentWine + 1) % recommendations.length;
+    goToWine(nextIndex);
+  };
+
+  const prevWine = () => {
+    const prevIndex = (currentWine - 1 + recommendations.length) % recommendations.length;
+    goToWine(prevIndex);
+  };
+
+  // Nouveau scan
+  const handleNewScan = () => {
+    router.replace('/(tabs)');
+  };
+
+  // Mapping des images CORRIGÉ avec les bons chemins
+  const getWineImage = (color: string) => {
+    switch(color.toLowerCase()) {
+      case 'rosé':
+      case 'rose':
+        return require('@/assets/images/rose.png/rose.png');
+      case 'rouge':
+      case 'red':
+        return require('@/assets/images/rouge.png/rouge.png');
+      case 'blanc':
+      case 'white':
+        return require('@/assets/images/blanc.png/blanc.png');
+      default:
+        return require('@/assets/images/rouge.png/rouge.png');
     }
-  };
-
-  const getCategoryLabel = (category: string) => {
-    switch (category) {
-      case 'economique': return 'Économique';
-      case 'qualite-prix': return 'Qualité-Prix';
-      case 'premium': return 'Premium';
-      default: return category;
-    }
-  };
-
-  const renderStars = (rating: number) => {
-    const stars = Math.round(rating / 20); // Convert 100-point scale to 5-star
-    return (
-      <View style={styles.starsContainer}>
-        {[...Array(5)].map((_, index) => (
-          <Star
-            key={index}
-            size={16}
-            color={index < stars ? Colors.secondary : Colors.textLight}
-            fill={index < stars ? Colors.secondary : 'transparent'}
-          />
-        ))}
-        <Text style={styles.ratingText}>{rating}/100</Text>
-      </View>
-    );
-  };
-
-  const handleWinePress = (wine: WineRecommendation) => {
-    router.push({
-      pathname: '/wine-detail',
-      params: {
-        wine: JSON.stringify(wine),
-        dish: dish,
-        budget: budget || '',
-      },
-    });
   };
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <LoadingSpinner text="Recommandation en cours..." />
+        <ActivityIndicator size="large" color={Colors.primary} />
+        <Text style={styles.loadingText}>Recommandations en cours...</Text>
       </View>
     );
   }
 
+  if (recommendations.length === 0) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Aucune recommandation trouvée</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={handleNewScan}>
+          <Text style={styles.retryButtonText}>Réessayer</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const wine = recommendations[currentWine];
+  const prevWineData = recommendations[(currentWine - 1 + recommendations.length) % recommendations.length];
+  const nextWineData = recommendations[(currentWine + 1) % recommendations.length];
+
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => router.back()}
+      {/* HEADER avec gradient - 27% */}
+      <View style={styles.headerSection}>
+        <LinearGradient
+          colors={getHeaderGradient(wine.color)}
+          style={styles.headerGradient}
         >
-          <ArrowLeft size={24} color={Colors.primary} />
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>
-            {photoMode === 'true' ? 'Mes recommandations' : 'Mes recommandations'}
-          </Text>
-          <Text style={styles.headerSubtitle}>
-            {fromHistory === 'true' ? 'Historique • ' : ''}
-            {photoMode === 'true' ? 'Pour votre plat photographié' : `Pour ${dish}`}
-            {budget && ` • Budget: €${budget}`}
-          </Text>
+          {/* Flèche retour */}
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <ArrowLeft size={24} color="white" />
+          </TouchableOpacity>
+
+          {/* Nom et millésime du vin */}
+          <View style={styles.headerContent}>
+            <Text style={styles.wineName}>{wine.name}</Text>
+            <Text style={styles.vintage}>{wine.vintage || new Date().getFullYear()}</Text>
+          </View>
+        </LinearGradient>
+
+        {/* Vague SVG */}
+        <Svg
+          height={40}
+          width="100%"
+          viewBox="0 0 400 40"
+          style={styles.wave}
+          preserveAspectRatio="none"
+        >
+          <Path
+            d="M0,20 Q100,0 200,15 T400,20 L400,40 L0,40 Z"
+            fill="#FAF6F0"
+          />
+        </Svg>
+      </View>
+
+      {/* SECTION BOUTEILLES - 38% */}
+      <View style={styles.bottlesSection}>
+        {/* Zones tactiles invisibles */}
+        <TouchableOpacity 
+          style={[styles.touchZone, styles.leftZone]}
+          onPress={prevWine}
+          activeOpacity={1}
+        />
+        <TouchableOpacity 
+          style={[styles.touchZone, styles.rightZone]}
+          onPress={nextWine}
+          activeOpacity={1}
+        />
+
+        {/* Container des 3 bouteilles */}
+        <View style={styles.bottlesWrapper}>
+          {/* Bouteille gauche */}
+          <View style={styles.sideBottleContainer}>
+            <Image
+              source={getWineImage(prevWineData.color)}
+              style={styles.sideBottle}
+              resizeMode="contain"
+            />
+          </View>
+
+          {/* Bouteille centrale */}
+          <View style={styles.centerBottleContainer}>
+            <Image
+              source={getWineImage(wine.color)}
+              style={styles.centerBottle}
+              resizeMode="contain"
+            />
+          </View>
+
+          {/* Bouteille droite */}
+          <View style={styles.sideBottleContainer}>
+            <Image
+              source={getWineImage(nextWineData.color)}
+              style={styles.sideBottle}
+              resizeMode="contain"
+            />
+          </View>
         </View>
       </View>
 
-      {photoMode === 'true' && (
-        <View style={styles.photoModeIndicator}>
-          <Camera size={20} color={Colors.primary} />
-          <Text style={styles.photoModeText}>
-            🤖 Plat identifié par IA
-            {visionConfidence && (
-              <Text style={styles.visionConfidenceText}>
-                {' '}avec {visionConfidence}% de confiance
-              </Text>
-            )}
-          </Text>
-        </View>
-      )}
-
-      <ScrollView 
-        style={styles.content}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        showsVerticalScrollIndicator={false}
-      >
-        {recommendations.map((wine, index) => (
+      {/* DOTS DE NAVIGATION - 5% */}
+      <View style={styles.dotsContainer}>
+        {recommendations.map((_, index) => (
           <TouchableOpacity
-            key={wine.id || index}
-            style={styles.wineCard}
-            onPress={() => handleWinePress(wine)}
-            activeOpacity={0.8}
-          >
-            <View style={styles.cardHeader}>
-              <View style={[
-                styles.categoryBadge,
-                { 
-                  backgroundColor: getWineColorBackground(wine.color),
-                  borderColor: getWineColorBackground(wine.color)
-                }
-              ]}>
-                <Text style={[
-                  styles.categoryText,
-                  { color: getCategoryBadgeTextColor(wine.color) }
-                ]}>
-                  {getCategoryLabel(wine.category)}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.cardContent}>
-              <Text style={styles.wineName}>{wine.name}</Text>
-              <Text style={styles.wineProducer}>
-                {wine.producer} • {wine.region}
-              </Text>
-              
-              <View style={styles.priceRatingRow}>
-                <Text style={styles.winePrice}>
-                  €{wine.price_estimate ? 
-                    (Number.isInteger(wine.price_estimate) ? 
-                      wine.price_estimate.toString() : 
-                      wine.price_estimate.toFixed(2)
-                    ) : '0'
-                  }
-                </Text>
-                {renderStars(wine.rating)}
-              </View>
-
-              <Text style={styles.reasoning} numberOfLines={2}>
-                {wine.reasoning.length > 80 
-                  ? wine.reasoning.substring(0, 80) + '...' 
-                  : wine.reasoning
-                }
-              </Text>
-            </View>
-          </TouchableOpacity>
+            key={index}
+            onPress={() => goToWine(index)}
+            style={[
+              styles.dot,
+              currentWine === index && styles.activeDot,
+              currentWine === index && {
+                backgroundColor: wine.color === 'rosé' ? '#F5B5A3' : 
+                                wine.color === 'rouge' ? '#A0616A' : '#D4C5A0'
+              }
+            ]}
+          />
         ))}
-      </ScrollView>
+      </View>
+
+      {/* INFORMATIONS VIN - 20% */}
+      <View style={styles.infoSection}>
+        <View style={styles.infoCard}>
+          <View style={styles.infoGrid}>
+            {/* Région */}
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>RÉGION</Text>
+              <Text style={styles.infoValue}>{wine.region}</Text>
+            </View>
+
+            {/* Prix */}
+            <View style={[styles.infoItem, styles.infoItemCenter]}>
+              <Text style={styles.infoLabel}>PRIX</Text>
+              <Text style={styles.infoPriceValue}>
+                {wine.price_estimate ? wine.price_estimate.toFixed(0) : '0'}€
+              </Text>
+            </View>
+
+            {/* Type */}
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>TYPE</Text>
+              <Text style={styles.infoValue}>
+                {wine.color === 'rosé' ? 'Rosé' : 
+                 wine.color === 'rouge' ? 'Rouge' : 
+                 wine.color === 'blanc' ? 'Blanc' : wine.color}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {/* BOUTON NOUVEAU SCAN - 10% */}
+      <View style={styles.buttonSection}>
+        <TouchableOpacity 
+          style={styles.scanButton}
+          onPress={handleNewScan}
+        >
+          <Camera size={20} color="white" />
+          <Text style={styles.scanButtonText}>Nouveau Scan</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -237,141 +292,223 @@ export default function RecommendationsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.accent,
+    backgroundColor: '#FAF6F0',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.accent,
+    backgroundColor: '#FAF6F0',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.softGray,
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: Colors.textSecondary,
   },
-  backButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: Colors.softGray,
+  errorContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    backgroundColor: '#FAF6F0',
+    paddingHorizontal: 40,
+  },
+  errorText: {
+    fontSize: 18,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  retryButton: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 26,
+  },
+  retryButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  
+  // Header - 27%
+  headerSection: {
+    height: height * 0.27,
+    position: 'relative',
+  },
+  headerGradient: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
   },
   headerContent: {
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  wineName: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: 'white',
+    textAlign: 'center',
+    marginBottom: 8,
+    paddingHorizontal: 40,
+  },
+  vintage: {
+    fontSize: 20,
+    color: 'rgba(255,255,255,0.9)',
+    fontWeight: '500',
+  },
+  wave: {
+    position: 'absolute',
+    bottom: -1,
+    left: 0,
+    right: 0,
+  },
+
+  // Bouteilles - 38%
+  bottlesSection: {
+    height: height * 0.38,
+    position: 'relative',
+    justifyContent: 'center',
+  },
+  touchZone: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: width * 0.33,
+    zIndex: 10,
+  },
+  leftZone: {
+    left: 0,
+  },
+  rightZone: {
+    right: 0,
+  },
+  bottlesWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  sideBottleContainer: {
     flex: 1,
+    alignItems: 'center',
   },
-  headerTitle: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.bold,
-    color: Colors.textPrimary,
+  centerBottleContainer: {
+    flex: 1.2,
+    alignItems: 'center',
   },
-  headerSubtitle: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.textSecondary,
-    marginTop: 2,
+  sideBottle: {
+    width: 85,
+    height: 255,
+    opacity: 0.7,
   },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 16,
+  centerBottle: {
+    width: 100,
+    height: 300,
   },
-  wineCard: {
-    backgroundColor: Colors.accent,
-    borderRadius: 16,
+
+  // Dots - 5%
+  dotsContainer: {
+    height: height * 0.05,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#E0D5D0',
+  },
+  activeDot: {
+    width: 20,
+    height: 6,
+  },
+
+  // Info - 20%
+  infoSection: {
+    height: height * 0.2,
+    paddingHorizontal: 20,
+    justifyContent: 'center',
+  },
+  infoCard: {
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderRadius: 20,
     padding: 20,
-    marginBottom: 16,
-    shadowColor: Colors.darkGray,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
-    position: 'relative',
   },
-  cardHeader: {
+  infoGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  categoryBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  categoryText: {
-    fontSize: Typography.sizes.xs,
-    fontWeight: Typography.weights.semibold,
-  },
-  cardContent: {
-    flex: 1,
-  },
-  wineName: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.bold,
-    color: Colors.textPrimary,
     marginBottom: 4,
   },
-  wineProducer: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.textSecondary,
-    marginBottom: 12,
-  },
-  priceRatingRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  winePrice: {
-    fontSize: Typography.sizes.xl,
-    fontWeight: Typography.weights.bold,
-    color: Colors.primary,
-  },
-  starsContainer: {
-    flexDirection: 'row',
+  infoItem: {
+    flex: 1,
     alignItems: 'center',
   },
-  ratingText: {
-    fontSize: Typography.sizes.xs,
-    color: Colors.textSecondary,
-    marginLeft: 8,
+  infoItemCenter: {
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: '#E0E0E0',
   },
-  reasoning: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.textSecondary,
-    lineHeight: Typography.sizes.sm * Typography.lineHeights.relaxed,
+  infoLabel: {
+    fontSize: 11,
+    color: '#999',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+    fontWeight: '600',
   },
-  photoModeIndicator: {
+  infoValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  infoPriceValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#333',
+  },
+
+  // Button - 10%
+  buttonSection: {
+    height: height * 0.1,
+    paddingHorizontal: 20,
+    justifyContent: 'center',
+  },
+  scanButton: {
+    backgroundColor: '#6B2B3A',
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.softGray,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginHorizontal: 24,
-    marginBottom: 16,
-    borderRadius: 12,
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: 26,
+    gap: 12,
+    shadowColor: '#6B2B3A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 5,
   },
-  photoModeText: {
-    fontSize: Typography.sizes.sm,
-    fontWeight: Typography.weights.medium,
-    color: Colors.textPrimary,
-    marginLeft: 8,
-  },
-  visionConfidenceText: {
-    fontSize: Typography.sizes.sm,
-    fontWeight: Typography.weights.regular,
-    color: Colors.textSecondary,
+  scanButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
   },
 });
