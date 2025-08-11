@@ -7,6 +7,7 @@ import {
   Dimensions,
   Image,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -34,6 +35,7 @@ export default function RecommendationsScreen() {
   const [loading, setLoading] = useState(true);
   const [currentWine, setCurrentWine] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [fadeAnim] = useState(new Animated.Value(1));
 
   useEffect(() => {
     loadRecommendations();
@@ -87,8 +89,23 @@ export default function RecommendationsScreen() {
   const goToWine = (index: number) => {
     if (isTransitioning) return;
     setIsTransitioning(true);
-    setCurrentWine(index);
-    setTimeout(() => setIsTransitioning(false), 300);
+    
+    // Fade out
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(() => {
+      setCurrentWine(index);
+      // Fade in
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }).start(() => {
+        setIsTransitioning(false);
+      });
+    });
   };
 
   const nextWine = () => {
@@ -127,6 +144,36 @@ export default function RecommendationsScreen() {
       default:
         return require('@/assets/images/rouge.png/rouge.png');
     }
+  };
+
+  // Fonction pour extraire juste le nom du vin (enlève la région si elle est dans le nom)
+  const getCleanWineName = (wine: WineRecommendation) => {
+    let cleanName = wine.name;
+    
+    // Enlève les patterns courants : ", Bordeaux", " - Bordeaux", " Bordeaux", etc.
+    const regionPatterns = [
+      `, ${wine.region}`,
+      ` - ${wine.region}`,
+      ` ${wine.region}`,
+      ', Bordeaux',
+      ', Bourgogne',
+      ', Loire',
+      ', Provence',
+      ' AOC',
+      ' AOP',
+    ];
+    
+    regionPatterns.forEach(pattern => {
+      if (cleanName.includes(pattern)) {
+        cleanName = cleanName.replace(pattern, '');
+      }
+    });
+    
+    // Enlève aussi le millésime s'il est dans le nom
+    const yearPattern = / \d{4}$/;
+    cleanName = cleanName.replace(yearPattern, '');
+    
+    return cleanName.trim();
   };
 
   if (loading) {
@@ -170,10 +217,17 @@ export default function RecommendationsScreen() {
           </TouchableOpacity>
 
           {/* Nom et millésime du vin */}
-          <View style={styles.headerContent}>
-            <Text style={styles.wineName}>{wine.name}</Text>
+          <Animated.View style={[styles.headerContent, { opacity: fadeAnim }]}>
+            <Text 
+              style={styles.wineName} 
+              numberOfLines={2}
+              adjustsFontSizeToFit
+              minimumFontScale={0.7}
+            >
+              {getCleanWineName(wine)}
+            </Text>
             <Text style={styles.vintage}>{wine.vintage || new Date().getFullYear()}</Text>
-          </View>
+          </Animated.View>
         </LinearGradient>
 
         {/* Vague SVG */}
@@ -234,6 +288,15 @@ export default function RecommendationsScreen() {
             />
           </View>
         </View>
+
+        {/* Indicateur de swipe au premier usage */}
+        {recommendations.length > 1 && currentWine === 0 && (
+          <View style={styles.swipeHint}>
+            <Text style={styles.swipeHintText}>
+              ← Swipe pour voir plus →
+            </Text>
+          </View>
+        )}
       </View>
 
       {/* DOTS DE NAVIGATION - 5% */}
@@ -259,34 +322,43 @@ export default function RecommendationsScreen() {
 
       {/* INFORMATIONS VIN - 20% */}
       <View style={styles.infoSection}>
-        <View style={styles.infoCard}>
-          <View style={styles.infoGrid}>
-            {/* Région */}
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>RÉGION</Text>
-              <Text style={styles.infoValue}>{wine.region}</Text>
-            </View>
+        <Animated.View style={{ opacity: fadeAnim }}>
+          <View style={styles.infoCard}>
+            <View style={styles.infoGrid}>
+              {/* Région */}
+              <View style={styles.infoItem}>
+                <Text style={styles.infoLabel}>RÉGION</Text>
+                <Text style={styles.infoValue}>{wine.region}</Text>
+              </View>
 
-            {/* Prix */}
-            <View style={[styles.infoItem, styles.infoItemCenter]}>
-              <Text style={styles.infoLabel}>PRIX</Text>
-              <Text style={styles.infoPriceValue}>
-                {wine.price_estimate ? wine.price_estimate.toFixed(0) : '0'}€
-              </Text>
-            </View>
+              {/* Prix */}
+              <View style={[styles.infoItem, styles.infoItemCenter]}>
+                <Text style={styles.infoLabel}>PRIX</Text>
+                <Text style={styles.infoPriceValue}>
+                  {Math.round(wine.price_estimate || 0)}€
+                </Text>
+              </View>
 
-            {/* Type */}
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>TYPE</Text>
-              <Text style={styles.infoValue}>
-                {wine.color === 'rosé' ? 'Rosé' : 
-                 wine.color === 'rouge' ? 'Rouge' : 
-                 wine.color === 'blanc' ? 'Blanc' : 
-                 wine.color === 'sparkling' ? 'Pétillant' : wine.color}
-              </Text>
+              {/* Type */}
+              <View style={styles.infoItem}>
+                <Text style={styles.infoLabel}>TYPE</Text>
+                <Text style={styles.infoValue}>
+                  {wine.color === 'rosé' ? 'Rosé' : 
+                   wine.color === 'rouge' ? 'Rouge' : 
+                   wine.color === 'blanc' ? 'Blanc' : 
+                   wine.color === 'sparkling' ? 'Pétillant' : wine.color}
+                </Text>
+              </View>
             </View>
+            
+            {/* Reasoning/Description */}
+            {wine.reasoning && (
+              <Text style={styles.reasoning} numberOfLines={3}>
+                {wine.reasoning}
+              </Text>
+            )}
           </View>
-        </View>
+        </Animated.View>
       </View>
 
       {/* BOUTON NOUVEAU SCAN - 10% */}
@@ -372,12 +444,13 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   wineName: {
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: '700',
     color: 'white',
     textAlign: 'center',
     marginBottom: 8,
-    paddingHorizontal: 40,
+    paddingHorizontal: 30,
+    letterSpacing: -0.5,
   },
   vintage: {
     fontSize: 20,
@@ -414,7 +487,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: width < 375 ? 10 : 20,
   },
   sideBottleContainer: {
     flex: 1,
@@ -425,13 +498,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sideBottle: {
-    width: 85,
-    height: 255,
+    width: width < 375 ? 75 : 85,
+    height: width < 375 ? 225 : 255,
     opacity: 0.7,
   },
   centerBottle: {
-    width: 100,
-    height: 300,
+    width: width < 375 ? 90 : 100,
+    height: width < 375 ? 270 : 300,
+  },
+
+  // Swipe hint
+  swipeHint: {
+    position: 'absolute',
+    bottom: '45%',
+    alignSelf: 'center',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 20,
+    zIndex: 20,
+  },
+  swipeHintText: {
+    color: 'white',
+    fontSize: 14,
   },
 
   // Dots - 5%
@@ -498,6 +587,14 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     color: '#333',
+  },
+  reasoning: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+    textAlign: 'center',
+    marginTop: 12,
+    paddingHorizontal: 8,
   },
 
   // Button - 10%
