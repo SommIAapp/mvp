@@ -536,6 +536,8 @@ export default function RestaurantScreen() {
       <View style={styles.headerSection}>
         <LinearGradient
           colors={['#6B2B3A', '#8B4B5A']}
+          style={styles.headerGradient}
+        >
         </LinearGradient>
         
         {/* Vague SVG */}
@@ -592,6 +594,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  modeTitle: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: 'white',
+    textAlign: 'center',
+    marginTop: 16,
+  },
+  modeSubtitle: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.8)',
+    textAlign: 'center',
+    marginTop: 8,
   },
   wave: {
     position: 'absolute',
