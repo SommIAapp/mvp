@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.base,
     color: Colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: Typography.sizes.base * Typography.lineHeights.relaxed,
     marginBottom: 32,
   },
   benefitsList: {
