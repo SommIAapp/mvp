@@ -503,7 +503,7 @@ const styles = StyleSheet.create({
   inputCard: {
     backgroundColor: 'white',
     marginHorizontal: 20,
-    marginTop: 30,
+    marginTop: 50,
     borderRadius: 24,
     padding: 16,
     flexDirection: 'row',
