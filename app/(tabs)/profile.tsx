@@ -11,8 +11,6 @@ import { useRouter } from 'expo-router';
 import { User, Crown, Calendar, ChartBar as BarChart3, Settings, LogOut, Wine } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
-import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Path } from 'react-native-svg';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
