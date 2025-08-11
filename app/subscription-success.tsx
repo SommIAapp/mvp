@@ -83,76 +83,54 @@ export default function SubscriptionSuccessScreen() {
     </View>
   );
 }
-          <CheckCircle size={80} color={Colors.primary} />
-        </View>
-
-        <Text style={styles.title}>Bienvenue dans Premium !</Text>
-        
-        <Text style={styles.message}>
-          Ton abonnement SommIA Premium est maintenant actif. 
-          Profite de recommandations illimitées et d'explications détaillées !
-        </Text>
-
-        <View style={styles.benefitsList}>
-          <Text style={styles.benefit}>🍷 Recommandations illimitées</Text>
-          <Text style={styles.benefit}>📱 Explications sommelier détaillées</Text>
-          <Text style={styles.benefit}>🔄 Historique complet de tes découvertes</Text>
-        </View>
-
-        <Button
-          title="Commencer à explorer"
-          onPress={handleContinue}
-          variant="primary"
-          size="large"
-          fullWidth
-        />
-      </View>
-    </View>
-  );
-}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAF6F0',
-  },
-  headerSection: {
-    position: 'relative',
-  },
-  headerGradient: {
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 50,
-  },
-  headerTitle: {
-    fontSize: 36,
-    fontWeight: '700',
-    color: 'white',
-    textAlign: 'center',
-    letterSpacing: 1.5,
-    marginTop: 50,
-  },
-  wave: {
-    position: 'absolute',
-    bottom: -1,
-    left: 0,
-    right: 0,
-  },
-  content: {
-    flex: 1,
+    backgroundColor: Colors.accent,
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
+  headerSection: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1,
+  },
+  headerGradient: {
+    paddingTop: 60,
+    paddingBottom: 20,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: Typography.sizes.xl,
+    fontWeight: Typography.weights.bold,
+    color: Colors.white,
+    letterSpacing: 2,
+  },
+  wave: {
+    marginTop: -1,
+  },
+  content: {
+    alignItems: 'center',
+    paddingTop: 140,
+  },
   successCard: {
-    backgroundColor: 'white',
-    borderRadius: 24,
+    backgroundColor: Colors.white,
+    borderRadius: 20,
     padding: 32,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    elevation: 5,
+    shadowColor: Colors.black,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 8,
+    width: '100%',
+    maxWidth: 400,
   },
   iconContainer: {
     marginBottom: 32,
