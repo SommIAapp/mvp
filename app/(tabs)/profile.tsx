@@ -177,6 +177,7 @@ export default function ProfileScreen() {
         </Svg>
       </View>
 
+      <ScrollView style={styles.content}>
         {/* User Info Section */}
         <View style={styles.userSection}>
           <View style={styles.avatarContainer}>
@@ -265,7 +266,6 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-    }
   container: {
     flex: 1,
     backgroundColor: '#FAF6F0',
