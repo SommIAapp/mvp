@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Tabs } from 'expo-router';
-import { Wine, Clock, User, Utensils } from 'lucide-react-native';
+import { Home, Clock, User, Utensils } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 
@@ -36,9 +36,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Accords',
+          title: 'Maison',
           tabBarIcon: ({ size, color }) => (
-            <Wine size={size} color={color} />
+            <Home size={size} color={color} />
           ),
         }}
       />
