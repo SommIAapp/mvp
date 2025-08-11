@@ -4,6 +4,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Sparkles, Wine, Smartphone, RotateCcw, X, Check, ArrowLeft, Camera, DollarSign, BookOpen } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Video } from 'expo-av';
+import Svg, { Path } from 'react-native-svg';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
@@ -196,36 +197,63 @@ export default function SubscriptionScreen() {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        {reason !== 'trial_signup' && (
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => {
-              if (router.canGoBack()) {
-                router.back();
-              } else {
-                router.replace('/(tabs)');
-              }
-            }}
-          >
-            <ArrowLeft size={24} color={Colors.primary} />
-          </TouchableOpacity>
-        )}
-        
-        <View style={styles.headerContent}>
-        {reason !== 'trial_signup' && (
-          <>
+      {reason !== 'trial_signup' ? (
+        <>
+          {/* Header avec gradient pour les autres cas */}
+          <View style={styles.headerSection}>
+            <LinearGradient
+              colors={['#6B2B3A', '#8B4B5A']}
+              style={styles.headerGradient}
+            >
+              {/* Bouton retour en haut à gauche */}
+              <TouchableOpacity 
+                style={styles.backButtonGradient}
+                onPress={() => {
+                  if (router.canGoBack()) {
+                    router.back();
+                  } else {
+                    router.replace('/(tabs)');
+                  }
+                }}
+              >
+                <ArrowLeft size={24} color="white" />
+              </TouchableOpacity>
+              
+              {/* SOMMIA centré */}
+              <Text style={styles.headerTitle}>SOMMIA</Text>
+            </LinearGradient>
+            
+            {/* Vague SVG */}
+            <Svg
+              height={40}
+              width="100%"
+              viewBox="0 0 400 40"
+              style={styles.wave}
+              preserveAspectRatio="none"
+            >
+              <Path
+                d="M0,20 Q100,0 200,15 T400,20 L400,40 L0,40 Z"
+                fill="#FAF6F0"
+              />
+            </Svg>
+          </View>
+
+          {/* Badge et titre sous la vague */}
+          <View style={styles.headerContent}>
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{contentConfig.badge}</Text>
             </View>
             <Text style={styles.title}>{contentConfig.title}</Text>
-          </>
-        )}
-        {reason !== 'trial_signup' && (
-          <Text style={styles.subtitle}>{contentConfig.subtitle}</Text>
-        )}
-      </View>
-      </View>
+            <Text style={styles.subtitle}>{contentConfig.subtitle}</Text>
+          </View>
+        </>
+      ) : (
+        /* Pour trial_signup, garde le header actuel sans modification */
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
+          </View>
+        </View>
+      )}
 
       <View style={styles.content}>
         {reason === 'trial_signup' ? (
@@ -376,13 +404,48 @@ export default function SubscriptionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.accent,
+    backgroundColor: '#FAF6F0',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: Colors.accent,
+  },
+  headerSection: {
+    position: 'relative',
+  },
+  headerGradient: {
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    paddingBottom: 50,
+    position: 'relative',
+  },
+  backButtonGradient: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  headerTitle: {
+    fontSize: 36,
+    fontWeight: '700',
+    color: 'white',
+    textAlign: 'center',
+    letterSpacing: 1.5,
+    marginTop: 50,
+  },
+  wave: {
+    position: 'absolute',
+    bottom: -1,
+    left: 0,
+    right: 0,
   },
   header: {
     flexDirection: 'row',
@@ -402,8 +465,10 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   headerContent: {
-    flex: 1,
     alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 16,
   },
   badge: {
     flexDirection: 'row',
@@ -449,6 +514,17 @@ const styles = StyleSheet.create({
   },
   benefitsSection: {
     marginBottom: 40,
+  },
+  benefitsSection: {
+    marginBottom: 40,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 5,
   },
   benefit: {
     flexDirection: 'row',
