@@ -429,13 +429,7 @@ export default function RestaurantScreen() {
 
           <View style={styles.scanSection}>
             <View style={styles.scanCard}>
-              <View style={styles.cameraIconContainer}>
-                <Camera size={40} color="#6B2B3A" />
-              </View>
               <Text style={styles.scanTitle}>Photographier la carte des vins</Text>
-              <Text style={styles.scanSubtitle}>
-                L'IA va extraire automatiquement tous les vins disponibles
-              </Text>
               <View style={styles.scanButtons}>
                 <Button
                   title={restaurantLoading ? "Analyse en cours..." : "Scanner la carte"}
@@ -542,24 +536,6 @@ export default function RestaurantScreen() {
       <View style={styles.headerSection}>
         <LinearGradient
           colors={['#6B2B3A', '#8B4B5A']}
-          style={styles.headerGradient}
-        >
-          {/* SOMMIA centré */}
-          <Text style={styles.headerTitle}>SOMMIA</Text>
-          
-          {/* Avatar à droite */}
-          <TouchableOpacity 
-            style={styles.avatarButton}
-            onPress={() => router.push('/(tabs)/profile')}
-          >
-            <User size={24} color="white" />
-          </TouchableOpacity>
-          
-          {/* Titre et sous-titre */}
-          <Text style={styles.modeTitle}>Mode Restaurant</Text>
-          <Text style={styles.modeSubtitle}>
-            Commencez par scanner une carte des vins
-          </Text>
         </LinearGradient>
         
         {/* Vague SVG */}
@@ -596,7 +572,7 @@ const styles = StyleSheet.create({
   headerGradient: {
     paddingTop: 60,
     paddingHorizontal: 20,
-    paddingBottom: 30,
+    paddingBottom: 80,
   },
   headerTitle: {
     fontSize: 36,
@@ -605,7 +581,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 1.5,
     marginTop: 50,
-    marginBottom: 20,
   },
   avatarButton: {
     position: 'absolute',
@@ -617,19 +592,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  modeTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: 'white',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  modeSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255,255,255,0.8)',
-    textAlign: 'center',
-    paddingHorizontal: 40,
   },
   wave: {
     position: 'absolute',
@@ -650,7 +612,7 @@ const styles = StyleSheet.create({
   scanCard: {
     backgroundColor: 'white',
     borderRadius: 24,
-    padding: 32,
+    padding: 24,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -658,28 +620,12 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 5,
   },
-  cameraIconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#FAF6F0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
   scanTitle: {
     fontSize: Typography.sizes.lg,
     fontWeight: Typography.weights.bold,
     color: Colors.textPrimary,
-    marginTop: 16,
     marginBottom: 8,
     textAlign: 'center',
-  },
-  scanSubtitle: {
-    fontSize: Typography.sizes.base,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 24,
   },
   scanButtons: {
     width: '100%',
