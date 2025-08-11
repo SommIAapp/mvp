@@ -258,7 +258,6 @@ export default function ProfileScreen() {
               Déconnexion
             </Text>
           </TouchableOpacity>
-        </View>
       </ScrollView>
     </View>
   );
