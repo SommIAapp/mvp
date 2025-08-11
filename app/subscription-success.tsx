@@ -76,9 +76,11 @@ export default function SubscriptionSuccessScreen() {
             onPress={handleContinue}
             variant="primary"
             size="large"
+        <>
             fullWidth
           />
         </View>
+        </>
       </View>
     </View>
   );
