@@ -16,6 +16,8 @@ import { Camera, Upload, Check, Wine, User, RotateCcw } from 'lucide-react-nativ
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Path } from 'react-native-svg';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
@@ -347,8 +349,17 @@ export default function RestaurantScreen() {
 
     try {
       const results = await getRestaurantRecommendations(dishDescription);
-      setRecommendations(results);
-      setStep('results');
+      
+      // Naviguer vers la page recommendations au lieu de step results
+      router.push({
+        pathname: '/recommendations',
+        params: {
+          mode: 'restaurant',
+          dish: dishDescription,
+          recommendations: JSON.stringify(results),
+          restaurantName: currentSession?.restaurant_name || '',
+        }
+      });
     } catch (error: any) {
       Alert.alert('Erreur', error.message);
     }
@@ -376,32 +387,51 @@ export default function RestaurantScreen() {
   if (step === 'scan') {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Image
-              source={require('../../assets/images/sommia-logo.png')}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
-            <Text style={styles.logo}>SOMMIA</Text>
-          </View>
-          <TouchableOpacity 
-            style={styles.profileButton}
-            onPress={() => router.push('/(tabs)/profile')}
+        <View style={styles.headerSection}>
+          <LinearGradient
+            colors={['#6B2B3A', '#8B4B5A']}
+            style={styles.headerGradient}
           >
-            <User size={24} color={Colors.primary} />
-          </TouchableOpacity>
+            {/* SOMMIA centré */}
+            <Text style={styles.headerTitle}>SOMMIA</Text>
+            
+            {/* Avatar à droite */}
+            <TouchableOpacity 
+              style={styles.avatarButton}
+              onPress={() => router.push('/(tabs)/profile')}
+            >
+              <User size={24} color="white" />
+            </TouchableOpacity>
+            
+            {/* Titre et sous-titre */}
+            <Text style={styles.modeTitle}>Mode Restaurant</Text>
+            <Text style={styles.modeSubtitle}>
+              Scanne la carte des vins de ton restaurant
+            </Text>
+          </LinearGradient>
+          
+          {/* Vague SVG */}
+          <Svg
+            height="25"
+            width="100%"
+            viewBox="0 0 400 25"
+            style={styles.wave}
+            preserveAspectRatio="none"
+          >
+            <Path
+              d="M0,12 Q100,0 200,8 T400,12 L400,25 L0,25 Z"
+              fill="#FAF6F0"
+            />
+          </Svg>
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          <View style={styles.pageHeader}>
-            <Text style={styles.title}>Mode Restaurant</Text>
-            <Text style={styles.subtitle}>Scannez la carte des vins de votre restaurant</Text>
-          </View>
 
           <View style={styles.scanSection}>
             <View style={styles.scanCard}>
-              <Camera size={64} color={Colors.primary} strokeWidth={1} />
+              <View style={styles.cameraIconContainer}>
+                <Camera size={40} color="#6B2B3A" />
+              </View>
               <Text style={styles.scanTitle}>Photographier la carte des vins</Text>
               <Text style={styles.scanSubtitle}>
                 L'IA va extraire automatiquement tous les vins disponibles
@@ -442,36 +472,47 @@ export default function RestaurantScreen() {
   if (step === 'dish' && currentSession) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Image
-              source={require('../../assets/images/sommia-logo.png')}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
-            <Text style={styles.logo}>SOMMIA</Text>
-          </View>
-          <TouchableOpacity 
-            style={styles.profileButton}
-            onPress={() => router.push('/(tabs)/profile')}
+        <View style={styles.headerSection}>
+          <LinearGradient
+            colors={['#6B2B3A', '#8B4B5A']}
+            style={styles.headerGradient}
           >
-            <User size={24} color={Colors.primary} />
-          </TouchableOpacity>
+            {/* SOMMIA centré */}
+            <Text style={styles.headerTitle}>SOMMIA</Text>
+            
+            {/* Avatar à droite */}
+            <TouchableOpacity 
+              style={styles.avatarButton}
+              onPress={() => router.push('/(tabs)/profile')}
+            >
+              <User size={24} color="white" />
+            </TouchableOpacity>
+            
+            {/* Titre et sous-titre */}
+            <Text style={styles.modeTitle}>Quel est ton plat ?</Text>
+            <Text style={styles.modeSubtitle}>
+              {currentSession.extracted_wines.length} vins disponibles chez {currentSession.restaurant_name}
+            </Text>
+          </LinearGradient>
+          
+          {/* Vague SVG */}
+          <Svg
+            height="25"
+            width="100%"
+            viewBox="0 0 400 25"
+            style={styles.wave}
+            preserveAspectRatio="none"
+          >
+            <Path
+              d="M0,12 Q100,0 200,8 T400,12 L400,25 L0,25 Z"
+              fill="#FAF6F0"
+            />
+          </Svg>
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          <View style={styles.pageHeader}>
-            <View style={styles.sessionInfo}>
-              <Check size={20} color={Colors.success} />
-              <Text style={styles.sessionText}>
-                {currentSession.extracted_wines.length} vins • {currentSession.restaurant_name}
-              </Text>
-            </View>
-          </View>
 
           <View style={styles.dishSection}>
-            <Text style={styles.stepTitle}>Que mangez-vous ce soir ?</Text>
-            
             <Input
               placeholder="Décrivez votre plat..."
               value={dishDescription}
@@ -496,98 +537,47 @@ export default function RestaurantScreen() {
     );
   }
 
-  // ÉCRAN 3: RÉSULTATS
-  if (step === 'results') {
-    return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Image
-              source={require('../../assets/images/sommia-logo.png')}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
-            <Text style={styles.logo}>SOMMIA</Text>
-          </View>
-          <TouchableOpacity 
-            style={styles.profileButton}
-            onPress={() => router.push('/(tabs)/profile')}
-          >
-            <User size={24} color={Colors.primary} />
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          <View style={styles.pageHeader}>
-            <Text style={styles.title}>Vos accords parfaits</Text>
-            <Text style={styles.subtitle}>
-              Pour {dishDescription}
-              {params.fromHistory === 'true' && params.restaurantName && (
-                <Text style={styles.restaurantContext}> • Chez {params.restaurantName}</Text>
-              )}
-            </Text>
-          </View>
-
-          <View style={styles.resultsSection}>
-            {recommendations.map((wine, index) => (
-              <View key={index} style={styles.recommendationCard}>
-                <View style={styles.wineHeader}>
-                  <Wine size={24} color={Colors.primary} />
-                  <Text style={styles.wineName}>{wine.name}</Text>
-                </View>
-                
-                <Text style={styles.winePrice}>{wine.price_display}</Text>
-                <Text style={styles.reasoning}>{wine.reasoning}</Text>
-                
-                <Button
-                  title="Demander au serveur"
-                  onPress={() => Alert.alert('Super choix !', `"Pourriez-vous nous servir le ${wine.name} s'il vous plaît ?"`)}
-                  variant="outline"
-                  size="medium"
-                  fullWidth
-                />
-              </View>
-            ))}
-
-            <View style={styles.newSearchSection}>
-              <Button
-                title={restaurantLoading ? "Analyse en cours..." : "Scanner la carte"}
-                onPress={handleNewSearch}
-                variant="primary"
-                size="medium"
-                loading={restaurantLoading}
-              />
-            </View>
-          </View>
-        </ScrollView>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Image
-            source={require('../../assets/images/sommia-logo.png')}
-            style={styles.logoImage}
-            resizeMode="contain"
-          />
-          <Text style={styles.logo}>SOMMIA</Text>
-        </View>
-        <TouchableOpacity 
-          style={styles.profileButton}
-          onPress={() => router.push('/(tabs)/profile')}
+      <View style={styles.headerSection}>
+        <LinearGradient
+          colors={['#6B2B3A', '#8B4B5A']}
+          style={styles.headerGradient}
         >
-          <User size={24} color={Colors.primary} />
-        </TouchableOpacity>
+          {/* SOMMIA centré */}
+          <Text style={styles.headerTitle}>SOMMIA</Text>
+          
+          {/* Avatar à droite */}
+          <TouchableOpacity 
+            style={styles.avatarButton}
+            onPress={() => router.push('/(tabs)/profile')}
+          >
+            <User size={24} color="white" />
+          </TouchableOpacity>
+          
+          {/* Titre et sous-titre */}
+          <Text style={styles.modeTitle}>Mode Restaurant</Text>
+          <Text style={styles.modeSubtitle}>
+            Commencez par scanner une carte des vins
+          </Text>
+        </LinearGradient>
+        
+        {/* Vague SVG */}
+        <Svg
+          height="25"
+          width="100%"
+          viewBox="0 0 400 25"
+          style={styles.wave}
+          preserveAspectRatio="none"
+        >
+          <Path
+            d="M0,12 Q100,0 200,8 T400,12 L400,25 L0,25 Z"
+            fill="#FAF6F0"
+          />
+        </Svg>
       </View>
 
       <ScrollView style={styles.content}>
-        <View style={styles.pageHeader}>
-          <Text style={styles.title}>Mode Restaurant</Text>
-          <Text style={styles.subtitle}>Commencez par scanner une carte des vins</Text>
-        </View>
       </ScrollView>
     </View>
   );
@@ -596,84 +586,86 @@ export default function RestaurantScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.accent,
+    backgroundColor: '#FAF6F0',
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 24,
+  
+  // Header Premium
+  headerSection: {
+    position: 'relative',
+  },
+  headerGradient: {
     paddingTop: 60,
-    paddingBottom: 24,
+    paddingHorizontal: 20,
+    paddingBottom: 30,
   },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  headerTitle: {
+    fontSize: 36,
+    fontWeight: '700',
+    color: 'white',
+    textAlign: 'center',
+    letterSpacing: 1.5,
+    marginTop: 50,
+    marginBottom: 20,
   },
-  logoImage: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-  },
-  logo: {
-    fontSize: Typography.sizes.xl,
-    fontWeight: Typography.weights.bold,
-    color: Colors.primary,
-    marginLeft: 12,
-    letterSpacing: 1,
-  },
-  profileButton: {
+  avatarButton: {
+    position: 'absolute',
+    top: 60,
+    right: 20,
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: Colors.softGray,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-  },
-  pageHeader: {
-    alignItems: 'center',
-    paddingVertical: 32,
-  },
-  title: {
-    fontSize: Typography.sizes.xxl,
-    fontWeight: Typography.weights.bold,
-    color: Colors.textPrimary,
+  modeTitle: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: 'white',
+    textAlign: 'center',
     marginBottom: 8,
   },
-  subtitle: {
-    fontSize: Typography.sizes.base,
-    color: Colors.textSecondary,
+  modeSubtitle: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.8)',
     textAlign: 'center',
+    paddingHorizontal: 40,
   },
-  restaurantContext: {
-    fontSize: Typography.sizes.base,
-    color: Colors.primary,
-    fontWeight: Typography.weights.medium,
+  wave: {
+    position: 'absolute',
+    bottom: -1,
+    left: 0,
+    right: 0,
   },
+  
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  
   scanSection: {
     marginBottom: 32,
   },
   scanCard: {
-    backgroundColor: Colors.softGray,
-    borderRadius: 16,
+    backgroundColor: 'white',
+    borderRadius: 24,
     padding: 32,
     alignItems: 'center',
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 5,
+  },
+  cameraIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#FAF6F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
   },
   scanTitle: {
     fontSize: Typography.sizes.lg,
@@ -693,66 +685,8 @@ const styles = StyleSheet.create({
     width: '100%',
     gap: 12,
   },
-  sessionInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.softGray,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  sessionText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.textPrimary,
-    marginLeft: 8,
-  },
   dishSection: {
     gap: 24,
-  },
-  stepTitle: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.bold,
-    color: Colors.textPrimary,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  resultsSection: {
-    paddingBottom: 32,
-  },
-  recommendationCard: {
-    backgroundColor: Colors.softGray,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  wineHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  wineName: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.bold,
-    color: Colors.textPrimary,
-    marginLeft: 12,
-    flex: 1,
-  },
-  winePrice: {
-    fontSize: Typography.sizes.xl,
-    fontWeight: Typography.weights.bold,
-    color: Colors.primary,
-    marginBottom: 12,
-  },
-  reasoning: {
-    fontSize: Typography.sizes.base,
-    color: Colors.textSecondary,
-    lineHeight: Typography.sizes.base * 1.5,
-    marginBottom: 16,
   },
   errorCard: {
     backgroundColor: Colors.error,
@@ -764,9 +698,6 @@ const styles = StyleSheet.create({
     color: Colors.accent,
     fontSize: Typography.sizes.base,
     textAlign: 'center',
-  },
-  newSearchSection: {
-    marginBottom: 24,
   },
   loadingContainer: {
     flex: 1,
