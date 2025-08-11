@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Tabs } from 'expo-router';
-import { Home, Clock, User, Utensils } from 'lucide-react-native';
+import { Chrome as Home, Clock, User, Utensils } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 
