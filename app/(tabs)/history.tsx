@@ -186,14 +186,12 @@ export default function HistoryScreen() {
   if (loading) {
     return (
       <View style={styles.container}>
-        {/* Header avec gradient */}
         <View style={styles.headerSection}>
           <LinearGradient
             colors={['#6B2B3A', '#8B4B5A']}
             style={styles.headerGradient}
           >
             <Text style={styles.headerTitle}>SOMMIA</Text>
-            <Text style={styles.pageTitle}>Historique</Text>
           </LinearGradient>
           
           <Svg
@@ -220,15 +218,12 @@ export default function HistoryScreen() {
   if (history.length === 0) {
     return (
       <View style={styles.container}>
-        {/* Header avec gradient */}
         <View style={styles.headerSection}>
           <LinearGradient
             colors={['#6B2B3A', '#8B4B5A']}
             style={styles.headerGradient}
           >
             <Text style={styles.headerTitle}>SOMMIA</Text>
-            <Text style={styles.pageTitle}>Historique</Text>
-            <Text style={styles.pageSubtitle}>Tes dernières découvertes</Text>
           </LinearGradient>
           
           <Svg
@@ -264,8 +259,6 @@ export default function HistoryScreen() {
           style={styles.headerGradient}
         >
           <Text style={styles.headerTitle}>SOMMIA</Text>
-          <Text style={styles.pageTitle}>Historique</Text>
-          {/* PAS de sous-titre ici */}
         </LinearGradient>
         
         <Svg
@@ -379,7 +372,7 @@ const styles = StyleSheet.create({
   headerGradient: {
     paddingTop: 60,
     paddingHorizontal: 20,
-    paddingBottom: 50,
+    paddingBottom: 30,
   },
   headerTitle: {
     fontSize: 36,
@@ -388,19 +381,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 1.5,
     marginTop: 50,
-    marginBottom: 30,
-  },
-  pageTitle: {
-    fontSize: 28,
-    fontWeight: '600',
-    color: 'white',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  pageSubtitle: {
-    fontSize: Typography.sizes.base,
-    color: 'rgba(255,255,255,0.8)',
-    textAlign: 'center',
   },
   wave: {
     position: 'absolute',
