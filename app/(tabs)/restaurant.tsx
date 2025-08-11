@@ -10,15 +10,12 @@ import {
   Image,
   Dimensions,
   AppState,
-  TextInput,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Camera, Upload, Check, Wine, User, RotateCcw } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Path } from 'react-native-svg';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
@@ -379,111 +376,57 @@ export default function RestaurantScreen() {
   if (step === 'scan') {
     return (
       <View style={styles.container}>
-        {/* Header avec gradient et vague */}
-        <View style={styles.headerSection}>
-          <LinearGradient
-            colors={['#6B2B3A', '#8B4B5A']}
-            style={styles.headerGradient}
-          >
-            {/* Logo SOMMIA centré */}
-            <Text style={styles.headerTitle}>SOMMIA</Text>
-            
-            {/* Avatar à droite */}
-            <TouchableOpacity 
-              style={styles.avatarButton}
-              onPress={() => router.push('/(tabs)/profile')}
-            >
-              <User size={24} color="white" />
-            </TouchableOpacity>
-            
-            {/* Titre Mode Restaurant */}
-            <Text style={styles.modeTitle}>Mode Restaurant</Text>
-            <Text style={styles.modeSubtitle}>
-              Scanne la carte des vins de ton restaurant
-            </Text>
-          </LinearGradient>
-          
-          {/* Vague */}
-          <Svg
-            height="25"
-            width="100%"
-            viewBox="0 0 400 25"
-            style={styles.wave}
-            preserveAspectRatio="none"
-          >
-            <Path
-              d="M0,12 Q100,0 200,8 T400,12 L400,25 L0,25 Z"
-              fill="#FAF6F0"
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Image
+              source={require('../../assets/images/sommia-logo.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
             />
-          </Svg>
+            <Text style={styles.logo}>SOMMIA</Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.profileButton}
+            onPress={() => router.push('/(tabs)/profile')}
+          >
+            <User size={24} color={Colors.primary} />
+          </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {/* Card scanner premium */}
-          <View style={styles.scannerCard}>
-            <View style={styles.cameraIcon}>
-              <Camera size={40} color="#6B2B3A" />
+          <View style={styles.pageHeader}>
+            <Text style={styles.title}>Mode Restaurant</Text>
+            <Text style={styles.subtitle}>Scannez la carte des vins de votre restaurant</Text>
+          </View>
+
+          <View style={styles.scanSection}>
+            <View style={styles.scanCard}>
+              <Camera size={64} color={Colors.primary} strokeWidth={1} />
+              <Text style={styles.scanTitle}>Photographier la carte des vins</Text>
+              <Text style={styles.scanSubtitle}>
+                L'IA va extraire automatiquement tous les vins disponibles
+              </Text>
+              <View style={styles.scanButtons}>
+                <Button
+                  title={restaurantLoading ? "Analyse en cours..." : "Scanner la carte"}
+                  onPress={handleScanCard}
+                  variant="primary"
+                  size="large"
+                  fullWidth
+                  loading={restaurantLoading}
+                />
+                
+                <Button
+                  title="Choisir depuis la galerie"
+                  onPress={handlePickFromGallery}
+                  variant="outline"
+                  size="medium"
+                  fullWidth
+                  loading={restaurantLoading}
+                />
+              </View>
             </View>
-            <Text style={styles.cardTitle}>
-              Photographier la carte des vins
-            </Text>
-            <Text style={styles.cardDescription}>
-              L'IA identifiera tous les vins disponibles
-            </Text>
-            
-            <TouchableOpacity 
-              style={styles.primaryButton}
-              onPress={handleScanCard}
-              disabled={restaurantLoading}
-            >
-              <Text style={styles.primaryButtonText}>
-                {restaurantLoading ? "Analyse en cours..." : "Scanner la carte"}
-              </Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.secondaryButton}
-              onPress={handlePickFromGallery}
-              disabled={restaurantLoading}
-            >
-              <Text style={styles.secondaryButtonText}>
-                Choisir depuis la galerie
-              </Text>
-            </TouchableOpacity>
           </View>
-
-          {/* Section "ou" */}
-          <Text style={styles.orText}>ou</Text>
-
-          {/* Input pour décrire le plat */}
-          <View style={styles.inputCard}>
-            <TextInput
-              style={styles.input}
-              placeholder="Décris ton plat pour l'accord parfait"
-              placeholderTextColor="#999"
-              value={dishDescription}
-              onChangeText={setDishDescription}
-              multiline
-              numberOfLines={2}
-              maxLength={200}
-            />
-            <TouchableOpacity style={styles.cameraButton}>
-              <Camera size={24} color="white" />
-            </TouchableOpacity>
-          </View>
-
-          {/* CTA pour recommandations directes */}
-          {dishDescription.trim() && (
-            <TouchableOpacity 
-              style={styles.ctaButton}
-              onPress={handleGetRecommendations}
-              disabled={restaurantLoading}
-            >
-              <Text style={styles.ctaText}>
-                {restaurantLoading ? "Recherche en cours..." : "Trouver l'accord parfait"}
-              </Text>
-            </TouchableOpacity>
-          )}
 
           {error && (
             <View style={styles.errorCard}>
@@ -653,184 +596,102 @@ export default function RestaurantScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAF6F0',
+    backgroundColor: Colors.accent,
   },
-  headerSection: {
-    position: 'relative',
-  },
-  headerGradient: {
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
     paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 25,
+    paddingBottom: 24,
   },
-  headerTitle: {
-    fontSize: 36,
-    fontWeight: '700',
-    color: 'white',
-    textAlign: 'center',
-    letterSpacing: 1.5,
-    marginTop: 50,
-    marginBottom: 20,
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  avatarButton: {
-    position: 'absolute',
-    top: 60,
-    right: 20,
+  logoImage: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+  },
+  logo: {
+    fontSize: Typography.sizes.xl,
+    fontWeight: Typography.weights.bold,
+    color: Colors.primary,
+    marginLeft: 12,
+    letterSpacing: 1,
+  },
+  profileButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: Colors.softGray,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  modeTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: 'white',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  modeSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255,255,255,0.8)',
-    textAlign: 'center',
-    paddingHorizontal: 40,
-    marginBottom: 30,
-  },
-  wave: {
-    position: 'absolute',
-    bottom: -1,
-    left: 0,
-    right: 0,
+    shadowColor: Colors.darkGray,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   content: {
     flex: 1,
-    marginTop: -20,
+    paddingHorizontal: 24,
   },
-  scannerCard: {
-    backgroundColor: 'white',
-    marginHorizontal: 20,
-    marginTop: 40,
-    borderRadius: 24,
-    padding: 32,
+  pageHeader: {
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    elevation: 5,
+    paddingVertical: 32,
   },
-  cameraIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#FAF6F0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  cardTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#2C2C2C',
-    textAlign: 'center',
+  title: {
+    fontSize: Typography.sizes.xxl,
+    fontWeight: Typography.weights.bold,
+    color: Colors.textPrimary,
     marginBottom: 8,
   },
-  cardDescription: {
-    fontSize: 16,
-    color: '#666',
+  subtitle: {
+    fontSize: Typography.sizes.base,
+    color: Colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 24,
+  },
+  restaurantContext: {
+    fontSize: Typography.sizes.base,
+    color: Colors.primary,
+    fontWeight: Typography.weights.medium,
+  },
+  scanSection: {
+    marginBottom: 32,
+  },
+  scanCard: {
+    backgroundColor: Colors.softGray,
+    borderRadius: 16,
+    padding: 32,
+    alignItems: 'center',
+    shadowColor: Colors.darkGray,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  scanTitle: {
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.bold,
+    color: Colors.textPrimary,
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  scanSubtitle: {
+    fontSize: Typography.sizes.base,
+    color: Colors.textSecondary,
+    textAlign: 'center',
     marginBottom: 24,
   },
-  primaryButton: {
-    backgroundColor: '#6B2B3A',
-    paddingVertical: 18,
-    paddingHorizontal: 40,
-    borderRadius: 26,
-    marginTop: 8,
-    shadowColor: '#6B2B3A',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
+  scanButtons: {
     width: '100%',
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: 'white',
-  },
-  secondaryButton: {
-    borderWidth: 2,
-    borderColor: '#6B2B3A',
-    paddingVertical: 16,
-    paddingHorizontal: 40,
-    borderRadius: 26,
-    marginTop: 16,
-    backgroundColor: 'transparent',
-    width: '100%',
-    alignItems: 'center',
-  },
-  secondaryButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#6B2B3A',
-  },
-  orText: {
-    textAlign: 'center',
-    marginVertical: 24,
-    fontSize: 16,
-    color: '#999',
-    fontWeight: '500',
-  },
-  inputCard: {
-    backgroundColor: 'white',
-    marginHorizontal: 20,
-    borderRadius: 24,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    elevation: 5,
-  },
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: '#333',
-    minHeight: 48,
-    textAlignVertical: 'top',
-  },
-  cameraButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#6B2B3A',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 12,
-  },
-  ctaButton: {
-    marginHorizontal: 20,
-    marginTop: 24,
-    backgroundColor: '#6B2B3A',
-    paddingVertical: 18,
-    borderRadius: 26,
-    shadowColor: '#6B2B3A',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
-    alignItems: 'center',
-  },
-  ctaText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: 'white',
+    gap: 12,
   },
   sessionInfo: {
     flexDirection: 'row',
