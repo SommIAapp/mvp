@@ -375,14 +375,14 @@ export default function HomeScreen() {
 
         {/* Vague SVG */}
         <Svg
-          height="25"
+          height={40}
           width="100%"
-          viewBox="0 0 400 25"
+          viewBox="0 0 400 40"
           style={styles.wave}
           preserveAspectRatio="none"
         >
           <Path
-            d="M0,12 Q100,0 200,8 T400,12 L400,25 L0,25 Z"
+            d="M0,20 Q100,0 200,15 T400,20 L400,40 L0,40 Z"
             fill="#FAF6F0"
           />
         </Svg>
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
   headerGradient: {
     paddingTop: 60,
     paddingHorizontal: 20,
-    paddingBottom: 25,
+    paddingBottom: 50,
     position: 'relative',
   },
   headerTitle: {
