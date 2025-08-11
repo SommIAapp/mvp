@@ -235,8 +235,6 @@ export default function RecommendationsScreen() {
             <Text 
               style={styles.wineName} 
               numberOfLines={2}
-              adjustsFontSizeToFit
-              minimumFontScale={0.7}
             >
               {getCleanWineName(wine)}
             </Text>
@@ -282,6 +280,9 @@ export default function RecommendationsScreen() {
               style={styles.sideBottle}
               resizeMode="contain"
             />
+            <View style={styles.bottleIndicator}>
+              <View style={[styles.bottleDot, { opacity: 0.4 }]} />
+            </View>
           </View>
 
           {/* Bouteille centrale */}
@@ -291,6 +292,16 @@ export default function RecommendationsScreen() {
               style={styles.centerBottle}
               resizeMode="contain"
             />
+            <View style={styles.bottleIndicator}>
+              <View style={[
+                styles.bottleDot, 
+                styles.bottleDotActive,
+                { backgroundColor: wine.color === 'rosé' ? '#F5B5A3' : 
+                                  wine.color === 'rouge' ? '#A0616A' : 
+                                  wine.color === 'blanc' ? '#D4C5A0' :
+                                  wine.color === 'sparkling' ? '#D4AF37' : '#D4C5A0' }
+              ]} />
+            </View>
           </View>
 
           {/* Bouteille droite */}
@@ -300,6 +311,9 @@ export default function RecommendationsScreen() {
               style={styles.sideBottle}
               resizeMode="contain"
             />
+            <View style={styles.bottleIndicator}>
+              <View style={[styles.bottleDot, { opacity: 0.4 }]} />
+            </View>
           </View>
         </View>
 
@@ -465,13 +479,15 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   wineName: {
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: '700',
     color: 'white',
     textAlign: 'center',
     marginBottom: 8,
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
     letterSpacing: -0.5,
+    lineHeight: 34,
+    minHeight: 68,
   },
   vintage: {
     fontSize: 20,
@@ -526,6 +542,23 @@ const styles = StyleSheet.create({
   centerBottle: {
     width: width < 375 ? 90 : 100,
     height: width < 375 ? 270 : 300,
+  },
+
+  // Indicateurs bouteilles
+  bottleIndicator: {
+    marginTop: 8,
+    alignItems: 'center',
+  },
+  bottleDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#E0D5D0',
+  },
+  bottleDotActive: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
 
   // Swipe hint
