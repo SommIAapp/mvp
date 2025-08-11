@@ -261,6 +261,7 @@ export default function ProfileScreen() {
       </ScrollView>
     </View>
   );
+    <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
 }
 
 const styles = StyleSheet.create({
