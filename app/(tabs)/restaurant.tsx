@@ -538,6 +538,18 @@ export default function RestaurantScreen() {
           colors={['#6B2B3A', '#8B4B5A']}
           style={styles.headerGradient}
         >
+          style={styles.headerGradient}
+        >
+          {/* SOMMIA centré */}
+          <Text style={styles.headerTitle}>SOMMIA</Text>
+          
+          {/* Avatar à droite */}
+          <TouchableOpacity 
+            style={styles.avatarButton}
+            onPress={() => router.push('/(tabs)/profile')}
+          >
+            <User size={24} color="white" />
+          </TouchableOpacity>
         </LinearGradient>
         
         {/* Vague SVG */}
