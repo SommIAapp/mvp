@@ -54,6 +54,7 @@ export default function RestaurantScreen() {
   const [dishDescription, setDishDescription] = useState('');
   const [step, setStep] = useState<RestaurantStep>('scan');
   const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [selectedBudget, setSelectedBudget] = useState<number>(25); // Par défaut 20-35€
   const [appState, setAppState] = useState(AppState.currentState);
   const hasNavigatedRef = useRef(false);
   const hasLoadedFromHistoryRef = useRef(false);
@@ -356,6 +357,7 @@ export default function RestaurantScreen() {
         params: {
           mode: 'restaurant',
           dish: dishDescription,
+          budget: selectedBudget.toString(),
           recommendations: JSON.stringify(results),
           restaurantName: currentSession?.restaurant_name || '',
         }
@@ -402,12 +404,6 @@ export default function RestaurantScreen() {
             >
               <User size={24} color="white" />
             </TouchableOpacity>
-            
-            {/* Titre et sous-titre */}
-            <Text style={styles.modeTitle}>Mode Restaurant</Text>
-            <Text style={styles.modeSubtitle}>
-              Scanne la carte des vins de ton restaurant
-            </Text>
           </LinearGradient>
           
           {/* Vague SVG */}
@@ -426,7 +422,6 @@ export default function RestaurantScreen() {
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-
           <View style={styles.scanSection}>
             <View style={styles.scanCard}>
               <Text style={styles.scanTitle}>Photographier la carte des vins</Text>
@@ -481,12 +476,6 @@ export default function RestaurantScreen() {
             >
               <User size={24} color="white" />
             </TouchableOpacity>
-            
-            {/* Titre et sous-titre */}
-            <Text style={styles.modeTitle}>Quel est ton plat ?</Text>
-            <Text style={styles.modeSubtitle}>
-              {currentSession.extracted_wines.length} vins disponibles chez {currentSession.restaurant_name}
-            </Text>
           </LinearGradient>
           
           {/* Vague SVG */}
@@ -505,8 +494,12 @@ export default function RestaurantScreen() {
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-
           <View style={styles.dishSection}>
+            <Text style={styles.stepTitle}>Que mangez-vous ce soir ?</Text>
+            <Text style={styles.stepSubtitle}>
+              {currentSession.extracted_wines.length} vins disponibles chez {currentSession.restaurant_name}
+            </Text>
+            
             <Input
               placeholder="Décrivez votre plat..."
               value={dishDescription}
@@ -515,6 +508,37 @@ export default function RestaurantScreen() {
               numberOfLines={3}
               maxLength={200}
             />
+
+            {/* Sélecteur de budget */}
+            <View style={styles.budgetSection}>
+              <Text style={styles.budgetTitle}>Budget par personne</Text>
+              <View style={styles.budgetOptions}>
+                {[
+                  { label: '< 20€', value: 15 },
+                  { label: '20-35€', value: 25 },
+                  { label: '35-50€', value: 40 },
+                  { label: '> 50€', value: 60 },
+                ].map((option) => (
+                  <TouchableOpacity
+                    key={option.value}
+                    style={[
+                      styles.budgetOption,
+                      selectedBudget === option.value && styles.budgetOptionSelected,
+                    ]}
+                    onPress={() => setSelectedBudget(option.value)}
+                  >
+                    <Text
+                      style={[
+                        styles.budgetOptionText,
+                        selectedBudget === option.value && styles.budgetOptionTextSelected,
+                      ]}
+                    >
+                      {option.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
 
             <Button
               title={restaurantLoading ? "Recherche en cours..." : "Trouver l'accord parfait"}
@@ -536,8 +560,6 @@ export default function RestaurantScreen() {
       <View style={styles.headerSection}>
         <LinearGradient
           colors={['#6B2B3A', '#8B4B5A']}
-          style={styles.headerGradient}
-        >
           style={styles.headerGradient}
         >
           {/* SOMMIA centré */}
@@ -586,7 +608,7 @@ const styles = StyleSheet.create({
   headerGradient: {
     paddingTop: 60,
     paddingHorizontal: 20,
-    paddingBottom: 80,
+    paddingBottom: 30,
   },
   headerTitle: {
     fontSize: 36,
@@ -594,6 +616,7 @@ const styles = StyleSheet.create({
     color: 'white',
     textAlign: 'center',
     letterSpacing: 1.5,
+    marginTop: 50,
     marginTop: 50,
   },
   avatarButton: {
@@ -606,19 +629,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  modeTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: 'white',
-    textAlign: 'center',
-    marginTop: 16,
-  },
-  modeSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255,255,255,0.8)',
-    textAlign: 'center',
-    marginTop: 8,
   },
   wave: {
     position: 'absolute',
@@ -651,7 +661,7 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.lg,
     fontWeight: Typography.weights.bold,
     color: Colors.textPrimary,
-    marginBottom: 8,
+    marginBottom: 40,
     textAlign: 'center',
   },
   scanButtons: {
@@ -660,6 +670,56 @@ const styles = StyleSheet.create({
   },
   dishSection: {
     gap: 24,
+  },
+  stepTitle: {
+    fontSize: Typography.sizes.xl,
+    fontWeight: Typography.weights.bold,
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  stepSubtitle: {
+    fontSize: Typography.sizes.base,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  budgetSection: {
+    marginBottom: 24,
+  },
+  budgetTitle: {
+    fontSize: Typography.sizes.base,
+    fontWeight: Typography.weights.semibold,
+    color: Colors.textPrimary,
+    marginBottom: 12,
+  },
+  budgetOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  budgetOption: {
+    flex: 1,
+    minWidth: '48%',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.softGray,
+    backgroundColor: 'white',
+    alignItems: 'center',
+  },
+  budgetOptionSelected: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  budgetOptionText: {
+    fontSize: Typography.sizes.base,
+    color: Colors.textPrimary,
+    fontWeight: Typography.weights.medium,
+  },
+  budgetOptionTextSelected: {
+    color: 'white',
   },
   errorCard: {
     backgroundColor: Colors.error,
