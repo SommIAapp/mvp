@@ -241,7 +241,7 @@ export default function HistoryScreen() {
         </View>
         
         <View style={styles.emptyContent}>
-          <Wine size={64} color={Colors.textLight} strokeWidth={1} />
+          <Wine size={64} color="#6B2B3A" strokeWidth={1} />
           <Text style={styles.emptyTitle}>Aucune recommandation</Text>
           <Text style={styles.emptySubtitle}>
             Tes recommandations apparaîtront ici après ta première recherche
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
   headerGradient: {
     paddingTop: 60,
     paddingHorizontal: 20,
-    paddingBottom: 30,
+    paddingBottom: 50,
   },
   headerTitle: {
     fontSize: 36,
