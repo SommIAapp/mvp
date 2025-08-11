@@ -14,6 +14,8 @@ import Svg, { Path } from 'react-native-svg';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Path } from 'react-native-svg';
 import { useAuth } from '@/hooks/useAuth';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import { useRestaurantMode } from '@/hooks/useRestaurantMode';
@@ -185,20 +187,73 @@ export default function HistoryScreen() {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <LoadingSpinner text="Chargement de l'historique..." />
+      <View style={styles.container}>
+        {/* Header avec gradient */}
+        <View style={styles.headerSection}>
+          <LinearGradient
+            colors={['#6B2B3A', '#8B4B5A']}
+            style={styles.headerGradient}
+          >
+            <Text style={styles.headerTitle}>SOMMIA</Text>
+            <Text style={styles.pageTitle}>Historique</Text>
+          </LinearGradient>
+          
+          <Svg
+            height={40}
+            width="100%"
+            viewBox="0 0 400 40"
+            style={styles.wave}
+            preserveAspectRatio="none"
+          >
+            <Path
+              d="M0,20 Q100,0 200,15 T400,20 L400,40 L0,40 Z"
+              fill="#FAF6F0"
+            />
+          </Svg>
+        </View>
+        
+        <View style={styles.loadingContent}>
+          <LoadingSpinner text="Chargement de l'historique..." />
+        </View>
       </View>
     );
   }
 
   if (history.length === 0) {
     return (
-      <View style={styles.emptyContainer}>
-        <Wine size={64} color={Colors.textLight} strokeWidth={1} />
-        <Text style={styles.emptyTitle}>Aucune recommandation</Text>
-        <Text style={styles.emptySubtitle}>
-          Tes recommandations apparaîtront ici après ta première recherche
-        </Text>
+      <View style={styles.container}>
+        {/* Header avec gradient */}
+        <View style={styles.headerSection}>
+          <LinearGradient
+            colors={['#6B2B3A', '#8B4B5A']}
+            style={styles.headerGradient}
+          >
+            <Text style={styles.headerTitle}>SOMMIA</Text>
+            <Text style={styles.pageTitle}>Historique</Text>
+            <Text style={styles.pageSubtitle}>Tes dernières découvertes</Text>
+          </LinearGradient>
+          
+          <Svg
+            height={40}
+            width="100%"
+            viewBox="0 0 400 40"
+            style={styles.wave}
+            preserveAspectRatio="none"
+          >
+            <Path
+              d="M0,20 Q100,0 200,15 T400,20 L400,40 L0,40 Z"
+              fill="#FAF6F0"
+            />
+          </Svg>
+        </View>
+        
+        <View style={styles.emptyContent}>
+          <Wine size={64} color={Colors.textLight} strokeWidth={1} />
+          <Text style={styles.emptyTitle}>Aucune recommandation</Text>
+          <Text style={styles.emptySubtitle}>
+            Tes recommandations apparaîtront ici après ta première recherche
+          </Text>
+        </View>
       </View>
     );
   }
@@ -210,15 +265,11 @@ export default function HistoryScreen() {
           colors={['#6B2B3A', '#8B4B5A']}
           style={styles.headerGradient}
         >
-          {/* SOMMIA centré */}
           <Text style={styles.headerTitle}>SOMMIA</Text>
-          
-          {/* Titre Historique */}
           <Text style={styles.pageTitle}>Historique</Text>
-          <Text style={styles.pageSubtitle}>Tes dernières découvertes</Text>
+          {/* PAS de sous-titre ici */}
         </LinearGradient>
         
-        {/* Vague SVG */}
         <Svg
           height={40}
           width="100%"
@@ -299,18 +350,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FAF6F0',
   },
-  loadingContainer: {
+  loadingContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FAF6F0',
   },
-  emptyContainer: {
+  emptyContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 48,
-    backgroundColor: '#FAF6F0',
   },
   emptyTitle: {
     fontSize: Typography.sizes.xl,
