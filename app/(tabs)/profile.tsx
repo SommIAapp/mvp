@@ -11,6 +11,8 @@ import { useRouter } from 'expo-router';
 import { User, Crown, Calendar, ChartBar as BarChart3, Settings, LogOut, Wine } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
+import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Path } from 'react-native-svg';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
@@ -123,19 +125,60 @@ export default function ProfileScreen() {
 
   if (authLoading || subscriptionLoading || loadingStats) {
     return (
-      <View style={styles.loadingContainer}>
-        <LoadingSpinner text="Chargement du profil..." />
+      <View style={styles.container}>
+        <View style={styles.headerSection}>
+          <LinearGradient
+            colors={['#6B2B3A', '#8B4B5A']}
+            style={styles.headerGradient}
+          >
+            <Text style={styles.headerTitle}>SOMMIA</Text>
+          </LinearGradient>
+          
+          <Svg
+            height={40}
+            width="100%"
+            viewBox="0 0 400 40"
+            style={styles.wave}
+            preserveAspectRatio="none"
+          >
+            <Path
+              d="M0,20 Q100,0 200,15 T400,20 L400,40 L0,40 Z"
+              fill="#FAF6F0"
+            />
+          </Svg>
+        </View>
+        
+        <View style={styles.loadingContent}>
+          <LoadingSpinner text="Chargement du profil..." />
+        </View>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Profil</Text>
+    <View style={styles.container}>
+      <View style={styles.headerSection}>
+        <LinearGradient
+          colors={['#6B2B3A', '#8B4B5A']}
+          style={styles.headerGradient}
+        >
+          <Text style={styles.headerTitle}>SOMMIA</Text>
+        </LinearGradient>
+        
+        <Svg
+          height={40}
+          width="100%"
+          viewBox="0 0 400 40"
+          style={styles.wave}
+          preserveAspectRatio="none"
+        >
+          <Path
+            d="M0,20 Q100,0 200,15 T400,20 L400,40 L0,40 Z"
+            fill="#FAF6F0"
+          />
+        </Svg>
       </View>
 
-      <View style={styles.content}>
         {/* User Info Section */}
         <View style={styles.userSection}>
           <View style={styles.avatarContainer}>
@@ -218,62 +261,74 @@ export default function ProfileScreen() {
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.accent,
+    backgroundColor: '#FAF6F0',
   },
-  loadingContainer: {
+  headerSection: {
+    position: 'relative',
+  },
+  headerGradient: {
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    paddingBottom: 50,
+  },
+  headerTitle: {
+    fontSize: 36,
+    fontWeight: '700',
+    color: 'white',
+    textAlign: 'center',
+    letterSpacing: 1.5,
+    marginTop: 50,
+  },
+  wave: {
+    position: 'absolute',
+    bottom: -1,
+    left: 0,
+    right: 0,
+  },
+  loadingContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.accent,
-  },
-  header: {
-    paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 24,
-  },
-  title: {
-    fontSize: Typography.sizes.xxl,
-    fontWeight: Typography.weights.bold,
-    color: Colors.textPrimary,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
+    paddingTop: 20,
   },
   userSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.softGray,
+    backgroundColor: 'white',
     borderRadius: 16,
     padding: 20,
     marginBottom: 24,
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 5,
   },
   avatarContainer: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: Colors.accent,
+    backgroundColor: '#FAF6F0',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   userInfo: {
     flex: 1,
@@ -289,15 +344,15 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   subscriptionCard: {
-    backgroundColor: Colors.softGray,
+    backgroundColor: 'white',
     borderRadius: 16,
     padding: 20,
     marginBottom: 24,
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 5,
   },
   subscriptionHeader: {
     flexDirection: 'row',
@@ -336,15 +391,15 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: Colors.softGray,
+    backgroundColor: 'white',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
-    shadowColor: Colors.darkGray,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 3,
   },
   statValue: {
     fontSize: Typography.sizes.xl,
@@ -366,7 +421,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 4,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.softGray,
+    borderBottomColor: '#E0E0E0',
   },
   menuText: {
     fontSize: Typography.sizes.base,
