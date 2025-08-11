@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Wine, Calendar, Utensils } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Path } from 'react-native-svg';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
@@ -203,9 +205,32 @@ export default function HistoryScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Historique</Text>
-        <Text style={styles.subtitle}>Tes dernières découvertes</Text>
+      <View style={styles.headerSection}>
+        <LinearGradient
+          colors={['#6B2B3A', '#8B4B5A']}
+          style={styles.headerGradient}
+        >
+          {/* SOMMIA centré */}
+          <Text style={styles.headerTitle}>SOMMIA</Text>
+          
+          {/* Titre Historique */}
+          <Text style={styles.pageTitle}>Historique</Text>
+          <Text style={styles.pageSubtitle}>Tes dernières découvertes</Text>
+        </LinearGradient>
+        
+        {/* Vague SVG */}
+        <Svg
+          height={40}
+          width="100%"
+          viewBox="0 0 400 40"
+          style={styles.wave}
+          preserveAspectRatio="none"
+        >
+          <Path
+            d="M0,20 Q100,0 200,15 T400,20 L400,40 L0,40 Z"
+            fill="#FAF6F0"
+          />
+        </Svg>
       </View>
 
       <ScrollView 
@@ -272,20 +297,20 @@ export default function HistoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.accent,
+    backgroundColor: '#FAF6F0',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.accent,
+    backgroundColor: '#FAF6F0',
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 48,
-    backgroundColor: Colors.accent,
+    backgroundColor: '#FAF6F0',
   },
   emptyTitle: {
     fontSize: Typography.sizes.xl,
@@ -301,35 +326,56 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: Typography.sizes.base * Typography.lineHeights.relaxed,
   },
-  header: {
-    paddingHorizontal: 24,
+  headerSection: {
+    position: 'relative',
+  },
+  headerGradient: {
     paddingTop: 60,
-    paddingBottom: 24,
+    paddingHorizontal: 20,
+    paddingBottom: 50,
   },
-  title: {
-    fontSize: Typography.sizes.xxl,
-    fontWeight: Typography.weights.bold,
-    color: Colors.textPrimary,
-    marginBottom: 4,
+  headerTitle: {
+    fontSize: 36,
+    fontWeight: '700',
+    color: 'white',
+    textAlign: 'center',
+    letterSpacing: 1.5,
+    marginTop: 50,
+    marginBottom: 30,
   },
-  subtitle: {
+  pageTitle: {
+    fontSize: 28,
+    fontWeight: '600',
+    color: 'white',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  pageSubtitle: {
     fontSize: Typography.sizes.base,
-    color: Colors.textSecondary,
+    color: 'rgba(255,255,255,0.8)',
+    textAlign: 'center',
+  },
+  wave: {
+    position: 'absolute',
+    bottom: -1,
+    left: 0,
+    right: 0,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
+    paddingTop: 20,
   },
   historyCard: {
-    backgroundColor: Colors.softGray,
-    borderRadius: 16,
+    backgroundColor: 'white',
+    borderRadius: 20,
     padding: 20,
     marginBottom: 16,
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 5,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -349,7 +395,7 @@ const styles = StyleSheet.create({
   restaurantBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.primary,
+    backgroundColor: '#6B2B3A',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
@@ -358,7 +404,7 @@ const styles = StyleSheet.create({
   restaurantBadgeText: {
     fontSize: Typography.sizes.xs,
     fontWeight: Typography.weights.semibold,
-    color: Colors.accent,
+    color: 'white',
     marginLeft: 4,
   },
   dishName: {
@@ -381,7 +427,7 @@ const styles = StyleSheet.create({
   wineCount: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.accent,
+    backgroundColor: '#FAF6F0',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
