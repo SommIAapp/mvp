@@ -617,6 +617,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 1.5,
     marginTop: 50,
+    marginTop: 50,
   },
   avatarButton: {
     position: 'absolute',
