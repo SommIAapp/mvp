@@ -7,29 +7,29 @@ import {
   TouchableOpacity,
   Alert,
   Dimensions,
-  Image,
+  TextInput,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Camera, User, Image as ImageIcon } from 'lucide-react-native';
+import { Camera, User } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Path } from 'react-native-svg';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
-import { Button } from '@/components/Button';
-import { Input } from '@/components/Input';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useRecommendations } from '@/hooks/useRecommendations';
 
 const { width } = Dimensions.get('window');
 
-const BUDGET_OPTIONS = [5, 10, 20, 30];
+const BUDGET_OPTIONS = ['€10', '€20', '€30', '€50+'];
 
 export default function HomeScreen() {
   const router = useRouter();
   const { user, profile, loading, canMakeRecommendation, updateUsageCount } = useAuth();
   const { getRecommendations, getRecommendationsFromPhoto } = useRecommendations();
   const [dishDescription, setDishDescription] = useState('');
-  const [budget, setBudget] = useState<number | null>(null);
+  const [selectedBudget, setSelectedBudget] = useState<string | null>(null);
   const [recommendationLoading, setRecommendationLoading] = useState(false);
 
   useEffect(() => {
@@ -47,6 +47,8 @@ export default function HomeScreen() {
       </View>
     );
   }
+
+  const firstName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'ami';
 
   const handleGetRecommendations = async () => {
     console.log('🎯 handleGetRecommendations - Starting TEXT_ONLY recommendation request');
@@ -97,13 +99,14 @@ export default function HomeScreen() {
       console.log('🤖 handleGetRecommendations - Calling AI recommendation service');
       console.log('📝 handleGetRecommendations - Request params:', {
         dishDescription,
-        budget,
+        budget: selectedBudget,
         userId: user?.id
       });
       
+      const budgetValue = selectedBudget ? parseInt(selectedBudget.replace('€', '').replace('+', '')) : undefined;
       const recommendations = await getRecommendations(
         dishDescription,
-        budget || undefined
+        budgetValue
       );
 
       console.log('✅ handleGetRecommendations - Recommendations received:', recommendations);
@@ -128,7 +131,7 @@ export default function HomeScreen() {
         pathname: '/recommendations',
         params: {
           dish: dishDescription,
-          budget: budget?.toString() || '',
+          budget: budgetValue?.toString() || '',
           recommendations: JSON.stringify(recommendations),
         },
       });
@@ -142,10 +145,6 @@ export default function HomeScreen() {
       setRecommendationLoading(false);
       Alert.alert('Erreur', `Impossible de générer les recommandations: ${error.message}`);
     }
-  };
-
-  const handleSuggestionPress = (suggestion: string) => {
-    setDishDescription(suggestion);
   };
 
   const handleCameraPress = () => {
@@ -217,9 +216,10 @@ export default function HomeScreen() {
 
       console.log('🤖 handlePhotoRecommendations - Calling photo recommendation service');
       
+      const budgetValue = selectedBudget ? parseInt(selectedBudget.replace('€', '').replace('+', '')) : undefined;
       const recommendations = await getRecommendationsFromPhoto(
         result.assets[0].base64,
-        budget || undefined
+        budgetValue
       );
 
       console.log('✅ handlePhotoRecommendations - Photo recommendations received:', recommendations);
@@ -244,7 +244,7 @@ export default function HomeScreen() {
         pathname: '/recommendations',
         params: {
           dish: 'Photo de plat',
-          budget: budget?.toString() || '',
+          budget: selectedBudget?.toString() || '',
           recommendations: JSON.stringify(recommendations),
           photoMode: 'true',
         },
@@ -313,9 +313,10 @@ export default function HomeScreen() {
 
       console.log('🤖 handleGalleryRecommendations - Calling photo recommendation service');
       
+      const budgetValue = selectedBudget ? parseInt(selectedBudget.replace('€', '').replace('+', '')) : undefined;
       const recommendations = await getRecommendationsFromPhoto(
         result.assets[0].base64,
-        budget || undefined
+        budgetValue
       );
 
       console.log('✅ handleGalleryRecommendations - Photo recommendations received:', recommendations);
@@ -340,7 +341,7 @@ export default function HomeScreen() {
         pathname: '/recommendations',
         params: {
           dish: 'Photo de plat',
-          budget: budget?.toString() || '',
+          budget: selectedBudget?.toString() || '',
           recommendations: JSON.stringify(recommendations),
           photoMode: 'true',
         },
@@ -353,258 +354,285 @@ export default function HomeScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Image
-            source={require('../../assets/images/sommia-logo.png')}
-            style={styles.logoImage}
-            resizeMode="contain"
-          />
-          <Text style={styles.logo}>SOMMIA</Text>
-        </View>
-        <TouchableOpacity 
-          style={styles.profileButton}
-          onPress={() => router.push('/(tabs)/profile')}
+    <View style={styles.container}>
+      {/* Header avec gradient et vague */}
+      <View style={styles.headerSection}>
+        <LinearGradient
+          colors={['#6B2B3A', '#8B4B5A']}
+          style={styles.headerGradient}
         >
-          <User size={24} color={Colors.primary} />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.content}>
-        <View style={styles.greetingSection}>
-          <Text style={styles.greeting}>
-            Bonjour {profile?.full_name || user?.email?.split('@')[0]}, que manges-tu ?
-          </Text>
-        </View>
-
-        <View style={styles.inputSection}>
-          <View style={styles.inputCard}>
-            <Input
-              placeholder="Décris ton plat ou prends une photo..."
-              value={dishDescription}
-              onChangeText={setDishDescription}
-              multiline
-              numberOfLines={3}
-              maxLength={200}
-            />
+          {/* Logo et Avatar */}
+          <View style={styles.headerTop}>
+            <View style={styles.logoContainer}>
+              <View style={styles.logoBox}>
+                <Text style={styles.logoS}>S</Text>
+              </View>
+              <Text style={styles.logoText}>SOMMIA</Text>
+            </View>
             <TouchableOpacity 
-              style={styles.cameraButton}
-              onPress={handleCameraPress}
+              style={styles.avatarButton}
+              onPress={() => router.push('/(tabs)/profile')}
             >
-              <Camera size={24} color={Colors.accent} />
+              <User size={24} color="white" />
             </TouchableOpacity>
           </View>
-          <Text style={styles.inputHint}>
-            Décrivez votre plat ou utilisez l'appareil photo
-          </Text>
+
+          {/* Greeting */}
+          <Text style={styles.greeting}>Bonjour {firstName}</Text>
+          <Text style={styles.question}>Qu'est-ce qu'on mange aujourd'hui ?</Text>
+        </LinearGradient>
+
+        {/* Vague SVG */}
+        <Svg
+          height="40"
+          width="100%"
+          viewBox="0 0 400 40"
+          style={styles.wave}
+          preserveAspectRatio="none"
+        >
+          <Path
+            d="M0,20 Q100,0 200,15 T400,20 L400,40 L0,40 Z"
+            fill="#FAF6F0"
+          />
+        </Svg>
+      </View>
+
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Input premium flottant */}
+        <View style={styles.inputCard}>
+          <TextInput
+            style={styles.input}
+            placeholder="Décris ton plat..."
+            placeholderTextColor="#999"
+            value={dishDescription}
+            onChangeText={setDishDescription}
+            multiline
+            numberOfLines={2}
+            maxLength={200}
+          />
+          <TouchableOpacity 
+            style={styles.cameraButton}
+            onPress={handleCameraPress}
+          >
+            <Camera size={24} color="white" />
+          </TouchableOpacity>
         </View>
 
-
+        {/* Section budget élégante */}
         <View style={styles.budgetSection}>
-          <Text style={styles.sectionTitle}>Budget par bouteille (optionnel)</Text>
-          <View style={styles.budgetOptions}>
-            {BUDGET_OPTIONS.map((option) => (
+          <Text style={styles.sectionTitle}>Budget par bouteille</Text>
+          <Text style={styles.sectionSubtitle}>Optionnel</Text>
+          
+          <View style={styles.budgetGrid}>
+            {BUDGET_OPTIONS.map(budget => (
               <TouchableOpacity
-                key={option}
+                key={budget}
                 style={[
-                  styles.budgetOption,
-                  budget === option && styles.budgetOptionSelected,
+                  styles.budgetPill,
+                  selectedBudget === budget && styles.budgetPillActive
                 ]}
-                onPress={() => setBudget(budget === option ? null : option)}
+                onPress={() => setSelectedBudget(selectedBudget === budget ? null : budget)}
               >
-                <Text
-                  style={[
-                    styles.budgetOptionText,
-                    budget === option && styles.budgetOptionTextSelected,
-                  ]}
-                >
-                  €{option}
+                <Text style={[
+                  styles.budgetText,
+                  selectedBudget === budget && styles.budgetTextActive
+                ]}>
+                  {budget}
                 </Text>
               </TouchableOpacity>
             ))}
-            <TouchableOpacity
-              style={[
-                styles.budgetOption,
-                budget && budget > 50 && styles.budgetOptionSelected,
-              ]}
-              onPress={() => setBudget(budget && budget > 50 ? null : 100)}
-            >
-              <Text
-                style={[
-                  styles.budgetOptionText,
-                  budget && budget > 50 && styles.budgetOptionTextSelected,
-                ]}
-              >
-                €50+
-              </Text>
-            </TouchableOpacity>
           </View>
         </View>
 
-        <View style={styles.ctaSection}>
-          <Button
-            title={recommendationLoading ? "Recommandation en cours..." : "Obtenir des recommandations"}
-            onPress={handleGetRecommendations}
-            variant="primary"
-            size="large"
-            fullWidth
-            loading={recommendationLoading}
-          />
-        </View>
-      </View>
-    </ScrollView>
+        {/* CTA Premium */}
+        <TouchableOpacity 
+          style={styles.ctaButton}
+          onPress={handleGetRecommendations}
+          disabled={recommendationLoading}
+        >
+          <Text style={styles.ctaText}>
+            {recommendationLoading ? "Recommandation en cours..." : "Obtenir des recommandations"}
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.accent,
+    backgroundColor: '#FAF6F0',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.accent,
+    backgroundColor: '#FAF6F0',
   },
-  header: {
+  headerSection: {
+    position: 'relative',
+  },
+  headerGradient: {
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+  },
+  headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 24,
   },
-  headerLeft: {
+  logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  logoImage: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-    borderRadius: 16, // Make it circular
-    borderWidth: 1, // Add border
-    borderColor: Colors.primary, // Border color
+  logoBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
-  logo: {
-    fontSize: Typography.sizes.xl,
-    fontWeight: Typography.weights.bold,
-    color: Colors.primary,
-    marginLeft: 12,
+  logoS: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: 'white',
+  },
+  logoText: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: 'white',
     letterSpacing: 1,
   },
-  profileButton: {
+  avatarButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: Colors.softGray,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+  },
+  greeting: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 24,
+  },
+  question: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: 'white',
+    marginTop: 4,
+    lineHeight: 32,
+  },
+  wave: {
+    position: 'absolute',
+    bottom: -1,
+    left: 0,
+    right: 0,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
-  },
-  greetingSection: {
-    marginBottom: 32,
-  },
-  greeting: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.medium,
-    color: Colors.textPrimary,
-    lineHeight: Typography.sizes.lg * Typography.lineHeights.relaxed,
-    marginBottom: 8,
-  },
-  inputSection: {
-    marginBottom: 32,
+    marginTop: -20, // Pour chevaucher légèrement la vague
   },
   inputCard: {
-    backgroundColor: Colors.softGray,
-    borderRadius: 16,
-    padding: 20,
-    position: 'relative',
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    backgroundColor: 'white',
+    marginHorizontal: 20,
+    marginTop: 30,
+    borderRadius: 24,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 5,
   },
-  inputHint: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 4,
-    textAlign: 'center',
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+    minHeight: 48,
+    textAlignVertical: 'top',
   },
   cameraButton: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: Colors.primary,
+    backgroundColor: '#6B2B3A',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
+    marginLeft: 12,
   },
   budgetSection: {
-    marginBottom: 40,
+    marginTop: 32,
+    paddingHorizontal: 20,
   },
   sectionTitle: {
-    fontSize: Typography.sizes.base,
-    fontWeight: Typography.weights.semibold,
-    color: Colors.textPrimary,
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#2C2C2C',
+    marginBottom: 4,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: '#999',
     marginBottom: 16,
   },
-  budgetOptions: {
+  budgetGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
   },
-  budgetOption: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 24,
+  budgetPill: {
+    backgroundColor: 'white',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: Colors.textLight,
-    backgroundColor: Colors.accent,
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  budgetOptionSelected: {
-    borderColor: Colors.primary,
-    backgroundColor: Colors.primary,
-    shadowColor: Colors.primary,
+    borderColor: '#E0E0E0',
+    minWidth: '30%',
+    flex: 1,
+    maxWidth: '48%',
+    alignItems: 'center',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  budgetOptionText: {
-    fontSize: Typography.sizes.sm,
-    fontWeight: Typography.weights.medium,
-    color: Colors.textPrimary,
+  budgetPillActive: {
+    backgroundColor: '#6B2B3A',
+    borderColor: '#6B2B3A',
   },
-  budgetOptionTextSelected: {
-    color: Colors.accent,
+  budgetText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
   },
-  ctaSection: {
-    paddingBottom: 32,
+  budgetTextActive: {
+    color: 'white',
+  },
+  ctaButton: {
+    marginHorizontal: 20,
+    marginTop: 40,
+    marginBottom: 40,
+    backgroundColor: '#6B2B3A',
+    paddingVertical: 18,
+    borderRadius: 26,
+    shadowColor: '#6B2B3A',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
+    alignItems: 'center',
+  },
+  ctaText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: 'white',
   },
 });
