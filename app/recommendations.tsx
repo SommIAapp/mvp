@@ -235,8 +235,6 @@ export default function RecommendationsScreen() {
             <Text 
               style={styles.wineName} 
               numberOfLines={2}
-              adjustsFontSizeToFit
-              minimumFontScale={0.7}
             >
               {getCleanWineName(wine)}
             </Text>
@@ -282,6 +280,9 @@ export default function RecommendationsScreen() {
               style={styles.sideBottle}
               resizeMode="contain"
             />
+            <Text style={styles.bottleNumber}>
+              {((currentWine - 1 + recommendations.length) % recommendations.length) + 1}/{recommendations.length}
+            </Text>
           </View>
 
           {/* Bouteille centrale */}
@@ -291,6 +292,9 @@ export default function RecommendationsScreen() {
               style={styles.centerBottle}
               resizeMode="contain"
             />
+            <Text style={[styles.bottleNumber, styles.bottleNumberActive]}>
+              {currentWine + 1}/{recommendations.length}
+            </Text>
           </View>
 
           {/* Bouteille droite */}
@@ -300,6 +304,9 @@ export default function RecommendationsScreen() {
               style={styles.sideBottle}
               resizeMode="contain"
             />
+            <Text style={styles.bottleNumber}>
+              {((currentWine + 1) % recommendations.length) + 1}/{recommendations.length}
+            </Text>
           </View>
         </View>
 
@@ -465,13 +472,15 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   wineName: {
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: '700',
     color: 'white',
     textAlign: 'center',
     marginBottom: 8,
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
     letterSpacing: -0.5,
+    lineHeight: 34,
+    minHeight: 68,
   },
   vintage: {
     fontSize: 20,
@@ -513,10 +522,12 @@ const styles = StyleSheet.create({
   sideBottleContainer: {
     flex: 1,
     alignItems: 'center',
+    paddingBottom: 20,
   },
   centerBottleContainer: {
     flex: 1.2,
     alignItems: 'center',
+    paddingBottom: 20,
   },
   sideBottle: {
     width: width < 375 ? 75 : 85,
@@ -641,6 +652,19 @@ const styles = StyleSheet.create({
   scanButtonText: {
     color: 'white',
     fontSize: 18,
+    fontWeight: '600',
+  },
+  bottleNumber: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 8,
+    opacity: 0.6,
+    fontWeight: '500',
+  },
+  bottleNumberActive: {
+    fontSize: 14,
+    color: '#666',
+    opacity: 1,
     fontWeight: '600',
   },
 });
