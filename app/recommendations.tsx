@@ -7,7 +7,6 @@ import {
   Dimensions,
   Image,
   ActivityIndicator,
-  Animated,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -35,7 +34,6 @@ export default function RecommendationsScreen() {
   const [loading, setLoading] = useState(true);
   const [currentWine, setCurrentWine] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [fadeAnim] = useState(new Animated.Value(1));
   const [showSwipeHint, setShowSwipeHint] = useState(true);
 
   useEffect(() => {
@@ -102,22 +100,8 @@ export default function RecommendationsScreen() {
     if (isTransitioning) return;
     setIsTransitioning(true);
     
-    // Fade out
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 150,
-      useNativeDriver: true,
-    }).start(() => {
-      setCurrentWine(index);
-      // Fade in
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 150,
-        useNativeDriver: true,
-      }).start(() => {
-        setIsTransitioning(false);
-      });
-    });
+    setCurrentWine(index);
+    setIsTransitioning(false);
   };
 
   const nextWine = () => {
@@ -135,6 +119,22 @@ export default function RecommendationsScreen() {
   // Nouveau scan
   const handleNewScan = () => {
     router.replace('/(tabs)');
+  };
+
+  // Ajoute cette fonction après loadRecommendations :
+  const getPriceBadge = (wine: WineRecommendation, allWines: WineRecommendation[]) => {
+    const prices = allWines.map(w => w.price_estimate || 0).sort((a, b) => a - b);
+    const winePrice = wine.price_estimate || 0;
+    
+    if (prices.length !== 3) return null;
+    
+    if (winePrice === prices[0]) {
+      return { text: 'Économique', color: '#4CAF50' };
+    } else if (winePrice === prices[2]) {
+      return { text: 'Premium', color: '#D4AF37' };
+    } else {
+      return { text: 'Supérieur', color: '#6B2B3A' };
+    }
   };
 
   // Mapping des images CORRIGÉ avec les bons chemins
@@ -231,7 +231,7 @@ export default function RecommendationsScreen() {
           </TouchableOpacity>
 
           {/* Nom et millésime du vin */}
-          <Animated.View style={[styles.headerContent, { opacity: fadeAnim }]}>
+          <View style={styles.headerContent}>
             <Text 
               style={styles.wineName} 
               numberOfLines={2}
@@ -239,7 +239,7 @@ export default function RecommendationsScreen() {
               {getCleanWineName(wine)}
             </Text>
             <Text style={styles.vintage}>{wine.vintage || new Date().getFullYear()}</Text>
-          </Animated.View>
+          </View>
         </LinearGradient>
 
         {/* Vague SVG */}
@@ -275,55 +275,70 @@ export default function RecommendationsScreen() {
         <View style={styles.bottlesWrapper}>
           {/* Bouteille gauche */}
           <View style={styles.sideBottleContainer}>
+            {getPriceBadge(prevWineData, recommendations) && (
+              <View style={[
+                styles.priceBadge,
+                { backgroundColor: getPriceBadge(prevWineData, recommendations).color }
+              ]}>
+                <Text style={styles.priceBadgeText}>
+                  {getPriceBadge(prevWineData, recommendations).text}
+                </Text>
+              </View>
+            )}
             <Image
               source={getWineImage(prevWineData.color)}
               style={styles.sideBottle}
               resizeMode="contain"
             />
-            <Text style={styles.bottleNumber}>
-              {((currentWine - 1 + recommendations.length) % recommendations.length) + 1}/{recommendations.length}
-            </Text>
           </View>
 
           {/* Bouteille centrale */}
           <View style={styles.centerBottleContainer}>
+            {getPriceBadge(wine, recommendations) && (
+              <View style={[
+                styles.priceBadge,
+                styles.priceBadgeCenter,
+                { backgroundColor: getPriceBadge(wine, recommendations).color }
+              ]}>
+                <Text style={styles.priceBadgeText}>
+                  {getPriceBadge(wine, recommendations).text}
+                </Text>
+              </View>
+            )}
             <Image
               source={getWineImage(wine.color)}
               style={styles.centerBottle}
               resizeMode="contain"
             />
-            <Text style={[styles.bottleNumber, styles.bottleNumberActive]}>
-              {currentWine + 1}/{recommendations.length}
-            </Text>
           </View>
 
           {/* Bouteille droite */}
           <View style={styles.sideBottleContainer}>
+            {getPriceBadge(nextWineData, recommendations) && (
+              <View style={[
+                styles.priceBadge,
+                { backgroundColor: getPriceBadge(nextWineData, recommendations).color }
+              ]}>
+                <Text style={styles.priceBadgeText}>
+                  {getPriceBadge(nextWineData, recommendations).text}
+                </Text>
+              </View>
+            )}
             <Image
               source={getWineImage(nextWineData.color)}
               style={styles.sideBottle}
               resizeMode="contain"
             />
-            <Text style={styles.bottleNumber}>
-              {((currentWine + 1) % recommendations.length) + 1}/{recommendations.length}
-            </Text>
           </View>
         </View>
 
         {/* Indicateur de swipe au premier usage */}
         {recommendations.length > 1 && currentWine === 0 && showSwipeHint && (
-          <Animated.View 
-            style={[
-              styles.swipeHint,
-              {
-                opacity: fadeAnim // Utilise la même animation de fade
-              }
-            ]}
-          >
+          <View style={styles.swipeHint}>
             <Text style={styles.swipeHintText}>
               ← Swipe pour voir plus →
             </Text>
-          </Animated.View>
+          </View>
         )}
       </View>
 
@@ -350,7 +365,7 @@ export default function RecommendationsScreen() {
 
       {/* INFORMATIONS VIN - 20% */}
       <View style={styles.infoSection}>
-        <Animated.View style={{ opacity: fadeAnim }}>
+        <View>
           <View style={styles.infoCard}>
             <View style={styles.infoGrid}>
               {/* Région */}
@@ -386,7 +401,7 @@ export default function RecommendationsScreen() {
               </Text>
             )}
           </View>
-        </Animated.View>
+        </View>
       </View>
 
       {/* BOUTON NOUVEAU SCAN - 10% */}
@@ -656,17 +671,28 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
   },
-  bottleNumber: {
-    fontSize: 12,
-    color: '#999',
-    marginTop: 8,
-    opacity: 0.6,
-    fontWeight: '500',
+  priceBadge: {
+    position: 'absolute',
+    top: -10,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    zIndex: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  bottleNumberActive: {
-    fontSize: 14,
-    color: '#666',
-    opacity: 1,
-    fontWeight: '600',
+  priceBadgeCenter: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 18,
+  },
+  priceBadgeText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
 });
