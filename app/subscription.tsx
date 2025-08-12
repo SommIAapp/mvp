@@ -346,7 +346,7 @@ export default function SubscriptionScreen() {
             </View>
 
             <Button
-              title="Commencer l'essai gratuit"
+              title="Passer à Premium"
               onPress={() => {
                 const priceId = selectedPlan === 'weekly' ? weeklyProduct?.priceId :
                                selectedPlan === 'monthly' ? premiumProduct?.priceId :
@@ -360,7 +360,7 @@ export default function SubscriptionScreen() {
             />
 
             <View style={styles.trustBadges}>
-              <Text style={styles.trustText}>✓ 7 jours gratuits</Text>
+              <Text style={styles.trustText}>✓ Accords illimités</Text>
               <Text style={styles.trustText}>✓ Annulation facile</Text>
               <Text style={styles.trustText}>✓ Paiement sécurisé</Text>
             </View>
