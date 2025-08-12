@@ -40,7 +40,7 @@ export default function WelcomeScreen() {
           >
             <Path
               d={`M0,20 Q${width/4},0 ${width/2},15 T${width},20 L${width},40 L0,40 Z`}
-              fill="#FEFEFE"
+              fill={Colors.accent}
             />
           </Svg>
         </View>
@@ -78,6 +78,7 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors.accent,
   },
   topSection: {
     height: height * 0.6,
