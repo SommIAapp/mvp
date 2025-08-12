@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { View, Text, StyleSheet, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Clock, Crown } from 'lucide-react-native';
+import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
 import { useAuth } from '@/hooks/useAuth';
@@ -137,13 +138,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: Typography.sizes.xl,
     fontWeight: Typography.weights.bold,
-    color: '#1F2937',
+    color: Colors.textPrimary,
     textAlign: 'center',
     marginBottom: 16,
   },
   message: {
     fontSize: Typography.sizes.base,
-    color: '#6B7280',
+    color: Colors.textSecondary,
     textAlign: 'center',
     lineHeight: Typography.sizes.base * Typography.lineHeights.relaxed,
     marginBottom: 32,
@@ -164,7 +165,7 @@ const styles = StyleSheet.create({
   premiumTitle: {
     fontSize: Typography.sizes.lg,
     fontWeight: Typography.weights.bold,
-    color: '#1F2937',
+    color: Colors.textPrimary,
     marginLeft: 8,
   },
   benefitsList: {
@@ -172,7 +173,7 @@ const styles = StyleSheet.create({
   },
   benefit: {
     fontSize: Typography.sizes.base,
-    color: '#1F2937',
+    color: Colors.textPrimary,
     marginBottom: 8,
     textAlign: 'center',
   },
