@@ -364,12 +364,6 @@ export default function SubscriptionScreen() {
               <Text style={styles.trustText}>✓ Annulation facile</Text>
               <Text style={styles.trustText}>✓ Paiement sécurisé</Text>
             </View>
-
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>
-                Annule quand tu veux • Restore Purchases
-              </Text>
-            </View>
           </View>
         </>
       ) : (
