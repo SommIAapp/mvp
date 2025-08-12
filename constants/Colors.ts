@@ -1,27 +1,27 @@
 export const Colors = {
   // Couleurs principales
-  primary: '#A0616A',        // Rose/Bordeaux original
-  secondary: '#D4AF37',      // Doré original
-  accent: '#FFF5F5',         // Rose très clair original
+  primary: '#6B2B3A',        // Bordeaux foncé
+  secondary: '#D4AF37',      // Doré (garde l'original)
+  accent: '#FAF6F0',         // Beige clair (PAS rose)
   
   // Textes
-  textPrimary: '#333333',    // Gris foncé original
-  textSecondary: '#666666',  // Gris moyen original
-  textLight: '#999999',      // Gris clair original
+  textPrimary: '#2C2C2C',    // Presque noir
+  textSecondary: '#666666',  // Gris moyen
+  textLight: '#999999',      // Gris clair
   
   // Backgrounds
-  softGray: '#F5F5F5',       // Gris très clair original
+  softGray: '#F5F5F5',       // Gris très clair
   white: '#FFFFFF',          // Blanc pur
-  darkGray: '#4A4A4A',       // Gris foncé original
+  darkGray: '#4A4A4A',       // Gris foncé
   
   // States
-  success: '#4CAF50',        // Vert original
-  error: '#FF5252',          // Rouge original
-  warning: '#FFA726',        // Orange original
+  success: '#4CAF50',        // Vert
+  error: '#F44336',          // Rouge
+  warning: '#FF9800',        // Orange
   
   // Autres
   transparent: 'transparent',
-  border: '#E0E0E0',         // Bordures légères originales
+  border: '#E0E0E0',         // Bordures légères
   
   // Additional colors for wine categories (legacy compatibility)
   economique: '#4CAF50',     // Green
