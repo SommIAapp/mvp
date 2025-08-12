@@ -375,7 +375,7 @@ export default function SubscriptionScreen() {
 
           <View style={styles.content}>
             <Image
-              source={require('@/assets/images/vdsub.gif')}
+              source={require('@/assets/images/giftrial.gif')}
               style={styles.demoGif}
               resizeMode="contain"
             />
