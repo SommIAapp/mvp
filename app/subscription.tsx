@@ -242,8 +242,8 @@ export default function SubscriptionScreen() {
             )}
           </View>
 
+          {/* Contenu */}
           <View style={styles.content}>
-            {/* Section pricing directement */}
             <Text style={styles.pricingSectionTitle}>Choisis ton plan</Text>
             
             <View style={styles.plansListContainer}>
@@ -333,14 +333,23 @@ export default function SubscriptionScreen() {
               <Text style={styles.trustText}>✓ Annulation facile</Text>
               <Text style={styles.trustText}>✓ Paiement sécurisé</Text>
             </View>
+
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>
+                Annule quand tu veux • Restore Purchases
+              </Text>
+            </View>
           </View>
         </>
       ) : (
         <>
+          {/* Contenu trial_signup existant */}
           <View style={styles.header}>
             <View style={styles.headerContent}>
+              {/* Contenu existant */}
             </View>
           </View>
+
           <View style={styles.content}>
             <Image
               source={require('@/assets/images/vdsub.gif')}
@@ -362,16 +371,15 @@ export default function SubscriptionScreen() {
                 loading={loading || contentConfig.loading}
               />
             </View>
+
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>
+                Annule quand tu veux • Restore Purchases
+              </Text>
+            </View>
           </View>
         </>
       )}
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            Annule quand tu veux • Restore Purchases
-          </Text>
-        </View>
-      </View>
     </ScrollView>
   );
 }
