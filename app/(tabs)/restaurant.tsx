@@ -51,10 +51,18 @@ export default function RestaurantScreen() {
     clearSession
   } = useRestaurantMode();
 
+  const WINE_TYPES = [
+    { id: 'rouge', label: 'Rouge', color: '#6B2B3A' },
+    { id: 'blanc', label: 'Blanc', color: '#D4C5A0' },
+    { id: 'rose', label: 'Rosé', color: '#F5B5A3' },
+    { id: 'champagne', label: 'Champagne', color: '#D4AF37' },
+  ];
+
   const [dishDescription, setDishDescription] = useState('');
   const [step, setStep] = useState<RestaurantStep>('scan');
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [selectedBudget, setSelectedBudget] = useState<number>(25); // Par défaut 20-35€
+  const [selectedWineType, setSelectedWineType] = useState<string | null>(null);
   const [appState, setAppState] = useState(AppState.currentState);
   const hasNavigatedRef = useRef(false);
   const hasLoadedFromHistoryRef = useRef(false);
