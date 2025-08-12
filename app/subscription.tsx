@@ -282,11 +282,67 @@ export default function SubscriptionScreen() {
             <Text style={styles.pricingSectionTitle}>Choisis ton plan</Text>
             
             <View style={styles.plansListContainer}>
-              {/* Plans ici - copiez le contenu existant */}
-            </View>
+              {/* Plan Annuel - En premier et mis en avant */}
+              <TouchableOpacity 
+                style={[
+                  styles.planOption, 
+                  styles.recommendedPlan,
+                  selectedPlan === 'annual' && styles.selectedPlanOption
+                ]}
+                onPress={() => setSelectedPlan('annual')}
+              >
+                <View style={styles.planContent}>
+                  <View style={styles.planHeader}>
+                    <Text style={styles.planTitle}>Annuel</Text>
+                    <View style={styles.saveBadge}>
+                      <Text style={styles.saveText}>ÉCONOMISE 50%</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.planPrice}>30€ par an</Text>
+                  <Text style={styles.planEquivalent}>Seulement 2,50€/mois</Text>
+                </View>
+                <View style={styles.radioButton}>
+                  {selectedPlan === 'annual' && <View style={styles.radioButtonInner} />}
+                </View>
+              </TouchableOpacity>
 
-            <View style={styles.freeTrialToggle}>
-              <Text style={styles.freeTrialText}>✓ Essai gratuit 7 jours inclus</Text>
+              {/* Plan Mensuel */}
+              <TouchableOpacity 
+                style={[
+                  styles.planOption,
+                  selectedPlan === 'monthly' && styles.selectedPlanOption
+                ]}
+                onPress={() => setSelectedPlan('monthly')}
+              >
+                <View style={styles.planContent}>
+                  <View style={styles.planHeader}>
+                    <Text style={styles.planTitle}>Mensuel</Text>
+                  </View>
+                  <Text style={styles.planPrice}>4,99€ par mois</Text>
+                </View>
+                <View style={styles.radioButton}>
+                  {selectedPlan === 'monthly' && <View style={styles.radioButtonInner} />}
+                </View>
+              </TouchableOpacity>
+
+              {/* Plan Hebdomadaire */}
+              <TouchableOpacity 
+                style={[
+                  styles.planOption,
+                  selectedPlan === 'weekly' && styles.selectedPlanOption
+                ]}
+                onPress={() => setSelectedPlan('weekly')}
+              >
+                <View style={styles.planContent}>
+                  <View style={styles.planHeader}>
+                    <Text style={styles.planTitle}>Hebdomadaire</Text>
+                  </View>
+                  <Text style={styles.planPrice}>2,99€ par semaine</Text>
+                </View>
+                <View style={styles.radioButton}>
+                  {selectedPlan === 'weekly' && <View style={styles.radioButtonInner} />}
+                </View>
+              </TouchableOpacity>
             </View>
 
             <Button
