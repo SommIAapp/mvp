@@ -601,11 +601,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.9)',
     borderRadius: 20,
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
   },
   infoGrid: {
     flexDirection: 'row',
@@ -673,7 +668,7 @@ const styles = StyleSheet.create({
   },
   priceBadge: {
     position: 'absolute',
-    top: -10,
+    top: 10,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
