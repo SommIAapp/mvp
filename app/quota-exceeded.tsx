@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   priceText: {
     fontSize: Typography.sizes.lg,
     fontWeight: Typography.weights.bold,
-    color: Colors.primary,
+    color: '#6B2B3A',
     textAlign: 'center',
   },
   buttonSection: {
