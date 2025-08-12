@@ -104,7 +104,6 @@ export default function SubscriptionScreen() {
       case 'daily_limit':
         return {
           title: 'Limite quotidienne atteinte',
-          subtitle: 'Passe à Premium pour des recommandations illimitées',
           buttonTitle: 'Passer à Premium',
           onPress: () => handleBuyPremium(premiumProduct?.priceId || ''),
           loading: false,
