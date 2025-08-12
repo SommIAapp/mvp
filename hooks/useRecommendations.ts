@@ -129,7 +129,8 @@ export function useRecommendations() {
       const wines = await fetchUnifiedRecommendations({
         mode: 'dish_photo',
         dish_image_base64: photoBase64,
-        user_budget: budget
+        user_budget: budget,
+        wine_type_preference: wineType
       });
 
       console.log('📸 getRecommendationsFromPhoto - DISH_PHOTO mode completed, wines:', wines.length);

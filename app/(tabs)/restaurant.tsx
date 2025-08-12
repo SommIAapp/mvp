@@ -540,6 +540,33 @@ export default function RestaurantScreen() {
               </View>
             </View>
 
+            {/* Section type de vin */}
+            <View style={styles.wineTypeSection}>
+              <Text style={styles.sectionTitle}>Type de vin préféré</Text>
+              <Text style={styles.sectionSubtitle}>Optionnel</Text>
+              
+              <View style={styles.wineTypeGrid}>
+                {WINE_TYPES.map(type => (
+                  <TouchableOpacity
+                    key={type.id}
+                    style={[
+                      styles.wineTypePill,
+                      selectedWineType === type.id && styles.wineTypePillActive,
+                      selectedWineType === type.id && { backgroundColor: type.color }
+                    ]}
+                    onPress={() => setSelectedWineType(selectedWineType === type.id ? null : type.id)}
+                  >
+                    <Text style={[
+                      styles.wineTypeText,
+                      selectedWineType === type.id && styles.wineTypeTextActive
+                    ]}>
+                      {type.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
             <Button
               title={restaurantLoading ? "Recherche en cours..." : "Trouver l'accord parfait"}
               onPress={handleGetRecommendations}
@@ -727,6 +754,42 @@ const styles = StyleSheet.create({
   },
   budgetOptionTextSelected: {
     color: 'white',
+  },
+  wineTypeSection: {
+    marginBottom: 24,
+  },
+  wineTypeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    justifyContent: 'space-between',
+  },
+  wineTypePill: {
+    backgroundColor: 'white',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    width: '48%',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  wineTypePillActive: {
+    borderColor: 'transparent',
+  },
+  wineTypeText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+  },
+  wineTypeTextActive: {
+    color: 'white',
+    fontWeight: '600',
   },
   errorCard: {
     backgroundColor: Colors.error,

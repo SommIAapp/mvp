@@ -24,12 +24,20 @@ const { width } = Dimensions.get('window');
 
 const BUDGET_OPTIONS = ['€10', '€20', '€30', '€50+'];
 
+const WINE_TYPES = [
+  { id: 'rouge', label: 'Rouge', color: '#6B2B3A' },
+  { id: 'blanc', label: 'Blanc', color: '#D4C5A0' },
+  { id: 'rose', label: 'Rosé', color: '#F5B5A3' },
+  { id: 'champagne', label: 'Champagne', color: '#D4AF37' },
+];
+
 export default function HomeScreen() {
   const router = useRouter();
   const { user, profile, loading, canMakeRecommendation, updateUsageCount } = useAuth();
   const { getRecommendations, getRecommendationsFromPhoto } = useRecommendations();
   const [dishDescription, setDishDescription] = useState('');
   const [selectedBudget, setSelectedBudget] = useState<string | null>(null);
+  const [selectedWineType, setSelectedWineType] = useState<string | null>(null);
   const [recommendationLoading, setRecommendationLoading] = useState(false);
 
   useEffect(() => {
@@ -106,7 +114,8 @@ export default function HomeScreen() {
       const budgetValue = selectedBudget ? parseInt(selectedBudget.replace('€', '').replace('+', '')) : undefined;
       const recommendations = await getRecommendations(
         dishDescription,
-        budgetValue
+        budgetValue,
+        selectedWineType
       );
 
       console.log('✅ handleGetRecommendations - Recommendations received:', recommendations);
@@ -132,6 +141,7 @@ export default function HomeScreen() {
         params: {
           dish: dishDescription,
           budget: budgetValue?.toString() || '',
+          wineType: selectedWineType || '',
           recommendations: JSON.stringify(recommendations),
         },
       });
@@ -219,7 +229,8 @@ export default function HomeScreen() {
       const budgetValue = selectedBudget ? parseInt(selectedBudget.replace('€', '').replace('+', '')) : undefined;
       const recommendations = await getRecommendationsFromPhoto(
         result.assets[0].base64,
-        budgetValue
+        budgetValue,
+        selectedWineType
       );
 
       console.log('✅ handlePhotoRecommendations - Photo recommendations received:', recommendations);
@@ -245,6 +256,7 @@ export default function HomeScreen() {
         params: {
           dish: 'Photo de plat',
           budget: selectedBudget?.toString() || '',
+          wineType: selectedWineType || '',
           recommendations: JSON.stringify(recommendations),
           photoMode: 'true',
         },
@@ -316,7 +328,8 @@ export default function HomeScreen() {
       const budgetValue = selectedBudget ? parseInt(selectedBudget.replace('€', '').replace('+', '')) : undefined;
       const recommendations = await getRecommendationsFromPhoto(
         result.assets[0].base64,
-        budgetValue
+        budgetValue,
+        selectedWineType
       );
 
       console.log('✅ handleGalleryRecommendations - Photo recommendations received:', recommendations);
@@ -342,6 +355,7 @@ export default function HomeScreen() {
         params: {
           dish: 'Photo de plat',
           budget: selectedBudget?.toString() || '',
+          wineType: selectedWineType || '',
           recommendations: JSON.stringify(recommendations),
           photoMode: 'true',
         },
@@ -429,6 +443,33 @@ export default function HomeScreen() {
                   selectedBudget === budget && styles.budgetTextActive
                 ]}>
                   {budget}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* Section type de vin */}
+        <View style={styles.wineTypeSection}>
+          <Text style={styles.sectionTitle}>Type de vin préféré</Text>
+          <Text style={styles.sectionSubtitle}>Optionnel</Text>
+          
+          <View style={styles.wineTypeGrid}>
+            {WINE_TYPES.map(type => (
+              <TouchableOpacity
+                key={type.id}
+                style={[
+                  styles.wineTypePill,
+                  selectedWineType === type.id && styles.wineTypePillActive,
+                  selectedWineType === type.id && { backgroundColor: type.color }
+                ]}
+                onPress={() => setSelectedWineType(selectedWineType === type.id ? null : type.id)}
+              >
+                <Text style={[
+                  styles.wineTypeText,
+                  selectedWineType === type.id && styles.wineTypeTextActive
+                ]}>
+                  {type.label}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -578,6 +619,43 @@ const styles = StyleSheet.create({
   },
   budgetTextActive: {
     color: 'white',
+  },
+  wineTypeSection: {
+    marginTop: 32,
+    paddingHorizontal: 20,
+  },
+  wineTypeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    justifyContent: 'space-between',
+  },
+  wineTypePill: {
+    backgroundColor: 'white',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    width: '48%',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  wineTypePillActive: {
+    borderColor: 'transparent',
+  },
+  wineTypeText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+  },
+  wineTypeTextActive: {
+    color: 'white',
+    fontWeight: '600',
   },
   ctaButton: {
     marginHorizontal: 20,
