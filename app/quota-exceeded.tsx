@@ -101,7 +101,6 @@ export default function QuotaExceededScreen() {
                   ? "Ok, à demain !" 
                   : "Plus tard"
               }
-              onPress={() => router.dismiss()}
               onPress={() => {
                 console.log('🚫 QuotaExceeded: Dismiss button pressed, closing modal');
                 router.dismiss();
@@ -181,7 +180,7 @@ const styles = StyleSheet.create({
   priceText: {
     fontSize: Typography.sizes.lg,
     fontWeight: Typography.weights.bold,
-    color: '#6B2B3A',
+    color: Colors.primary,
     textAlign: 'center',
   },
   buttonSection: {
