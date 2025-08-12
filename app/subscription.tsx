@@ -104,6 +104,7 @@ export default function SubscriptionScreen() {
         return {
           title: 'Limite quotidienne atteinte',
           subtitle: 'Passe à Premium pour des recommandations illimitées',
+          badge: '⭐ Premium',
           buttonTitle: 'Passer à Premium',
           onPress: () => handleBuyPremium(premiumProduct?.priceId || ''),
           loading: false,
@@ -212,7 +213,7 @@ export default function SubscriptionScreen() {
         )}
         
         <View style={styles.headerContent}>
-        {reason !== 'trial_signup' && contentConfig.badge && (
+        {reason !== 'trial_signup' && (
           <>
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{contentConfig.badge}</Text>
@@ -220,7 +221,7 @@ export default function SubscriptionScreen() {
             <Text style={styles.title}>{contentConfig.title}</Text>
           </>
         )}
-        {reason !== 'trial_signup' && contentConfig.subtitle && reason !== 'daily_limit' && (
+        {reason !== 'trial_signup' && (
           <Text style={styles.subtitle}>{contentConfig.subtitle}</Text>
         )}
       </View>
@@ -336,8 +337,12 @@ export default function SubscriptionScreen() {
               </TouchableOpacity>
             </View>
 
+            <View style={styles.freeTrialToggle}>
+              <Text style={styles.freeTrialText}>✓ Essai gratuit 7 jours inclus</Text>
+            </View>
+
             <Button
-              title={reason === 'daily_limit' ? "Passer à Premium" : "Commencer l'essai gratuit"}
+              title="Commencer l'essai gratuit"
               onPress={() => {
                 const priceId = selectedPlan === 'weekly' ? weeklyProduct?.priceId :
                                selectedPlan === 'monthly' ? premiumProduct?.priceId :
@@ -399,7 +404,6 @@ const styles = StyleSheet.create({
   headerContent: {
     flex: 1,
     alignItems: 'center',
-    marginLeft: -44, // Compense la largeur du bouton retour pour centrer
   },
   badge: {
     flexDirection: 'row',
