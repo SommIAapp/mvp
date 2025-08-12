@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity, Dimensions
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Sparkles, Wine, Smartphone, RotateCcw, X, Check, ArrowLeft, Camera, DollarSign, BookOpen } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Path } from 'react-native-svg';
 import { Video } from 'expo-av';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
@@ -104,7 +105,6 @@ export default function SubscriptionScreen() {
         return {
           title: 'Limite quotidienne atteinte',
           subtitle: 'Passe à Premium pour des recommandations illimitées',
-          badge: '⭐ Premium',
           buttonTitle: 'Passer à Premium',
           onPress: () => handleBuyPremium(premiumProduct?.priceId || ''),
           loading: false,
@@ -114,7 +114,6 @@ export default function SubscriptionScreen() {
         return {
           title: 'Essai terminé !',
           subtitle: 'Continue avec Premium pour des recommandations illimitées',
-          badge: '⭐ Premium',
           buttonTitle: 'Passer à Premium',
           onPress: () => handleBuyPremium(premiumProduct?.priceId || ''),
           loading: false,
@@ -123,8 +122,6 @@ export default function SubscriptionScreen() {
       case 'premium_upgrade':
         return {
           title: 'Passe à Premium',
-          subtitle: 'Accès illimité à toutes les fonctionnalités',
-          badge: '⭐ Premium',
           buttonTitle: 'Passer à Premium',
           onPress: () => handleBuyPremium(premiumProduct?.priceId || ''),
           loading: false,
@@ -196,81 +193,57 @@ export default function SubscriptionScreen() {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        {reason !== 'trial_signup' && (
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => {
-              if (router.canGoBack()) {
-                router.back();
-              } else {
-                router.replace('/(tabs)');
-              }
-            }}
-          >
-            <ArrowLeft size={24} color={Colors.primary} />
-          </TouchableOpacity>
-        )}
-        
-        <View style={styles.headerContent}>
-        {reason !== 'trial_signup' && (
-          <>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{contentConfig.badge}</Text>
-            </View>
-            <Text style={styles.title}>{contentConfig.title}</Text>
-          </>
-        )}
-        {reason !== 'trial_signup' && (
-          <Text style={styles.subtitle}>{contentConfig.subtitle}</Text>
-        )}
-      </View>
-      </View>
-
-      <View style={styles.content}>
-        {reason === 'trial_signup' ? (
-          <>
-            <Image
-              source={require('@/assets/images/vdsub.gif')}
-              style={styles.demoGif}
-              resizeMode="contain"
-            />
-
-            <Text style={styles.trialText}>
-              Essai gratuit 7 jours
-            </Text>
-
-            <View style={styles.buttonSection}>
-              <Button
-                title={(loading || contentConfig.loading) ? "Chargement..." : "Commencer"}
-                onPress={contentConfig.onPress}
-                variant="primary"
-                size="large"
-                fullWidth
-                loading={loading || contentConfig.loading}
+      {reason !== 'trial_signup' ? (
+        <>
+          {/* Header avec gradient */}
+          <View style={styles.headerSection}>
+            <LinearGradient
+              colors={['#6B2B3A', '#8B4B5A']}
+              style={styles.headerGradient}
+            >
+              {/* Bouton retour */}
+              <TouchableOpacity 
+                style={styles.backButtonGradient}
+                onPress={() => {
+                  if (router.canGoBack()) {
+                    router.back();
+                  } else {
+                    router.replace('/(tabs)');
+                  }
+                }}
+              >
+                <ArrowLeft size={24} color="white" />
+              </TouchableOpacity>
+              
+              {/* SOMMIA centré */}
+              <Text style={styles.headerTitle}>SOMMIA</Text>
+            </LinearGradient>
+            
+            {/* Vague SVG */}
+            <Svg
+              height={40}
+              width="100%"
+              viewBox="0 0 400 40"
+              style={styles.wave}
+              preserveAspectRatio="none"
+            >
+              <Path
+                d="M0,20 Q100,0 200,15 T400,20 L400,40 L0,40 Z"
+                fill="#FAF6F0"
               />
-            </View>
-          </>
-        ) : (
-          <View style={styles.benefitsSection}>
-            <View style={styles.benefit}>
-              <Wine size={24} color={Colors.secondary} />
-              <Text style={styles.benefitText}>Accords personnalisés selon ton budget</Text>
-            </View>
-            
-            <View style={styles.benefit}>
-              <Smartphone size={24} color={Colors.secondary} />
-              <Text style={styles.benefitText}>Explications sommelier pour chaque choix</Text>
-            </View>
-            
-            <View style={styles.benefit}>
-              <RotateCcw size={24} color={Colors.secondary} />
-              <Text style={styles.benefitText}>Historique de tes découvertes</Text>
-            </View>
+            </Svg>
           </View>
-        )}
-        {reason !== 'trial_signup' && (
-          <>
+
+          {/* Titre sous la vague */}
+          <View style={styles.titleSection}>
+            <Text style={styles.pageTitle}>{contentConfig.title}</Text>
+            {contentConfig.subtitle && (
+              <Text style={styles.pageSubtitle}>{contentConfig.subtitle}</Text>
+            )}
+          </View>
+
+          <View style={styles.content}>
+            {/* Section pricing directement */}
             <Text style={styles.pricingSectionTitle}>Choisis ton plan</Text>
             
             <View style={styles.plansListContainer}>
@@ -360,8 +333,38 @@ export default function SubscriptionScreen() {
               <Text style={styles.trustText}>✓ Annulation facile</Text>
               <Text style={styles.trustText}>✓ Paiement sécurisé</Text>
             </View>
-          </>
-        )}
+          </View>
+        </>
+      ) : (
+        <>
+          <View style={styles.header}>
+            <View style={styles.headerContent}>
+            </View>
+          </View>
+          <View style={styles.content}>
+            <Image
+              source={require('@/assets/images/vdsub.gif')}
+              style={styles.demoGif}
+              resizeMode="contain"
+            />
+
+            <Text style={styles.trialText}>
+              Essai gratuit 7 jours
+            </Text>
+
+            <View style={styles.buttonSection}>
+              <Button
+                title={(loading || contentConfig.loading) ? "Chargement..." : "Commencer"}
+                onPress={contentConfig.onPress}
+                variant="primary"
+                size="large"
+                fullWidth
+                loading={loading || contentConfig.loading}
+              />
+            </View>
+          </View>
+        </>
+      )}
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>
@@ -384,6 +387,59 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: Colors.accent,
   },
+  headerSection: {
+    position: 'relative',
+  },
+  headerGradient: {
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    paddingBottom: 50,
+    position: 'relative',
+  },
+  backButtonGradient: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  headerTitle: {
+    fontSize: 36,
+    fontWeight: '700',
+    color: 'white',
+    textAlign: 'center',
+    letterSpacing: 1.5,
+    marginTop: 50,
+  },
+  wave: {
+    position: 'absolute',
+    bottom: -1,
+    left: 0,
+    right: 0,
+  },
+  titleSection: {
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 30,
+    paddingBottom: 20,
+  },
+  pageTitle: {
+    fontSize: Typography.sizes.xxl,
+    fontWeight: Typography.weights.bold,
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  pageSubtitle: {
+    fontSize: Typography.sizes.lg,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -391,77 +447,13 @@ const styles = StyleSheet.create({
     paddingTop: 80,
     paddingBottom: 16,
   },
-  backButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: Colors.softGray,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-    marginTop: 8,
-  },
   headerContent: {
     flex: 1,
     alignItems: 'center',
   },
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.secondary,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginBottom: 24,
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  badgeText: {
-    fontSize: Typography.sizes.sm,
-    fontWeight: Typography.weights.semibold,
-    color: Colors.darkGray,
-  },
-  title: {
-    fontSize: Typography.sizes.xxl,
-    fontWeight: Typography.weights.bold,
-    color: Colors.textPrimary,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: Typography.sizes.lg,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-  },
-  mainTitle: {
-    fontSize: Typography.sizes.xxl,
-    fontWeight: Typography.weights.bold,
-    color: Colors.textPrimary,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
   content: {
     flex: 1,
     paddingHorizontal: 24,
-  },
-  benefitsSection: {
-    marginBottom: 40,
-  },
-  benefit: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-    paddingHorizontal: 8,
-  },
-  benefitText: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.medium,
-    color: Colors.textPrimary,
-    marginLeft: 16,
-    flex: 1,
   },
   offerBox: {
     backgroundColor: Colors.softGray,
