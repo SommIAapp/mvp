@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   },
   premiumSection: {
     backgroundColor: Colors.softGray,
-    borderRadius: 16,
+    borderRadius: 26,
     padding: 24,
     width: '100%',
     marginBottom: 32,

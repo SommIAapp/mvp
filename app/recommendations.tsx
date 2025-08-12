@@ -653,6 +653,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 16,
+    paddingHorizontal: 32,
     borderRadius: 26,
     gap: 12,
     shadowColor: '#6B2B3A',

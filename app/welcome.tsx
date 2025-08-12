@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.accent,
     paddingHorizontal: 24,
-    paddingTop: 32,
+    borderRadius: 26,
     paddingBottom: 40,
   },
   heroContent: {
