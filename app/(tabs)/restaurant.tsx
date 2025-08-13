@@ -87,7 +87,6 @@ export default function RestaurantScreen() {
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
       if (appState.match(/inactive|background/) && nextAppState === 'active') {
-       wineType: selectedWineType || '',
         // Rafraîchir la session si nécessaire
         checkAndRefreshSession();
       }
@@ -555,6 +554,33 @@ export default function RestaurantScreen() {
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <View style={styles.scanContainer}>
+            <View style={styles.scanSection}>
+              <View style={styles.scanCard}>
+                <Text style={styles.scanTitle}>
+                  Scannez la carte des vins du restaurant
+                </Text>
+                
+                <View style={styles.scanButtons}>
+                  <Button
+                    title="📸 Prendre une photo"
+                    onPress={handleScanCard}
+                    variant="primary"
+                    disabled={restaurantLoading}
+                  />
+                  
+                  <Button
+                    title="🖼️ Choisir depuis galerie"
+                    onPress={handlePickFromGallery}
+                    variant="secondary"
+                    disabled={restaurantLoading}
+                  />
+                </View>
+              </View>
+            </View>
+
+            {/* Section budget élégante */}
+            <View style={styles.budgetSection}>
               <TouchableOpacity 
                 style={styles.sectionHeader}
                 onPress={() => setShowBudgetOptions(!showBudgetOptions)}
@@ -638,7 +664,7 @@ export default function RestaurantScreen() {
             style={styles.wave}
             preserveAspectRatio="none"
           >
-      </ScrollView>
+            <Path
               d="M0,20 Q100,0 200,15 T400,20 L400,40 L0,40 Z"
               fill="#FAF6F0"
             />
@@ -753,25 +779,6 @@ export default function RestaurantScreen() {
                     <TouchableOpacity
                       key={type.id}
                       style={[
-                        styles.wineTypePill,
-                        selectedWineType === type.id && styles.wineTypePillActive,
-                        selectedWineType === type.id && { backgroundColor: type.color }
-                      ]}
-                      onPress={() => {
-                        setSelectedWineType(selectedWineType === type.id ? null : type.id);
-                        setShowWineTypeOptions(false);
-                      }}
-                    >
-                      <Text style={[
-                        styles.wineTypeText,
-                        selectedWineType === type.id && styles.wineTypeTextActive
-                      ]}>
-                        {type.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
                         styles.wineTypePill,
                         selectedWineType === type.id && styles.wineTypePillActive,
                         selectedWineType === type.id && { backgroundColor: type.color }
@@ -979,34 +986,6 @@ const styles = StyleSheet.create({
   budgetSection: {
     marginTop: 32,
     paddingHorizontal: 20,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  chevronContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#F5F5F5',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  chevron: {
-    fontSize: 20,
-    color: '#6B2B3A',
-    fontWeight: '600',
   },
   sectionHeader: {
     flexDirection: 'row',
