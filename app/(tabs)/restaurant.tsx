@@ -418,11 +418,12 @@ export default function RestaurantScreen() {
       
       // Naviguer vers la page recommendations au lieu de step results
       results = await getRestaurantRecommendations(
-          dishDescription,
-          budgetValue,      // Ajoute le budget
-          selectedWineType  // Ajoute le wine type
-        );
-      }
+        dishDescription,
+        budgetValue,      // Ajoute le budget
+        selectedWineType  // Ajoute le wine type
+      );
+      
+      router.push({
         pathname: '/recommendations',
         params: {
           mode: 'restaurant',
@@ -794,7 +795,6 @@ const styles = StyleSheet.create({
     color: 'white',
     textAlign: 'center',
     letterSpacing: 1.5,
-    marginTop: 50,
     marginTop: 50,
   },
   avatarButton: {
