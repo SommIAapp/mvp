@@ -9,11 +9,12 @@ import {
   TextInput,
   Alert,
   Image,
+  Image,
   Dimensions,
   AppState,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Camera, Upload, Check, Wine, User, RotateCcw } from 'lucide-react-native';
+import { Camera, Upload, Check, Wine, User, RotateCcw, X } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -64,6 +65,7 @@ export default function RestaurantScreen() {
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [selectedBudget, setSelectedBudget] = useState<string | null>(null);
   const [selectedWineType, setSelectedWineType] = useState<string | null>(null);
+  const [dishImage, setDishImage] = useState<string | null>(null);
   const [appState, setAppState] = useState(AppState.currentState);
   const hasNavigatedRef = useRef(false);
   const hasLoadedFromHistoryRef = useRef(false);
@@ -370,25 +372,51 @@ export default function RestaurantScreen() {
       return;
     }
 
-    if (!dishDescription.trim()) {
-      Alert.alert('Erreur', 'Veuillez décrire votre plat');
+    if (!dishDescription.trim() && !dishImage) {
+      Alert.alert('Erreur', 'Décris ton plat ou prends-le en photo');
       return;
     }
 
     try {
       const budgetValue = selectedBudget ? parseInt(selectedBudget.replace('€', '').replace('+', '')) : undefined;
-      const results = await getRestaurantRecommendations(dishDescription);
+      let results;
+      
+      if (dishImage) {
+        // Si on a une image, utilise getRecommendationsFromPhoto
+        // Récupérer le base64 de l'image
+        const manipResult = await ImageManipulator.manipulateAsync(
+          dishImage,
+          [{ resize: { width: 600 } }],
+          { 
+            compress: 0.4,
+            format: ImageManipulator.SaveFormat.JPEG,
+            base64: true
+          }
+        );
+        
+        if (manipResult.base64) {
+          results = await getRecommendationsFromPhoto(
+            manipResult.base64,
+            budgetValue,
+            selectedWineType
+          );
+        }
+      } else {
+        // Sinon utilise le texte
+        results = await getRestaurantRecommendations(dishDescription);
+      }
       
       // Naviguer vers la page recommendations au lieu de step results
       router.push({
         pathname: '/recommendations',
         params: {
           mode: 'restaurant',
-          dish: dishDescription,
+          dish: dishImage ? 'Photo de plat' : dishDescription,
           budget: budgetValue?.toString() || '',
           wineType: selectedWineType || '',
           recommendations: JSON.stringify(results),
           restaurantName: currentSession?.restaurant_name || '',
+          photoMode: dishImage ? 'true' : 'false',
         }
       });
     } catch (error: any) {
@@ -405,14 +433,29 @@ export default function RestaurantScreen() {
         { 
           text: '📸 Prendre une photo', 
           onPress: async () => {
-            // Utilise la logique existante pour la photo
-            await handleScanCard();
+            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+            
+            if (status !== 'granted') {
+              Alert.alert('Permission requise', 'L\'accès à la caméra est nécessaire.');
+              return;
+            }
+
+            const result = await ImagePicker.launchCameraAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: true,
+              aspect: [4, 3],
+              quality: 0.8,
+              base64: true,
+            });
+
+            if (!result.canceled) {
+              setDishImage(result.assets[0].uri);
+            }
           }
         },
         { 
           text: '🖼️ Choisir depuis galerie', 
           onPress: async () => {
-            // Logique pour choisir depuis la galerie
             const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
             
             if (status !== 'granted') {
@@ -428,9 +471,8 @@ export default function RestaurantScreen() {
               base64: true,
             });
 
-            if (!result.canceled && result.assets[0].base64) {
-              // Traiter l'image comme pour un scan de plat
-              // Tu peux adapter selon tes besoins
+            if (!result.canceled) {
+              setDishImage(result.assets[0].uri);
             }
           }
         },
@@ -573,22 +615,36 @@ export default function RestaurantScreen() {
             
             {/* Input premium flottant */}
             <View style={styles.inputCard}>
-              <TextInput
-                style={styles.input}
-                placeholder="Décris ton plat ou prends-le en photo"
-                placeholderTextColor="#999"
-                value={dishDescription}
-                onChangeText={setDishDescription}
-                multiline
-                numberOfLines={2}
-                maxLength={200}
-              />
-              <TouchableOpacity 
-                style={styles.cameraButton}
-                onPress={handleCameraPress}
-              >
-                <Camera size={24} color="white" />
-              </TouchableOpacity>
+              {dishImage ? (
+                <View style={styles.imageContainer}>
+                  <Image source={{ uri: dishImage }} style={styles.dishImage} />
+                  <TouchableOpacity 
+                    style={styles.removeImageButton}
+                    onPress={() => setDishImage(null)}
+                  >
+                    <X size={20} color="white" />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Décris ton plat ou prends-le en photo"
+                    placeholderTextColor="#999"
+                    value={dishDescription}
+                    onChangeText={setDishDescription}
+                    multiline
+                    numberOfLines={2}
+                    maxLength={200}
+                  />
+                  <TouchableOpacity 
+                    style={styles.cameraButton}
+                    onPress={handleCameraPress}
+                  >
+                    <Camera size={24} color="white" />
+                  </TouchableOpacity>
+                </>
+              )}
             </View>
 
             {/* Section budget élégante */}
@@ -945,6 +1001,27 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imageContainer: {
+    width: '100%',
+    height: 120,
+    position: 'relative',
+  },
+  dishImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 16,
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
