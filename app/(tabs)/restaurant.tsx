@@ -9,7 +9,6 @@ import {
   TextInput,
   Alert,
   Image,
-  Image,
   AppState,
 } from 'react-native';
 import { useRouter } from 'expo-router';
