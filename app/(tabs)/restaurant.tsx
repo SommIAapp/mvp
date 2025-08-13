@@ -944,7 +944,7 @@ const styles = StyleSheet.create({
     fontWeight: Typography.weights.bold,
     color: Colors.textPrimary,
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: 20,
     marginTop: 20,
   },
   stepSubtitle: {
@@ -956,7 +956,7 @@ const styles = StyleSheet.create({
   inputCard: {
     backgroundColor: 'white',
     marginHorizontal: 20,
-    marginTop: 50,
+    marginTop: 24,
     borderRadius: 24,
     padding: 16,
     flexDirection: 'row',
