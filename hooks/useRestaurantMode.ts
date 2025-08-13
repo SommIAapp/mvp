@@ -89,13 +89,6 @@ export function useRestaurantMode() {
       setCurrentSession(restaurantSession);
       console.log('✅ scanWineCard - Session créée:', restaurantSession.id);
       
-      // Update usage count after successful scan
-      if (user) {
-        console.log('📈 scanWineCard - Mise à jour du compteur d\'usage...');
-        await updateUsageCount();
-        console.log('✅ scanWineCard - Compteur d\'usage mis à jour');
-      }
-      
       return restaurantSession;
 
     } catch (err) {
