@@ -73,8 +73,6 @@ export default function RestaurantScreen() {
   const hasLoadedFromHistoryRef = useRef(false);
   const [showBudgetOptions, setShowBudgetOptions] = useState(false);
   const [showWineTypeOptions, setShowWineTypeOptions] = useState(false);
-  const [showBudgetOptions, setShowBudgetOptions] = useState(false);
-  const [showWineTypeOptions, setShowWineTypeOptions] = useState(false);
 
   const BUDGET_OPTIONS = ['€10', '€20', '€30', '€50+'];
 
