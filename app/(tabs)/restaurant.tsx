@@ -578,51 +578,6 @@ export default function RestaurantScreen() {
                 </View>
               </View>
             </View>
-
-            {/* Section budget élégante */}
-            <View style={styles.budgetSection}>
-              <TouchableOpacity 
-                style={styles.sectionHeader}
-                onPress={() => setShowBudgetOptions(!showBudgetOptions)}
-              >
-                <View>
-                  <Text style={styles.sectionTitle}>Budget par bouteille</Text>
-                  <Text style={styles.sectionSubtitle}>
-                    {selectedBudget || 'Optionnel'}
-                  </Text>
-                </View>
-                <View style={styles.chevronContainer}>
-                  <Text style={styles.chevron}>
-                    {showBudgetOptions ? '−' : '+'}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-              
-              {showBudgetOptions && (
-                <View style={styles.budgetGrid}>
-                  {BUDGET_OPTIONS.map(budget => (
-                    <TouchableOpacity
-                      key={budget}
-                      style={[
-                        styles.budgetPill,
-                        selectedBudget === budget && styles.budgetPillActive
-                      ]}
-                      onPress={() => {
-                        setSelectedBudget(selectedBudget === budget ? null : budget);
-                        setShowBudgetOptions(false);
-                      }}
-                    >
-                      <Text style={[
-                        styles.budgetText,
-                        selectedBudget === budget && styles.budgetTextActive
-                      ]}>
-                        {budget}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-            </View>
           </View>
 
           {error && (
