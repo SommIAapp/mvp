@@ -401,14 +401,14 @@ export default function RestaurantScreen() {
             compress: 0.4,
             format: ImageManipulator.SaveFormat.JPEG,
             base64: true
-          selectedWineType  // Passe le wine type ici aussi
+          }
         );
         
         if (manipResult.base64) {
           results = await getRecommendationsFromPhoto(
             manipResult.base64,
             budgetValue,
-            selectedWineType
+            selectedWineType  // Passe le wine type ici aussi
           );
         }
       } else {
@@ -418,10 +418,11 @@ export default function RestaurantScreen() {
       
       // Naviguer vers la page recommendations au lieu de step results
       results = await getRestaurantRecommendations(
-        dishDescription,
-        budgetValue,      // Ajoute le budget
-        selectedWineType  // Ajoute le wine type
-      );
+          dishDescription,
+          budgetValue,      // Ajoute le budget
+          selectedWineType  // Ajoute le wine type
+        );
+      }
         pathname: '/recommendations',
         params: {
           mode: 'restaurant',
