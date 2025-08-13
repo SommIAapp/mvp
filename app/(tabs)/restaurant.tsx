@@ -671,6 +671,8 @@ export default function RestaurantScreen() {
           </Svg>
         </View>
 
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <View style={styles.dishSection}>
             {/* Input premium flottant */}
             <View style={styles.inputCard}>
               {dishImage ? (
@@ -814,7 +816,6 @@ export default function RestaurantScreen() {
 
   // Fallback - should not reach here
   return null;
-  );
 }
 
 const styles = StyleSheet.create({
