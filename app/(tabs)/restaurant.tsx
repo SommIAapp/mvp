@@ -10,7 +10,6 @@ import {
   Alert,
   Image,
   Image,
-  Dimensions,
   AppState,
 } from 'react-native';
 import { useRouter } from 'expo-router';
