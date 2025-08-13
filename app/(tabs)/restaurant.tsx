@@ -671,8 +671,6 @@ export default function RestaurantScreen() {
           </Svg>
         </View>
 
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          <View style={styles.dishSection}>
             {/* Input premium flottant */}
             <View style={styles.inputCard}>
               {dishImage ? (
@@ -954,7 +952,7 @@ const styles = StyleSheet.create({
   inputCard: {
     backgroundColor: 'white',
     marginHorizontal: 20,
-    marginTop: 30,
+    marginTop: 50,
     borderRadius: 24,
     padding: 16,
     flexDirection: 'row',
@@ -982,7 +980,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   budgetSection: {
-    marginTop: 16,
+    marginTop: 32,
     paddingHorizontal: 20,
   },
   sectionHeader: {
@@ -1059,7 +1057,7 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   wineTypeSection: {
-    marginTop: 16,
+    marginTop: 32,
     paddingHorizontal: 20,
   },
   wineTypeGrid: {
@@ -1097,17 +1095,17 @@ const styles = StyleSheet.create({
   },
   ctaButton: {
     marginHorizontal: 20,
-    marginTop: 24,
-    marginBottom: 30,
+    marginTop: 40,
+    marginBottom: 40,
     backgroundColor: '#6B2B3A',
     paddingVertical: 18,
     paddingHorizontal: 32,
     borderRadius: 26,
     shadowColor: '#6B2B3A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
     alignItems: 'center',
   },
   ctaText: {
