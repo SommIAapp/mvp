@@ -413,16 +413,14 @@ export default function RestaurantScreen() {
         }
       } else {
         // Sinon utilise le texte
-        results = await getRestaurantRecommendations(dishDescription);
+        results = await getRestaurantRecommendations(
+          dishDescription,
+          budgetValue,      // Ajoute le budget
+          selectedWineType  // Ajoute le wine type
+        );
       }
       
       // Naviguer vers la page recommendations au lieu de step results
-      results = await getRestaurantRecommendations(
-        dishDescription,
-        budgetValue,      // Ajoute le budget
-        selectedWineType  // Ajoute le wine type
-      );
-      
       router.push({
         pathname: '/recommendations',
         params: {
