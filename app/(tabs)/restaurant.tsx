@@ -978,7 +978,7 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   wineTypeSection: {
-    marginTop: 20,
+    marginTop: 12,
     paddingHorizontal: 20,
   },
   wineTypeGrid: {
