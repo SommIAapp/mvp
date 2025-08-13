@@ -812,43 +812,8 @@ export default function RestaurantScreen() {
     );
   }
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.headerSection}>
-        <LinearGradient
-          colors={['#6B2B3A', '#8B4B5A']}
-          style={styles.headerGradient}
-        >
-          {/* SOMMIA centré */}
-          <Text style={styles.headerTitle}>SOMMIA</Text>
-          
-          {/* Avatar à droite */}
-          <TouchableOpacity 
-            style={styles.avatarButton}
-            onPress={() => router.push('/(tabs)/profile')}
-          >
-            <User size={24} color="white" />
-          </TouchableOpacity>
-        </LinearGradient>
-        
-        {/* Vague SVG */}
-        <Svg
-          height={40}
-          width="100%"
-          viewBox="0 0 400 40"
-          style={styles.wave}
-          preserveAspectRatio="none"
-        >
-          <Path
-            d="M0,20 Q100,0 200,15 T400,20 L400,40 L0,40 Z"
-            fill="#FAF6F0"
-          />
-        </Svg>
-      </View>
-
-      <ScrollView style={styles.content}>
-      </ScrollView>
-    </View>
+  // Fallback - should not reach here
+  return null;
   );
 }
 
