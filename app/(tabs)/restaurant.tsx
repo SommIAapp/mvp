@@ -246,7 +246,7 @@ export default function RestaurantScreen() {
       
       Alert.alert(
         'Carte analysée !', 
-        `${restaurantSession.extracted_wines.length} vins détectés chez ${restaurantSession.restaurant_name}`,
+        'Continuez pour sélectionner votre plat',
         [{ text: 'Continuer', onPress: () => setStep('dish') }]
       );
 
@@ -331,7 +331,7 @@ export default function RestaurantScreen() {
       
       Alert.alert(
         'Carte analysée !', 
-        `${restaurantSession.extracted_wines.length} vins détectés chez ${restaurantSession.restaurant_name}`,
+        'Continuez pour sélectionner votre plat',
         [{ text: 'Continuer', onPress: () => setStep('dish') }]
       );
 
@@ -627,9 +627,6 @@ export default function RestaurantScreen() {
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.dishSection}>
             <Text style={styles.stepTitle}>Que mangez-vous ce soir ?</Text>
-            <Text style={styles.stepSubtitle}>
-              {currentSession?.extracted_wines?.length || 0} vins disponibles chez {currentSession?.restaurant_name || ''}
-            </Text>
             
             {/* Input premium flottant */}
             <View style={styles.inputCard}>
@@ -725,7 +722,7 @@ export default function RestaurantScreen() {
               disabled={!!loading || (!dishDescription.trim() && !dishImage)}
             >
               <Text style={styles.ctaText}>
-                {loading ? "Recommandation en cours..." : "Obtenir des recommandations"}
+                {loading ? "Analyse en cours..." : "Voir les recommandations"}
               </Text>
             </TouchableOpacity>
           </View>
@@ -861,7 +858,8 @@ const styles = StyleSheet.create({
     fontWeight: Typography.weights.bold,
     color: Colors.textPrimary,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 32,
+    marginTop: 20,
   },
   stepSubtitle: {
     fontSize: Typography.sizes.base,
