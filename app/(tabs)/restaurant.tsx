@@ -61,11 +61,13 @@ export default function RestaurantScreen() {
   const [dishDescription, setDishDescription] = useState('');
   const [step, setStep] = useState<RestaurantStep>('scan');
   const [recommendations, setRecommendations] = useState<any[]>([]);
-  const [selectedBudget, setSelectedBudget] = useState<number>(25); // Par défaut 20-35€
+  const [selectedBudget, setSelectedBudget] = useState<string | null>(null);
   const [selectedWineType, setSelectedWineType] = useState<string | null>(null);
   const [appState, setAppState] = useState(AppState.currentState);
   const hasNavigatedRef = useRef(false);
   const hasLoadedFromHistoryRef = useRef(false);
+
+  const BUDGET_OPTIONS = ['€10', '€20', '€30', '€50+'];
 
   useEffect(() => {
     console.log('🍽️ Restaurant: Component mounted');
@@ -119,13 +121,6 @@ export default function RestaurantScreen() {
 
   useEffect(() => {
     checkSessionOnFocus();
-    if (!authLoading && !canMakeRecommendation() && !hasNavigatedRef.current) {
-      hasNavigatedRef.current = true;
-      router.push({
-        pathname: '/subscription',
-        params: { reason: 'daily_limit' }
-      });
-    }
   }, [authLoading, profile, canMakeRecommendation, router]);
 
   // Handle loading from history
@@ -351,12 +346,36 @@ export default function RestaurantScreen() {
   };
 
   const handleGetRecommendations = async () => {
+    // Vérification du quota ici
+    if (!canMakeRecommendation()) {
+      console.log('🚫 Restaurant - Quota exceeded, showing paywall');
+      
+      let reason: 'daily_limit' | 'trial_expired' | 'trial_signup' = 'daily_limit';
+      
+      if (!profile) {
+        reason = 'trial_signup';
+      } else if (profile.subscription_plan === 'free' && !profile.trial_start_date) {
+        reason = 'trial_signup';
+      } else if (profile.subscription_plan === 'trial' && (profile.daily_count || 0) >= 1) {
+        reason = 'daily_limit';
+      } else if (profile.subscription_plan === 'trial' || profile.subscription_plan === 'free') {
+        reason = 'trial_expired';
+      }
+      
+      router.push({
+        pathname: '/subscription',
+        params: { reason }
+      });
+      return;
+    }
+
     if (!dishDescription.trim()) {
       Alert.alert('Erreur', 'Veuillez décrire votre plat');
       return;
     }
 
     try {
+      const budgetValue = selectedBudget ? parseInt(selectedBudget.replace('€', '').replace('+', '')) : undefined;
       const results = await getRestaurantRecommendations(dishDescription);
       
       // Naviguer vers la page recommendations au lieu de step results
@@ -365,7 +384,8 @@ export default function RestaurantScreen() {
         params: {
           mode: 'restaurant',
           dish: dishDescription,
-          budget: selectedBudget.toString(),
+          budget: budgetValue?.toString() || '',
+          wineType: selectedWineType || '',
           recommendations: JSON.stringify(results),
           restaurantName: currentSession?.restaurant_name || '',
         }
@@ -508,40 +528,46 @@ export default function RestaurantScreen() {
               {currentSession.extracted_wines.length} vins disponibles chez {currentSession.restaurant_name}
             </Text>
             
-            <Input
-              placeholder="Décrivez votre plat..."
-              value={dishDescription}
-              onChangeText={setDishDescription}
-              multiline
-              numberOfLines={3}
-              maxLength={200}
-            />
+            {/* Input premium flottant */}
+            <View style={styles.inputCard}>
+              <TextInput
+                style={styles.input}
+                placeholder="Décris ton plat ou prends-le en photo"
+                placeholderTextColor="#999"
+                value={dishDescription}
+                onChangeText={setDishDescription}
+                multiline
+                numberOfLines={2}
+                maxLength={200}
+              />
+              <TouchableOpacity 
+                style={styles.cameraButton}
+                onPress={handleCameraPress}
+              >
+                <Camera size={24} color="white" />
+              </TouchableOpacity>
+            </View>
 
-            {/* Sélecteur de budget */}
+            {/* Section budget élégante */}
             <View style={styles.budgetSection}>
-              <Text style={styles.budgetTitle}>Budget par personne</Text>
-              <View style={styles.budgetOptions}>
-                {[
-                  { label: '< 20€', value: 15 },
-                  { label: '20-35€', value: 25 },
-                  { label: '35-50€', value: 40 },
-                  { label: '> 50€', value: 60 },
-                ].map((option) => (
+              <Text style={styles.sectionTitle}>Budget par bouteille</Text>
+              <Text style={styles.sectionSubtitle}>Optionnel</Text>
+              
+              <View style={styles.budgetGrid}>
+                {BUDGET_OPTIONS.map(budget => (
                   <TouchableOpacity
-                    key={option.value}
+                    key={budget}
                     style={[
-                      styles.budgetOption,
-                      selectedBudget === option.value && styles.budgetOptionSelected,
+                      styles.budgetPill,
+                      selectedBudget === budget && styles.budgetPillActive
                     ]}
-                    onPress={() => setSelectedBudget(option.value)}
+                    onPress={() => setSelectedBudget(selectedBudget === budget ? null : budget)}
                   >
-                    <Text
-                      style={[
-                        styles.budgetOptionText,
-                        selectedBudget === option.value && styles.budgetOptionTextSelected,
-                      ]}
-                    >
-                      {option.label}
+                    <Text style={[
+                      styles.budgetText,
+                      selectedBudget === budget && styles.budgetTextActive
+                    ]}>
+                      {budget}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -575,15 +601,16 @@ export default function RestaurantScreen() {
               </View>
             </View>
 
-            <Button
-              title={restaurantLoading ? "Recherche en cours..." : "Trouver l'accord parfait"}
+            {/* CTA Premium */}
+            <TouchableOpacity 
+              style={styles.ctaButton}
               onPress={handleGetRecommendations}
-              variant="primary"
-              size="large"
-              fullWidth
-              loading={restaurantLoading}
               disabled={!dishDescription.trim()}
-            />
+            >
+              <Text style={styles.ctaText}>
+                {restaurantLoading ? "Recommandation en cours..." : "Obtenir des recommandations"}
+              </Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </View>
@@ -674,8 +701,7 @@ const styles = StyleSheet.create({
   
   content: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 0,
+    marginTop: -20, // Pour chevaucher légèrement la vague
   },
   
   scanContainer: {
@@ -711,6 +737,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   dishSection: {
+    paddingHorizontal: 20,
     gap: 24,
   },
   stepTitle: {
@@ -726,45 +753,88 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 24,
   },
+  inputCard: {
+    backgroundColor: 'white',
+    marginHorizontal: 20,
+    marginTop: 50,
+    borderRadius: 24,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 5,
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+    minHeight: 48,
+    textAlignVertical: 'top',
+  },
+  cameraButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#6B2B3A',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 12,
+  },
   budgetSection: {
-    marginBottom: 24,
+    marginTop: 32,
+    paddingHorizontal: 20,
   },
-  budgetTitle: {
-    fontSize: Typography.sizes.base,
-    fontWeight: Typography.weights.semibold,
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
     color: Colors.textPrimary,
-    marginBottom: 12,
+    marginBottom: 4,
   },
-  budgetOptions: {
+  sectionSubtitle: {
+    fontSize: 14,
+    color: '#999',
+    marginBottom: 16,
+  },
+  budgetGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 12,
   },
-  budgetOption: {
-    flex: 1,
-    minWidth: '48%',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.softGray,
+  budgetPill: {
     backgroundColor: 'white',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    minWidth: '30%',
+    flex: 1,
+    maxWidth: '48%',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  budgetOptionSelected: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
+  budgetPillActive: {
+    backgroundColor: '#6B2B3A',
+    borderColor: '#6B2B3A',
   },
-  budgetOptionText: {
-    fontSize: Typography.sizes.base,
-    color: Colors.textPrimary,
-    fontWeight: Typography.weights.medium,
+  budgetText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
   },
-  budgetOptionTextSelected: {
+  budgetTextActive: {
     color: 'white',
   },
   wineTypeSection: {
-    marginBottom: 24,
+    marginTop: 32,
+    paddingHorizontal: 20,
   },
   wineTypeGrid: {
     flexDirection: 'row',
@@ -798,6 +868,26 @@ const styles = StyleSheet.create({
   wineTypeTextActive: {
     color: 'white',
     fontWeight: '600',
+  },
+  ctaButton: {
+    marginHorizontal: 20,
+    marginTop: 40,
+    marginBottom: 40,
+    backgroundColor: '#6B2B3A',
+    paddingVertical: 18,
+    paddingHorizontal: 32,
+    borderRadius: 26,
+    shadowColor: '#6B2B3A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 5,
+    alignItems: 'center',
+  },
+  ctaText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: 'white',
   },
   errorCard: {
     backgroundColor: Colors.error,
