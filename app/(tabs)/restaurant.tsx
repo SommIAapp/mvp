@@ -946,7 +946,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   budgetSection: {
-    marginTop: 32,
+    marginTop: 20,
     paddingHorizontal: 20,
   },
   sectionHeader: {
@@ -1023,7 +1023,7 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   wineTypeSection: {
-    marginTop: 32,
+    marginTop: 20,
     paddingHorizontal: 20,
   },
   wineTypeGrid: {
@@ -1061,7 +1061,7 @@ const styles = StyleSheet.create({
   },
   ctaButton: {
     marginHorizontal: 20,
-    marginTop: 40,
+    marginTop: 28,
     marginBottom: 40,
     backgroundColor: '#6B2B3A',
     paddingVertical: 18,
