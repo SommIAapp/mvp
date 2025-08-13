@@ -396,6 +396,48 @@ export default function RestaurantScreen() {
     }
   };
 
+  const handleCameraPress = () => {
+    Alert.alert(
+      'Mode Photo',
+      'Comment souhaitez-vous ajouter votre photo ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { 
+          text: '📸 Prendre une photo', 
+          onPress: async () => {
+            // Utilise la logique existante pour la photo
+            await handleScanCard();
+          }
+        },
+        { 
+          text: '🖼️ Choisir depuis galerie', 
+          onPress: async () => {
+            // Logique pour choisir depuis la galerie
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            
+            if (status !== 'granted') {
+              Alert.alert('Permission requise', 'L\'accès à la galerie est nécessaire.');
+              return;
+            }
+
+            const result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: true,
+              aspect: [4, 3],
+              quality: 0.8,
+              base64: true,
+            });
+
+            if (!result.canceled && result.assets[0].base64) {
+              // Traiter l'image comme pour un scan de plat
+              // Tu peux adapter selon tes besoins
+            }
+          }
+        },
+      ]
+    );
+  };
+
   const handleNewSearch = () => {
     setStep('scan');
     setDishDescription('');
