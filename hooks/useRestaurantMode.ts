@@ -115,7 +115,9 @@ export function useRestaurantMode() {
   // RECOMMANDATIONS BASÉES SUR LA CARTE
   const getRestaurantRecommendations = async (
     dishDescription: string,
-    sessionId?: string
+    sessionId?: string,
+    budget?: number,
+    wineType?: string | null
   ): Promise<RestaurantRecommendation[]> => {
     if (!currentSession && !sessionId) {
       throw new Error('Aucune session restaurant active');
