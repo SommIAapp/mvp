@@ -954,7 +954,7 @@ const styles = StyleSheet.create({
   inputCard: {
     backgroundColor: 'white',
     marginHorizontal: 20,
-    marginTop: 40,
+    marginTop: 30,
     borderRadius: 24,
     padding: 16,
     flexDirection: 'row',
@@ -982,7 +982,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   budgetSection: {
-    marginTop: 24,
+    marginTop: 16,
     paddingHorizontal: 20,
   },
   sectionHeader: {
@@ -1059,7 +1059,7 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   wineTypeSection: {
-    marginTop: 24,
+    marginTop: 16,
     paddingHorizontal: 20,
   },
   wineTypeGrid: {
@@ -1097,8 +1097,8 @@ const styles = StyleSheet.create({
   },
   ctaButton: {
     marginHorizontal: 20,
-    marginTop: 32,
-    marginBottom: 40,
+    marginTop: 24,
+    marginBottom: 30,
     backgroundColor: '#6B2B3A',
     paddingVertical: 18,
     paddingHorizontal: 32,
