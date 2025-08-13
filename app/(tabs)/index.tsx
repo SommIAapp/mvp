@@ -39,6 +39,8 @@ export default function HomeScreen() {
   const [selectedBudget, setSelectedBudget] = useState<string | null>(null);
   const [selectedWineType, setSelectedWineType] = useState<string | null>(null);
   const [recommendationLoading, setRecommendationLoading] = useState(false);
+  const [showBudgetOptions, setShowBudgetOptions] = useState(false);
+  const [showWineTypeOptions, setShowWineTypeOptions] = useState(false);
 
   useEffect(() => {
     console.log('🏡 Home: Component mounted');
@@ -425,55 +427,93 @@ export default function HomeScreen() {
 
         {/* Section budget élégante */}
         <View style={styles.budgetSection}>
-          <Text style={styles.sectionTitle}>Budget par bouteille</Text>
-          <Text style={styles.sectionSubtitle}>Optionnel</Text>
+          <TouchableOpacity 
+            style={styles.sectionHeader}
+            onPress={() => setShowBudgetOptions(!showBudgetOptions)}
+          >
+            <View>
+              <Text style={styles.sectionTitle}>Budget par bouteille</Text>
+              <Text style={styles.sectionSubtitle}>
+                {selectedBudget || 'Optionnel'}
+              </Text>
+            </View>
+            <View style={styles.chevronContainer}>
+              <Text style={styles.chevron}>
+                {showBudgetOptions ? '−' : '+'}
+              </Text>
+            </View>
+          </TouchableOpacity>
           
-          <View style={styles.budgetGrid}>
-            {BUDGET_OPTIONS.map(budget => (
-              <TouchableOpacity
-                key={budget}
-                style={[
-                  styles.budgetPill,
-                  selectedBudget === budget && styles.budgetPillActive
-                ]}
-                onPress={() => setSelectedBudget(selectedBudget === budget ? null : budget)}
-              >
-                <Text style={[
-                  styles.budgetText,
-                  selectedBudget === budget && styles.budgetTextActive
-                ]}>
-                  {budget}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {showBudgetOptions && (
+            <View style={styles.budgetGrid}>
+              {BUDGET_OPTIONS.map(budget => (
+                <TouchableOpacity
+                  key={budget}
+                  style={[
+                    styles.budgetPill,
+                    selectedBudget === budget && styles.budgetPillActive
+                  ]}
+                  onPress={() => {
+                    setSelectedBudget(selectedBudget === budget ? null : budget);
+                    setShowBudgetOptions(false);
+                  }}
+                >
+                  <Text style={[
+                    styles.budgetText,
+                    selectedBudget === budget && styles.budgetTextActive
+                  ]}>
+                    {budget}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
 
         {/* Section type de vin */}
         <View style={styles.wineTypeSection}>
-          <Text style={styles.sectionTitle}>Type de vin préféré</Text>
-          <Text style={styles.sectionSubtitle}>Optionnel</Text>
+          <TouchableOpacity 
+            style={styles.sectionHeader}
+            onPress={() => setShowWineTypeOptions(!showWineTypeOptions)}
+          >
+            <View>
+              <Text style={styles.sectionTitle}>Type de vin préféré</Text>
+              <Text style={styles.sectionSubtitle}>
+                {selectedWineType ? WINE_TYPES.find(t => t.id === selectedWineType)?.label : 'Optionnel'}
+              </Text>
+            </View>
+            <View style={styles.chevronContainer}>
+              <Text style={styles.chevron}>
+                {showWineTypeOptions ? '−' : '+'}
+              </Text>
+            </View>
+          </TouchableOpacity>
           
-          <View style={styles.wineTypeGrid}>
-            {WINE_TYPES.map(type => (
-              <TouchableOpacity
-                key={type.id}
-                style={[
-                  styles.wineTypePill,
-                  selectedWineType === type.id && styles.wineTypePillActive,
-                  selectedWineType === type.id && { backgroundColor: type.color }
-                ]}
-                onPress={() => setSelectedWineType(selectedWineType === type.id ? null : type.id)}
-              >
-                <Text style={[
-                  styles.wineTypeText,
-                  selectedWineType === type.id && styles.wineTypeTextActive
-                ]}>
-                  {type.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {showWineTypeOptions && (
+            <View style={styles.wineTypeGrid}>
+              {WINE_TYPES.map(type => (
+                <TouchableOpacity
+                  key={type.id}
+                  style={[
+                    styles.wineTypePill,
+                    selectedWineType === type.id && styles.wineTypePillActive,
+                    selectedWineType === type.id && { backgroundColor: type.color }
+                  ]}
+                  onPress={() => {
+                    setSelectedWineType(selectedWineType === type.id ? null : type.id);
+                    setShowWineTypeOptions(false);
+                  }}
+                >
+                  <Text style={[
+                    styles.wineTypeText,
+                    selectedWineType === type.id && styles.wineTypeTextActive
+                  ]}>
+                    {type.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
 
         {/* CTA Premium */}
@@ -574,6 +614,34 @@ const styles = StyleSheet.create({
   budgetSection: {
     marginTop: 32,
     paddingHorizontal: 20,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  chevronContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  chevron: {
+    fontSize: 20,
+    color: '#6B2B3A',
+    fontWeight: '600',
   },
   sectionTitle: {
     fontSize: 20,
