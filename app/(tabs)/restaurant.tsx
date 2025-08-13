@@ -638,7 +638,7 @@ export default function RestaurantScreen() {
             style={styles.wave}
             preserveAspectRatio="none"
           >
-            <Path
+      </ScrollView>
               d="M0,20 Q100,0 200,15 T400,20 L400,40 L0,40 Z"
               fill="#FAF6F0"
             />
