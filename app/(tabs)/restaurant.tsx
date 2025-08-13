@@ -420,11 +420,6 @@ export default function RestaurantScreen() {
         );
       }
       
-      // Update usage count
-      if (profile?.subscription_plan !== 'premium') {
-        await updateUsageCount();
-      }
-
       setLoading(false);
       
       // Navigation vers les recommandations
