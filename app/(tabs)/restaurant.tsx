@@ -622,7 +622,7 @@ export default function RestaurantScreen() {
           <View style={styles.dishSection}>
             <Text style={styles.stepTitle}>Que mangez-vous ce soir ?</Text>
             <Text style={styles.stepSubtitle}>
-              {currentSession.extracted_wines.length} vins disponibles chez {currentSession.restaurant_name}
+              {currentSession?.extracted_wines?.length || 0} vins disponibles chez {currentSession?.restaurant_name || ''}
             </Text>
             
             {/* Input premium flottant */}
