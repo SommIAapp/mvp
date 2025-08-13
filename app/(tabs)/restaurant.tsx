@@ -420,7 +420,14 @@ export default function RestaurantScreen() {
         );
       }
       
-      // Naviguer vers la page recommendations au lieu de step results
+      // Update usage count
+      if (profile?.subscription_plan !== 'premium') {
+        await updateUsageCount();
+      }
+
+      setLoading(false);
+      
+      // Navigation vers les recommandations
       router.push({
         pathname: '/recommendations',
         params: {
@@ -434,9 +441,9 @@ export default function RestaurantScreen() {
         }
       });
     } catch (error: any) {
-      Alert.alert('Erreur', error.message);
-    } finally {
+      console.error('Error getting recommendations:', error);
       setLoading(false);
+      Alert.alert('Erreur', error.message || 'Impossible de générer les recommandations');
     }
   };
 
