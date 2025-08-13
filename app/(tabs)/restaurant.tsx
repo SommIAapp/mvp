@@ -673,8 +673,6 @@ export default function RestaurantScreen() {
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.dishSection}>
-            <Text style={styles.stepTitle}>Que mangez-vous ce soir ?</Text>
-            
             {/* Input premium flottant */}
             <View style={styles.inputCard}>
               {dishImage ? (
@@ -956,7 +954,7 @@ const styles = StyleSheet.create({
   inputCard: {
     backgroundColor: 'white',
     marginHorizontal: 20,
-    marginTop: 24,
+    marginTop: 40,
     borderRadius: 24,
     padding: 16,
     flexDirection: 'row',
@@ -984,7 +982,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   budgetSection: {
-    marginTop: 32,
+    marginTop: 24,
     paddingHorizontal: 20,
   },
   sectionHeader: {
@@ -1061,7 +1059,7 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   wineTypeSection: {
-    marginTop: 32,
+    marginTop: 24,
     paddingHorizontal: 20,
   },
   wineTypeGrid: {
@@ -1099,7 +1097,7 @@ const styles = StyleSheet.create({
   },
   ctaButton: {
     marginHorizontal: 20,
-    marginTop: 40,
+    marginTop: 32,
     marginBottom: 40,
     backgroundColor: '#6B2B3A',
     paddingVertical: 18,
