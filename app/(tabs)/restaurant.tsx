@@ -19,6 +19,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
+import { useRecommendations } from '@/hooks/useRecommendations';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
@@ -41,6 +42,7 @@ export default function RestaurantScreen() {
     restaurantName?: string;
   }>();
   const { user, profile, canMakeRecommendation, loading: authLoading } = useAuth();
+  const { getRecommendations, getRecommendationsFromPhoto } = useRecommendations();
   const { 
     currentSession,
     loading: restaurantLoading,
@@ -349,6 +351,13 @@ export default function RestaurantScreen() {
   };
 
   const handleGetRecommendations = async () => {
+    // Debug logs
+    console.log('🔍 Checking recommendation quota...');
+    console.log('Profile:', profile);
+    console.log('Subscription plan:', profile?.subscription_plan);
+    console.log('Daily count:', profile?.daily_count);
+    console.log('Can make recommendation:', canMakeRecommendation());
+    
     // Vérification du quota ici
     if (!canMakeRecommendation()) {
       console.log('🚫 Restaurant - Quota exceeded, showing paywall');
