@@ -85,7 +85,7 @@ export default function RestaurantScreen() {
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
       if (appState.match(/inactive|background/) && nextAppState === 'active') {
-        console.log('App revenue au premier plan');
+       wineType: selectedWineType || '',
         // Rafraîchir la session si nécessaire
         checkAndRefreshSession();
       }
