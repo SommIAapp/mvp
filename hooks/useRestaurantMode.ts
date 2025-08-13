@@ -130,11 +130,13 @@ export function useRestaurantMode() {
       const session = currentSession || await getSessionById(sessionId!);
       
       // Utiliser la fonction unifiée pour les recommandations restaurant
-      console.log('🤖 Calling RESTAURANT_RECO mode via unified service for:', dishDescription);
+      console.log('🤖 Calling RESTAURANT_RECO mode via unified service for:', dishDescription, 'with wine type:', wineType);
       const recommendations = await getUnifiedRestaurantRecommendations(
         dishDescription,
         session.id,
-        session.extracted_wines
+        session.extracted_wines,
+        budget,
+        wineType
       );
       
       // Sauvegarder recommandation

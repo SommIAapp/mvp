@@ -116,11 +116,13 @@ export function useRecommendations() {
 
   const getRecommendationsFromPhoto = async (
     photoBase64: string,
-    budget?: number
+    budget?: number,
+    wineType?: string | null
   ): Promise<WineRecommendation[]> => {
     console.log('📸 STARTING DISH_PHOTO MODE - Photo analysis');
     console.log('📸 Photo base64 length:', photoBase64.length);
     console.log('💰 Photo mode budget:', budget);
+    console.log('🍷 Photo mode wine type:', wineType);
     
     setLoading(true);
     setError(null);
