@@ -65,6 +65,7 @@ export default function RestaurantScreen() {
   const [selectedBudget, setSelectedBudget] = useState<string | null>(null);
   const [selectedWineType, setSelectedWineType] = useState<string | null>(null);
   const [dishImage, setDishImage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const [appState, setAppState] = useState(AppState.currentState);
   const hasNavigatedRef = useRef(false);
   const hasLoadedFromHistoryRef = useRef(false);
@@ -377,6 +378,7 @@ export default function RestaurantScreen() {
     }
 
     try {
+      setLoading(true);
       const budgetValue = selectedBudget ? parseInt(selectedBudget.replace('€', '').replace('+', '')) : undefined;
       let results;
       
@@ -420,6 +422,8 @@ export default function RestaurantScreen() {
       });
     } catch (error: any) {
       Alert.alert('Erreur', error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -701,12 +705,12 @@ export default function RestaurantScreen() {
 
             {/* CTA Premium */}
             <TouchableOpacity 
-              style={styles.ctaButton}
+              style={[styles.ctaButton, loading && styles.ctaButtonDisabled]}
               onPress={handleGetRecommendations}
-              disabled={!dishDescription.trim()}
+              disabled={!!loading || (!dishDescription.trim() && !dishImage)}
             >
               <Text style={styles.ctaText}>
-                {restaurantLoading ? "Recommandation en cours..." : "Obtenir des recommandations"}
+                {loading ? "Recommandation en cours..." : "Obtenir des recommandations"}
               </Text>
             </TouchableOpacity>
           </View>
@@ -986,6 +990,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: 'white',
+  },
+  ctaButtonDisabled: {
+    opacity: 0.6,
   },
   errorCard: {
     backgroundColor: Colors.error,
