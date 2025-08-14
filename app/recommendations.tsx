@@ -20,13 +20,26 @@ const { width, height } = Dimensions.get('window');
 
 export default function RecommendationsScreen() {
   const router = useRouter();
-  const { dish, budget, recommendations: recommendationsParam, fromHistory, photoMode, visionConfidence } = useLocalSearchParams<{ 
-    dish: string; 
+  const { 
+    dish = '', 
+    budget = '0', 
+    recommendations: recommendationsParam = '[]', 
+    fromHistory = 'false', 
+    photoMode = 'false', 
+    visionConfidence = '0',
+    mode = 'text',
+    wineType = 'all',
+    restaurantName = ''
+  } = useLocalSearchParams<{ 
+    dish?: string; 
     budget?: string;
     recommendations?: string;
     fromHistory?: string;
     photoMode?: string;
     visionConfidence?: string;
+    mode?: string;
+    wineType?: string;
+    restaurantName?: string;
   }>();
   
   const { getRecommendations } = useRecommendations();

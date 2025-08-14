@@ -430,12 +430,11 @@ export default function RestaurantScreen() {
         params: {
           mode: 'restaurant',
           dish: dishImage ? 'Photo de plat' : dishDescription,
-          budget: budgetValue?.toString() || '',
-          wineType: selectedWineType || '',
+         budget: budgetValue?.toString() || '0',
+         wineType: selectedWineType || 'all',
           recommendations: JSON.stringify(results),
-          restaurantName: currentSession?.restaurant_name || '',
+         restaurantName: currentSession?.restaurant_name || 'Restaurant',
           photoMode: dishImage ? 'true' : 'false',
-         // Ajouter ces paramètres pour éviter undefined
          fromHistory: 'false',
          visionConfidence: '0',
         }
