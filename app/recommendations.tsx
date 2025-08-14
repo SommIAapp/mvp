@@ -249,7 +249,9 @@ export default function RecommendationsScreen() {
               style={styles.wineName} 
               numberOfLines={2}
             >
-              {getCleanWineName(wine)}
+              {wine.name && !wine.name.includes('VINS') ? 
+                getCleanWineName(wine) : 
+                `Sélection ${wine.type || 'Rouge'} ${currentWine + 1}`}
             </Text>
             <Text style={styles.vintage}>{wine.vintage || new Date().getFullYear()}</Text>
           </View>
@@ -384,14 +386,16 @@ export default function RecommendationsScreen() {
               {/* Région */}
               <View style={styles.infoItem}>
                 <Text style={styles.infoLabel}>RÉGION</Text>
-                <Text style={styles.infoValue}>{wine.region}</Text>
+                <Text style={styles.infoValue}>
+                  {wine.region || 'France'}
+                </Text>
               </View>
 
               {/* Prix */}
               <View style={[styles.infoItem, styles.infoItemCenter]}>
                 <Text style={styles.infoLabel}>PRIX</Text>
                 <Text style={styles.infoPriceValue}>
-                  {Math.round(wine.price_estimate || 0)}€
+                  {wine.price_display || `${Math.round(wine.price_estimate || wine.match_score || 30)}€`}
                 </Text>
               </View>
 
@@ -399,10 +403,14 @@ export default function RecommendationsScreen() {
               <View style={styles.infoItem}>
                 <Text style={styles.infoLabel}>TYPE</Text>
                 <Text style={styles.infoValue}>
-                  {(wine.color || '').toLowerCase() === 'rosé' ? 'Rosé' : 
-                   (wine.color || '').toLowerCase() === 'rouge' ? 'Rouge' : 
-                   (wine.color || '').toLowerCase() === 'blanc' ? 'Blanc' : 
-                   (wine.color || '').toLowerCase() === 'sparkling' ? 'Pétillant' : wine.color || 'Vin'}
+                  {wine.type === 'rouge' ? 'Rouge' :
+                   wine.type === 'blanc' ? 'Blanc' :
+                   wine.type === 'rosé' ? 'Rosé' :
+                   wine.type === 'champagne' ? 'Champagne' :
+                   wine.type === 'pétillant' ? 'Pétillant' :
+                   wine.color === 'rouge' ? 'Rouge' :
+                   wine.color === 'blanc' ? 'Blanc' :
+                   wine.color === 'rosé' ? 'Rosé' : 'Rouge'}
                 </Text>
               </View>
             </View>
