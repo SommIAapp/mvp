@@ -68,7 +68,7 @@ export default function RecommendationsScreen() {
     setLoading(true);
     try {
       if (recommendationsParam) {
-        const parsedRecommendations = JSON.parse(recommendationsParam);
+        const parsedRecommendations = JSON.parse(recommendationsParam || '[]');
         setRecommendations(parsedRecommendations);
       } else {
         const newRecommendations = await getRecommendations(
@@ -87,7 +87,7 @@ export default function RecommendationsScreen() {
 
   // Fonction pour obtenir le gradient selon la couleur du vin
   const getHeaderGradient = (color: string) => {
-    switch(color.toLowerCase()) {
+    switch((color || '').toLowerCase()) {
       case 'rosé':
       case 'rose':
         return ['#E5A593', '#F5B5A3'];
@@ -152,7 +152,7 @@ export default function RecommendationsScreen() {
 
   // Mapping des images CORRIGÉ avec les bons chemins
   const getWineImage = (color: string) => {
-    switch(color.toLowerCase()) {
+    switch((color || '').toLowerCase()) {
       case 'rosé':
       case 'rose':
         return require('@/assets/images/rose.png/rose.png');
@@ -399,10 +399,10 @@ export default function RecommendationsScreen() {
               <View style={styles.infoItem}>
                 <Text style={styles.infoLabel}>TYPE</Text>
                 <Text style={styles.infoValue}>
-                  {wine.color === 'rosé' ? 'Rosé' : 
-                   wine.color === 'rouge' ? 'Rouge' : 
-                   wine.color === 'blanc' ? 'Blanc' : 
-                   wine.color === 'sparkling' ? 'Pétillant' : wine.color}
+                  {(wine.color || '').toLowerCase() === 'rosé' ? 'Rosé' : 
+                   (wine.color || '').toLowerCase() === 'rouge' ? 'Rouge' : 
+                   (wine.color || '').toLowerCase() === 'blanc' ? 'Blanc' : 
+                   (wine.color || '').toLowerCase() === 'sparkling' ? 'Pétillant' : wine.color || 'Vin'}
                 </Text>
               </View>
             </View>
