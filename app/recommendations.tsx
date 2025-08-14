@@ -203,6 +203,23 @@ export default function RecommendationsScreen() {
     return cleanName.trim();
   };
 
+  // Fonction pour déterminer la catégorie du vin
+  const getCategoryLabel = (wine: WineRecommendation) => {
+    const price = wine.price_estimate || wine.match_score || 30;
+    
+    if (price <= 15) return 'Économique';
+    if (price <= 30) return 'Qualité-Prix';
+    return 'Premium';
+  };
+
+  // Fonction pour le style de la catégorie
+  const getCategoryStyle = (wine: WineRecommendation) => {
+    const price = wine.price_estimate || wine.match_score || 30;
+    
+    if (price <= 15) return { backgroundColor: '#4CAF50' }; // Vert
+    if (price <= 30) return { backgroundColor: '#FF9800' }; // Orange
+    return { backgroundColor: '#9C27B0' }; // Violet
+  };
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -320,6 +337,10 @@ export default function RecommendationsScreen() {
                 </Text>
               </View>
             )}
+            {/* Badge de catégorie */}
+            <View style={[styles.categoryBadge, getCategoryStyle(wine)]}>
+              <Text style={styles.categoryText}>{getCategoryLabel(wine)}</Text>
+            </View>
             <Image
               source={getWineImage(wine.color)}
               style={styles.centerBottle}
@@ -395,7 +416,7 @@ export default function RecommendationsScreen() {
               <View style={[styles.infoItem, styles.infoItemCenter]}>
                 <Text style={styles.infoLabel}>PRIX</Text>
                 <Text style={styles.infoPriceValue}>
-                  {wine.price_display || `${Math.round(wine.price_estimate || wine.match_score || 30)}€`}
+                  {Math.round(wine.price_estimate || wine.match_score || 30)}€
                 </Text>
               </View>
 
@@ -711,5 +732,24 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.3,
+  },
+  categoryBadge: {
+    position: 'absolute',
+    top: 50,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    zIndex: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  categoryText: {
+    color: 'white',
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 0.2,
   },
 });
