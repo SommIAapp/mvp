@@ -435,6 +435,9 @@ export default function RestaurantScreen() {
           recommendations: JSON.stringify(results),
           restaurantName: currentSession?.restaurant_name || '',
           photoMode: dishImage ? 'true' : 'false',
+         // Ajouter ces paramètres pour éviter undefined
+         fromHistory: 'false',
+         visionConfidence: '0',
         }
       });
     } catch (error: any) {
