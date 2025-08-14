@@ -416,8 +416,9 @@ export default function RestaurantScreen() {
         // Sinon utilise le texte
         results = await getRestaurantRecommendations(
           dishDescription,
-          budgetValue,      // Ajoute le budget
-          selectedWineType  // Ajoute le wine type
+          currentSession?.id,    // 2ème paramètre = sessionId (OBLIGATOIRE)
+          budgetValue,          // 3ème paramètre = budget
+          selectedWineType      // 4ème paramètre = wineType
         );
       }
       
