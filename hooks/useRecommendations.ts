@@ -303,6 +303,17 @@ export function useRecommendations() {
       console.log('🌐 fetchUnifiedRecommendations - Making fetch request...');
       const fetchStartTime = Date.now();
       
+      console.log('🔍 DEBUG - Full body:', requestBodyString);
+      console.log('🔍 DEBUG - Available wines:', JSON.stringify(request.available_wines, null, 2));
+
+      // Vérifie particulièrement les vins pour des caractères bizarres
+      request.available_wines?.forEach((wine, index) => {
+        console.log(`🍷 Wine ${index}:`, wine.name);
+        console.log(`   Has newlines: ${wine.name?.includes('\n')}`);
+        console.log(`   Has tabs: ${wine.name?.includes('\t')}`);
+        console.log(`   Has quotes: ${wine.name?.includes('"')}`);
+      });
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers,
