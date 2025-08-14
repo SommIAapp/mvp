@@ -191,22 +191,37 @@ export function useRecommendations() {
   const getRestaurantRecommendations = async (
     dish: string,
     sessionId: string,
-    availableWines: any[]
+    availableWines: any[],
+    budget?: number,
+    wineType?: string | null
   ): Promise<RestaurantRecommendation[]> => {
     console.log('🍽️ STARTING RESTAURANT_RECO MODE - Restaurant recommendations');
     console.log('🍽️ Dish:', dish);
     console.log('🏪 Session ID:', sessionId);
     console.log('🍷 Available wines count:', availableWines.length);
+    console.log('💰 Budget:', budget);
+    console.log('🍷 Wine type preference:', wineType);
     
     setLoading(true);
     setError(null);
 
     try {
+      // Nettoyer les vins pour éviter les caractères problématiques
+      const cleanedWines = availableWines?.map(wine => ({
+        ...wine,
+        name: wine.name?.replace(/[\n\r\t]/g, ' ').replace(/\s+/g, ' ').trim(),
+        producer: wine.producer?.replace(/[\n\r\t]/g, ' ').replace(/\s+/g, ' ').trim(),
+        region: wine.region?.replace(/[\n\r\t]/g, ' ').replace(/\s+/g, ' ').trim(),
+        price_display: wine.price_display?.replace(/[\n\r\t]/g, ' ').replace(/\s+/g, ' ').trim(),
+      })) || [];
+
       const recommendations = await fetchUnifiedRecommendations({
         mode: 'restaurant_reco',
         dish_description: dish,
         restaurant_session_id: sessionId,
-        available_wines: availableWines
+        available_wines: cleanedWines,
+        user_budget: budget,
+        wine_type_preference: wineType || null
       });
 
       console.log('🍽️ getRestaurantRecommendations - RESTAURANT_RECO mode completed');
