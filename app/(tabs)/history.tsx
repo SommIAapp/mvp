@@ -170,16 +170,8 @@ export default function HistoryScreen() {
         },
       });
     } else {
-      // Navigation normale vers les recommandations
-      router.push({
-        pathname: '/recommendations',
-        params: {
-          dish: item.dish_description,
-          budget: item.user_budget?.toString() || '',
-          recommendations: JSON.stringify(item.recommended_wines),
-          fromHistory: 'true',
-        },
-      });
+      // Navigation vers la nouvelle route avec juste l'ID
+      router.push(`/wine-recommendation/${item.id}`);
     }
   };
 
