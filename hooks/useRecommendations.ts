@@ -226,6 +226,59 @@ export function useRecommendations() {
 
       console.log('🍽️ getRestaurantRecommendations - RESTAURANT_RECO mode completed');
       console.log('🎯 Restaurant recommendations count:', recommendations.length);
+
+      // SAUVEGARDER DANS L'HISTORIQUE PRINCIPAL
+      if (user && recommendations.length > 0) {
+        try {
+          console.log('💾 Saving restaurant recommendation to history...');
+          
+          // Sauvegarder dans la table recommendations principale
+          const { data, error: saveError } = await supabase
+            .from('recommendations')
+            .insert({
+              user_id: user.id,
+              dish_description: dish,
+              user_budget: budget || null,
+              recommended_wines: recommendations, // Directement le tableau
+              created_at: new Date().toISOString(),
+            })
+            .select()
+            .single();
+
+          if (saveError) {
+            console.error('❌ Error saving restaurant recommendation to history:', saveError);
+          } else {
+            console.log('✅ Restaurant recommendation saved to main history with ID:', data.id);
+          }
+
+          // Mettre à jour le compteur d'usage
+          await updateUsageCount();
+          console.log('✅ Usage count updated');
+          
+          // Logger l'analytics
+          const standardFormat = recommendations.map(rec => ({
+            id: rec.wine_id,
+            name: rec.name,
+            type: rec.type,
+            region: rec.region,
+            price_estimate: rec.price_bottle || rec.price_glass || 0,
+            rating: rec.match_score || 85,
+            category: 'restaurant',
+            color: rec.type || 'rouge',
+            reasoning: rec.reasoning
+          }));
+          
+          await logRecommendationAnalytics(user.id, dish, budget, standardFormat);
+          console.log('✅ Analytics logged');
+          
+        } catch (error) {
+          console.error('❌ Error in restaurant save process:', error);
+          // Ne pas throw pour ne pas casser le flow
+        }
+      } else {
+        console.log('⚠️ No user or no recommendations to save');
+      }
+
       return recommendations as RestaurantRecommendation[];
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur recommandations restaurant';
