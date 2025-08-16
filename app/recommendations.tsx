@@ -159,7 +159,6 @@ export default function RecommendationsScreen() {
     }
   };
 
-  // Mapping des images CORRIGÉ avec les bons chemins
   const getWineImage = (color: string) => {
     switch((color || '').toLowerCase()) {
       case 'rosé':
