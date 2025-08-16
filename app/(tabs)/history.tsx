@@ -81,24 +81,8 @@ export default function HistoryScreen() {
       const normalRecommendations = await getRecommendationHistory(user.id);
       console.log('📚 loadHistory - Received normal recommendations:', normalRecommendations?.length || 0);
       
-      // Récupérer les recommandations restaurant
-      const restaurantRecommendations = await getRestaurantRecommendationHistory(user.id);
-      console.log('📚 loadHistory - Received restaurant recommendations:', restaurantRecommendations?.length || 0);
-      
-      // Combiner et marquer les types
-      const combinedHistory: Recommendation[] = [
-        ...(normalRecommendations || []).map(rec => ({ ...rec, type: 'normal' as const })),
-        ...(restaurantRecommendations || []).map(rec => ({
-          id: rec.id,
-          dish_description: rec.dish_description,
-          recommended_wines: rec.recommended_wines,
-          created_at: rec.created_at,
-          user_id: user.id,
-          user_budget: null,
-          type: 'restaurant' as const,
-          restaurant_name: rec.restaurant_sessions?.restaurant_name || 'Restaurant'
-        }))
-      ];
+      // On utilise seulement normalRecommendations qui contient TOUT
+      const combinedHistory: Recommendation[] = normalRecommendations || [];
       
       // Trier par date (plus récent en premier)
       const sortedHistory = combinedHistory.sort((a, b) => 
@@ -152,38 +136,12 @@ export default function HistoryScreen() {
   const handleHistoryItemPress = (item: Recommendation) => {
     console.log('🔍 handleHistoryItemPress - Opening recommendation:', {
       id: item.id,
-      type: item.type,
       dish: item.dish_description,
-      wines: item.recommended_wines,
-      restaurant_name: item.restaurant_name
+      wines: item.recommended_wines
     });
     
-    if (item.type === 'restaurant') {
-      console.log('🍽️ Restaurant mode - Session data:', {
-        sessionId: item.id,
-        extractedWines: item.restaurant_sessions?.extracted_wines?.length || 0
-      });
-      
-      // Store large data objects in temporary store to avoid large URL parameters
-      tempStore.set(item.id, {
-        recommendations: item.recommended_wines,
-        extractedWines: item.restaurant_sessions?.extracted_wines || [],
-      });
-      
-      // Navigate with minimal parameters
-      router.push({
-        pathname: '/(tabs)/restaurant',
-        params: {
-          fromHistory: 'true',
-          sessionId: item.id,
-          dish: item.dish_description,
-          restaurantName: item.restaurant_name || 'Restaurant',
-        },
-      });
-    } else {
-      // Pour les recommandations normales, utiliser la nouvelle route
-      router.push(`/wine-recommendation/${item.id}`);
-    }
+    // Toutes les recommandations utilisent la même route
+    router.push(`/wine-recommendation/${item.id}`);
   };
 
   if (loading) {
