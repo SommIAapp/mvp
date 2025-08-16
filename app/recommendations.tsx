@@ -224,24 +224,6 @@ export default function RecommendationsScreen() {
     
     return cleanName.trim();
   };
-
-  // Fonction pour déterminer la catégorie du vin
-  const getCategoryLabel = (wine: WineRecommendation) => {
-    const price = wine.price_estimate || wine.match_score || 30;
-    
-    if (price <= 15) return 'Économique';
-    if (price <= 30) return 'Qualité-Prix';
-    return 'Premium';
-  };
-
-  // Fonction pour le style de la catégorie
-  const getCategoryStyle = (wine: WineRecommendation) => {
-    const price = wine.price_estimate || wine.match_score || 30;
-    
-    if (price <= 15) return { backgroundColor: '#4CAF50' }; // Vert
-    if (price <= 30) return { backgroundColor: '#FF9800' }; // Orange
-    return { backgroundColor: '#9C27B0' }; // Violet
-  };
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -359,10 +341,6 @@ export default function RecommendationsScreen() {
                 </Text>
               </View>
             )}
-            {/* Badge de catégorie */}
-            <View style={[styles.categoryBadge, getCategoryStyle(wine)]}>
-              <Text style={styles.categoryText}>{getCategoryLabel(wine)}</Text>
-            </View>
             <Image
               source={getWineImage(getWineColor(wine))}
               style={styles.centerBottle}
