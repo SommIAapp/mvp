@@ -453,7 +453,7 @@ export default function RecommendationsScreen() {
                   if (wine.price_glass !== undefined) return Math.round(wine.price_glass);
                   // Mode normal : utiliser price_estimate
                   return Math.round(wine.price_estimate || wine.match_score || 30);
-                })()}€
+                {wine.region || '-'}
               </Text>
             )}
           </View>
