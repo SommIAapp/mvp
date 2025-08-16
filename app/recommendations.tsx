@@ -439,7 +439,13 @@ export default function RecommendationsScreen() {
             {/* Reasoning/Description */}
             {wine.reasoning && (
               <Text style={styles.reasoning} numberOfLines={3}>
-                {wine.reasoning}
+                {(() => {
+                  // Mode restaurant : utiliser price_bottle ou price_glass
+                  if (wine.price_bottle !== undefined) return Math.round(wine.price_bottle);
+                  if (wine.price_glass !== undefined) return Math.round(wine.price_glass);
+                  // Mode normal : utiliser price_estimate
+                  return Math.round(wine.price_estimate || wine.match_score || 30);
+                })()}€
               </Text>
             )}
           </View>
