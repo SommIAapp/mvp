@@ -16,6 +16,12 @@ import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { useRecommendations, type WineRecommendation } from '@/hooks/useRecommendations';
 
+// Helper pour obtenir la couleur du vin
+const getWineColor = (wine: any) => {
+  // Mode restaurant utilise 'type', mode normal utilise 'color'
+  return wine.type || wine.color || 'rouge';
+};
+
 const { width, height } = Dimensions.get('window');
 
 export default function RecommendationsScreen() {
@@ -87,7 +93,7 @@ export default function RecommendationsScreen() {
 
   // Fonction pour obtenir le gradient selon la couleur du vin
   const getHeaderGradient = (color: string) => {
-    switch((color || '').toLowerCase()) {
+    switch((getWineColor(wine) || '').toLowerCase()) {
       case 'rosé':
       case 'rose':
         return ['#E5A593', '#F5B5A3'];
@@ -138,10 +144,13 @@ export default function RecommendationsScreen() {
   const getPriceBadge = (wine: WineRecommendation, allWines: WineRecommendation[]) => {
     // Fonction helper pour récupérer le prix selon le mode
     const getPrice = (w) => {
-      // Mode restaurant : price_bottle ou price_glass
-      if (w.price_bottle !== undefined) return w.price_bottle;
-      if (w.price_glass !== undefined) return w.price_glass;
-      // Mode normal : price_estimate
+      // Mode restaurant : utiliser les vrais prix de la carte
+      if (w.price_bottle) return w.price_bottle;
+      if (w.price_glass && !w.price_bottle) {
+        // Si seulement prix au verre, estimer la bouteille (x5-6)
+        return w.price_glass * 5.5;
+      }
+      // Mode normal : utiliser price_estimate
       return w.price_estimate || 0;
     };
     
@@ -331,7 +340,7 @@ export default function RecommendationsScreen() {
               </View>
             )}
             <Image
-              source={getWineImage(prevWineData.color)}
+              source={getWineImage(getWineColor(prevWineData))}
               style={styles.sideBottle}
               resizeMode="contain"
             />
@@ -355,7 +364,7 @@ export default function RecommendationsScreen() {
               <Text style={styles.categoryText}>{getCategoryLabel(wine)}</Text>
             </View>
             <Image
-              source={getWineImage(wine.color)}
+              source={getWineImage(getWineColor(wine))}
               style={styles.centerBottle}
               resizeMode="contain"
             />
@@ -374,7 +383,7 @@ export default function RecommendationsScreen() {
               </View>
             )}
             <Image
-              source={getWineImage(nextWineData.color)}
+              source={getWineImage(getWineColor(nextWineData))}
               style={styles.sideBottle}
               resizeMode="contain"
             />
@@ -402,10 +411,10 @@ export default function RecommendationsScreen() {
               currentWine === index && styles.activeDot,
               currentWine === index && {
                 backgroundColor: 
-                  wine.color === 'rosé' ? '#F5B5A3' : 
-                  wine.color === 'rouge' ? '#A0616A' : 
-                  wine.color === 'blanc' ? '#D4C5A0' :
-                  wine.color === 'sparkling' ? '#D4AF37' : '#D4C5A0'
+                  getWineColor(wine) === 'rosé' ? '#F5B5A3' : 
+                  getWineColor(wine) === 'rouge' ? '#A0616A' : 
+                  getWineColor(wine) === 'blanc' ? '#D4C5A0' :
+                  getWineColor(wine) === 'sparkling' ? '#D4AF37' : '#D4C5A0'
               }
             ]}
           />
@@ -430,9 +439,12 @@ export default function RecommendationsScreen() {
                 <Text style={styles.infoLabel}>PRIX</Text>
                 <Text style={styles.infoPriceValue}>
                   {(() => {
-                    // Mode restaurant : utiliser price_bottle ou price_glass
-                    if (wine.price_bottle !== undefined) return Math.round(wine.price_bottle);
-                    if (wine.price_glass !== undefined) return Math.round(wine.price_glass);
+                    // Mode restaurant : utiliser les vrais prix de la carte
+                    if (wine.price_bottle) return Math.round(wine.price_bottle);
+                    if (wine.price_glass && !wine.price_bottle) {
+                      // Si seulement prix au verre, estimer la bouteille (x5-6)
+                      return Math.round(wine.price_glass * 5.5);
+                    }
                     // Mode normal : utiliser price_estimate
                     return Math.round(wine.price_estimate || wine.match_score || 30);
                   })()}€
@@ -448,9 +460,9 @@ export default function RecommendationsScreen() {
                    wine.type === 'rosé' ? 'Rosé' :
                    wine.type === 'champagne' ? 'Champagne' :
                    wine.type === 'pétillant' ? 'Pétillant' :
-                   wine.color === 'rouge' ? 'Rouge' :
-                   wine.color === 'blanc' ? 'Blanc' :
-                   wine.color === 'rosé' ? 'Rosé' : 'Rouge'}
+                   getWineColor(wine) === 'rouge' ? 'Rouge' :
+                   getWineColor(wine) === 'blanc' ? 'Blanc' :
+                   getWineColor(wine) === 'rosé' ? 'Rosé' : 'Rouge'}
                 </Text>
               </View>
             </View>
