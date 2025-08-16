@@ -150,9 +150,20 @@ export default function HistoryScreen() {
   };
 
   const handleHistoryItemPress = (item: Recommendation) => {
-    console.log('🔍 handleHistoryItemPress - Opening recommendation:', item.id);
+    console.log('🔍 handleHistoryItemPress - Opening recommendation:', {
+      id: item.id,
+      type: item.type,
+      dish: item.dish_description,
+      wines: item.recommended_wines,
+      restaurant_name: item.restaurant_name
+    });
     
     if (item.type === 'restaurant') {
+      console.log('🍽️ Restaurant mode - Session data:', {
+        sessionId: item.id,
+        extractedWines: item.restaurant_sessions?.extracted_wines?.length || 0
+      });
+      
       // Store large data objects in temporary store to avoid large URL parameters
       tempStore.set(item.id, {
         recommendations: item.recommended_wines,
@@ -170,7 +181,7 @@ export default function HistoryScreen() {
         },
       });
     } else {
-      // Navigation vers la nouvelle route avec juste l'ID
+      // Pour les recommandations normales, utiliser la nouvelle route
       router.push(`/wine-recommendation/${item.id}`);
     }
   };

@@ -224,11 +224,14 @@ export function useRestaurantMode() {
 // RÉCUPÉRER L'HISTORIQUE DES RECOMMANDATIONS RESTAURANT
 export const getRestaurantRecommendationHistory = async (userId: string) => {
   try {
+    console.log('📚 Loading restaurant recommendations for user:', userId);
+    
     const { data, error } = await supabase
       .from('restaurant_recommendations')
       .select(`
         *,
         restaurant_sessions!inner(
+          id,
           restaurant_name,
           extracted_wines
         )
@@ -241,10 +244,29 @@ export const getRestaurantRecommendationHistory = async (userId: string) => {
       throw error;
     }
 
-    return data || [];
+    console.log('📚 Restaurant recommendations raw data:', data);
+
+    // Transformer les données pour correspondre au format attendu par history.tsx
+    const transformedData = data?.map(item => ({
+      id: item.id,
+      dish_description: item.dish_description,
+      recommended_wines: item.recommended_wines, // Déjà au bon format
+      created_at: item.created_at,
+      user_id: item.user_id,
+      user_budget: null,
+      type: 'restaurant',
+      restaurant_sessions: {
+        restaurant_name: item.restaurant_sessions?.restaurant_name || 'Restaurant',
+        extracted_wines: item.restaurant_sessions?.extracted_wines || []
+      }
+    })) || [];
+
+    console.log('📚 Restaurant recommendations transformed:', transformedData.length);
+    
+    return transformedData;
   } catch (error) {
     console.error('❌ Error in getRestaurantRecommendationHistory:', error);
-    throw error;
+    return []; // Retourner un tableau vide au lieu de throw
   }
 };
 
