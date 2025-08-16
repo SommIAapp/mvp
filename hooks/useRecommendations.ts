@@ -68,6 +68,7 @@ export function useRecommendations() {
     dishDescription: string,
     budget?: number,
     timestamp?: number,
+    wineType?: string | null
   ): Promise<WineRecommendation[]> => {
     console.log('🚀 STARTING TEXT_ONLY MODE for:', dishDescription);
     console.log('🔄 getRecommendations - Starting with params:', {
@@ -88,7 +89,8 @@ export function useRecommendations() {
       const wines = await fetchUnifiedRecommendations({
         mode: 'text_only',
         dish_description: dishDescription,
-        user_budget: budget
+        user_budget: budget,
+        wine_type_preference: wineType || null
       });
       
       console.log('🍷 getRecommendations - TEXT_ONLY mode completed, wines:', wines.length);

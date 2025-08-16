@@ -117,6 +117,7 @@ export default function HomeScreen() {
       const recommendations = await getRecommendations(
         dishDescription,
         budgetValue,
+        undefined, // timestamp
         selectedWineType
       );
 
