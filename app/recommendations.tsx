@@ -424,7 +424,13 @@ export default function RecommendationsScreen() {
               <View style={[styles.infoItem, styles.infoItemCenter]}>
                 <Text style={styles.infoLabel}>PRIX</Text>
                 <Text style={styles.infoPriceValue}>
-                  {Math.round(wine.price_estimate || wine.match_score || 30)}€
+                  {(() => {
+                    // Mode restaurant : utiliser price_bottle ou price_glass
+                    if (wine.price_bottle !== undefined) return Math.round(wine.price_bottle);
+                    if (wine.price_glass !== undefined) return Math.round(wine.price_glass);
+                    // Mode normal : utiliser price_estimate
+                    return Math.round(wine.price_estimate || wine.match_score || 30);
+                  })()}€
                 </Text>
               </View>
 
@@ -447,13 +453,7 @@ export default function RecommendationsScreen() {
             {/* Reasoning/Description */}
             {wine.reasoning && (
               <Text style={styles.reasoning} numberOfLines={3}>
-                {(() => {
-                  // Mode restaurant : utiliser price_bottle ou price_glass
-                  if (wine.price_bottle !== undefined) return Math.round(wine.price_bottle);
-                  if (wine.price_glass !== undefined) return Math.round(wine.price_glass);
-                  // Mode normal : utiliser price_estimate
-                  return Math.round(wine.price_estimate || wine.match_score || 30);
-                {wine.region || '-'}
+                {wine.reasoning}
               </Text>
             )}
           </View>
