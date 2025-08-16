@@ -183,6 +183,11 @@ export default function RecommendationsScreen() {
 
   // Fonction pour extraire juste le nom du vin (enlève la région si elle est dans le nom)
   const getCleanWineName = (wine: WineRecommendation) => {
+    // Si c'est un nom générique du mode restaurant
+    if (wine.name?.includes('VINS') || wine.name?.length < 5) {
+      return `${wine.producer || 'Sélection'} ${wine.type || wine.color || 'Rouge'}`;
+    }
+    
     let cleanName = wine.name;
     
     // Enlève les patterns courants : ", Bordeaux", " - Bordeaux", " Bordeaux", etc.
