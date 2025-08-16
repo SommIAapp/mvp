@@ -136,8 +136,17 @@ export default function RecommendationsScreen() {
 
   // Ajoute cette fonction après loadRecommendations :
   const getPriceBadge = (wine: WineRecommendation, allWines: WineRecommendation[]) => {
-    const prices = allWines.map(w => w.price_estimate || 0).sort((a, b) => a - b);
-    const winePrice = wine.price_estimate || 0;
+    // Fonction helper pour récupérer le prix selon le mode
+    const getPrice = (w) => {
+      // Mode restaurant : price_bottle ou price_glass
+      if (w.price_bottle !== undefined) return w.price_bottle;
+      if (w.price_glass !== undefined) return w.price_glass;
+      // Mode normal : price_estimate
+      return w.price_estimate || 0;
+    };
+    
+    const prices = allWines.map(w => getPrice(w)).sort((a, b) => a - b);
+    const winePrice = getPrice(wine);
     
     if (prices.length !== 3) return null;
     
