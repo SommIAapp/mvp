@@ -65,12 +65,16 @@ export default function SubscriptionScreen() {
       return;
     }
 
+    analytics.trackPremiumAction('subscription_attempted');
+
     setLoading(true);
     
     try {
       await createCheckoutSession(priceId, 'subscription');
+      analytics.trackPremiumAction('subscription_started');
     } catch (error) {
       console.error('Checkout error:', error);
+      analytics.trackError('Subscription Error', error.message || 'Unknown error');
       Alert.alert('Erreur', 'Impossible de créer la session de paiement. Réessaie plus tard.');
     } finally {
       setLoading(false);

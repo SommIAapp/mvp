@@ -373,6 +373,13 @@ export default function RestaurantScreen() {
     console.log('Daily count:', profile?.daily_count);
     console.log('Can make recommendation:', canMakeRecommendation());
     
+    analytics.trackRestaurantMode('wine_search', {
+      dish: dishDescription,
+      available_wines: currentSession?.extracted_wines?.length || 0,
+      has_budget: !!selectedBudget,
+      wine_type: selectedWineType,
+    });
+    
     // Vérification du quota ici
     if (!canMakeRecommendation()) {
       console.log('🚫 Restaurant - Quota exceeded, showing paywall');
