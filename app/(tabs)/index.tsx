@@ -19,6 +19,8 @@ import { Typography } from '@/constants/Typography';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useRecommendations } from '@/hooks/useRecommendations';
+import { analytics } from '@/src/services/mixpanel';
+import { useFocusEffect } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
@@ -49,6 +51,12 @@ export default function HomeScreen() {
     };
   }, []);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      analytics.trackScreenView('Home');
+    }, [])
+  );
+
   // Show loading spinner while profile is being loaded
   if (loading) {
     return (
@@ -64,6 +72,8 @@ export default function HomeScreen() {
     console.log('🎯 handleGetRecommendations - Starting TEXT_ONLY recommendation request');
     console.log('👤 handleGetRecommendations - Current user:', user);
     console.log('📋 handleGetRecommendations - Current profile:', profile);
+    
+    analytics.trackSearch(dishDescription, budgetValue, selectedWineType);
     
     if (!dishDescription.trim()) {
       Alert.alert('Erreur', 'Peux-tu décrire ton plat plus précisément ?');
@@ -123,6 +133,8 @@ export default function HomeScreen() {
 
       console.log('✅ handleGetRecommendations - Recommendations received:', recommendations);
 
+      analytics.trackRecommendation(dishDescription, recommendations.length);
+
       // Update usage count for free users
       if (profile?.subscription_plan !== 'premium') {
         console.log('📈 handleGetRecommendations - Updating usage count');
@@ -150,6 +162,7 @@ export default function HomeScreen() {
       });
     } catch (error) {
       console.error('💥 handleGetRecommendations - Error:', error);
+      analytics.trackError('Search Error', error.message || 'Unknown error');
       console.error('🔍 handleGetRecommendations - Error details:', {
         message: error.message,
         stack: error.stack,
@@ -174,6 +187,8 @@ export default function HomeScreen() {
 
   const handlePhotoRecommendations = async () => {
     console.log('📸 handlePhotoRecommendations - Starting DISH_PHOTO recommendation request');
+    
+    analytics.trackPhotoMode('photo_taken');
     
     if (!canMakeRecommendation()) {
       console.log('🚫 handlePhotoRecommendations - Quota exceeded, showing paywall');
@@ -238,6 +253,12 @@ export default function HomeScreen() {
 
       console.log('✅ handlePhotoRecommendations - Photo recommendations received:', recommendations);
 
+      analytics.trackPhotoMode('photo_analyzed', {
+        recommendations_count: recommendations.length,
+        budget: budgetValue,
+        wine_type: selectedWineType,
+      });
+
       // Update usage count for non-premium users
       if (profile?.subscription_plan !== 'premium') {
         console.log('📈 handlePhotoRecommendations - Updating usage count');
@@ -266,6 +287,7 @@ export default function HomeScreen() {
       });
     } catch (error) {
       console.error('💥 handlePhotoRecommendations - Error:', error);
+      analytics.trackError('Photo Mode Error', error.message || 'Unknown error');
       setRecommendationLoading(false);
       Alert.alert('Erreur', `Impossible de générer les recommandations: ${error.message}`);
     }
@@ -273,6 +295,8 @@ export default function HomeScreen() {
 
   const handleGalleryRecommendations = async () => {
     console.log('🖼️ handleGalleryRecommendations - Starting DISH_PHOTO (gallery) recommendation request');
+    
+    analytics.trackPhotoMode('gallery_photo_selected');
     
     if (!canMakeRecommendation()) {
       console.log('🚫 handleGalleryRecommendations - Quota exceeded, showing paywall');
@@ -337,6 +361,12 @@ export default function HomeScreen() {
 
       console.log('✅ handleGalleryRecommendations - Photo recommendations received:', recommendations);
 
+      analytics.trackPhotoMode('gallery_photo_analyzed', {
+        recommendations_count: recommendations.length,
+        budget: budgetValue,
+        wine_type: selectedWineType,
+      });
+
       // Update usage count for non-premium users
       if (profile?.subscription_plan !== 'premium') {
         console.log('📈 handleGalleryRecommendations - Updating usage count');
@@ -365,6 +395,7 @@ export default function HomeScreen() {
       });
     } catch (error) {
       console.error('💥 handleGalleryRecommendations - Error:', error);
+      analytics.trackError('Gallery Mode Error', error.message || 'Unknown error');
       setRecommendationLoading(false);
       Alert.alert('Erreur', `Impossible de générer les recommandations: ${error.message}`);
     }

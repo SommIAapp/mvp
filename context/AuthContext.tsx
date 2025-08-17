@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { supabase } from '@/lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import type { Database } from '@/lib/supabase';
+import { analytics } from '@/src/services/mixpanel';
 
 type UserProfile = Database['public']['Tables']['user_profiles']['Row'] & {
   trial_start_date: string | null;
@@ -112,6 +113,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     return () => subscription.unsubscribe();
   }, []); // Empty dependency array - only run once on mount
+
+  useEffect(() => {
+    if (user) {
+      analytics.identify(user.id, user.email || undefined);
+    }
+  }, [user]);
 
   const fetchProfile = async (userId: string) => {
     console.log('🔐 AuthProvider: Fetching profile for userId:', userId);
