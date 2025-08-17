@@ -28,7 +28,6 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useRestaurantMode, UserCancellationError } from '@/hooks/useRestaurantMode';
 import { tempStore } from '@/utils/tempStore';
-import { analytics } from '@/src/services/mixpanel';
 
 const { width } = Dimensions.get('window');
 
@@ -83,12 +82,6 @@ export default function RestaurantScreen() {
       console.log('🍽️ Restaurant: Component unmounted');
     };
   }, []);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      analytics.trackScreenView('Restaurant Mode');
-    }, [])
-  );
 
   // Vérifier la session au retour de l'appareil photo
   useEffect(() => {
@@ -191,8 +184,6 @@ export default function RestaurantScreen() {
   const handleScanCard = async () => {
     console.log('📸 handleScanCard - Début de la prise de photo');
     
-    analytics.trackRestaurantMode('ocr_scan_started');
-    
     try {
       // Vérifier les permissions
       console.log('🔐 handleScanCard - Vérification des permissions caméra...');
@@ -253,11 +244,6 @@ export default function RestaurantScreen() {
 
       console.log('🚀 handleScanCard - Envoi vers scanWineCard...');
       const restaurantSession = await scanWineCard(manipResult.base64);
-      
-      analytics.trackRestaurantMode('ocr_scan_completed', {
-        wines_detected: restaurantSession.extracted_wines?.length || 0,
-        restaurant_name: restaurantSession.restaurant_name,
-      });
       
       Alert.alert(
         'Carte analysée !', 
@@ -372,13 +358,6 @@ export default function RestaurantScreen() {
     console.log('Subscription plan:', profile?.subscription_plan);
     console.log('Daily count:', profile?.daily_count);
     console.log('Can make recommendation:', canMakeRecommendation());
-    
-    analytics.trackRestaurantMode('wine_search', {
-      dish: dishDescription,
-      available_wines: currentSession?.extracted_wines?.length || 0,
-      has_budget: !!selectedBudget,
-      wine_type: selectedWineType,
-    });
     
     // Vérification du quota ici
     if (!canMakeRecommendation()) {

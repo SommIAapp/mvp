@@ -140,12 +140,6 @@ export default function HistoryScreen() {
       wines: item.recommended_wines
     });
     
-    analytics.trackHistoryAction('recommendation_opened', {
-      recommendation_id: item.id,
-      dish: item.dish_description,
-      type: item.type || 'normal',
-    });
-    
     // Toutes les recommandations utilisent la même route
     router.push(`/wine-recommendation/${item.id}`);
   };

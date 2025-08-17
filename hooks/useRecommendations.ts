@@ -285,7 +285,6 @@ export function useRecommendations() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur recommandations restaurant';
       setError(errorMessage);
-      analytics.trackError('Restaurant Recommendation Error', errorMessage);
       throw err;
     } finally {
       setLoading(false);

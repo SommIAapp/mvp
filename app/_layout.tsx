@@ -4,17 +4,11 @@ import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { AuthProvider } from '@/context/AuthContext';
-import { analytics } from '@/src/services/mixpanel';
 
 export default function RootLayout() {
   console.log('📱 Layout: RootLayout rendering');
   
   useFrameworkReady();
-
-  useEffect(() => {
-    // Initialiser Mixpanel
-    analytics.init();
-  }, []);
 
   return (
     <AuthProvider>
