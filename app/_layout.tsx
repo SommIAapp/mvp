@@ -42,29 +42,16 @@ export default function RootLayout() {
       </GestureHandlerRootView>
     </AuthProvider>
   );
+}
 
 const styles = StyleSheet.create({
   offlineIndicator: {
     backgroundColor: Colors.error,
     paddingVertical: 8,
-    paddingHorizontal: 16,
     alignItems: 'center',
-    justifyContent: 'center',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 9999,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 10,
   },
   offlineText: {
-    color: Colors.accent,
-    fontSize: Typography.sizes.sm,
-    fontWeight: Typography.weights.semibold,
-    marginTop: 44, // Account for status bar
+    ...Typography.caption,
+    color: Colors.white,
   },
 });
