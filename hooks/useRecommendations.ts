@@ -139,7 +139,8 @@ export function useRecommendations() {
   const getRecommendationsFromPhoto = async (
     photoBase64: string,
     budget?: number,
-    wineType?: string | null
+    wineType?: string | null,
+    restaurantSessionId?: string
   ): Promise<WineRecommendation[]> => {
     // Check connexion d'abord
     if (!isConnected) {
@@ -158,17 +159,50 @@ export function useRecommendations() {
     console.log('📸 Photo base64 length:', photoBase64.length);
     console.log('💰 Photo mode budget:', budget);
     console.log('🍷 Photo mode wine type:', wineType);
+    console.log('🏪 Restaurant session ID:', restaurantSessionId);
     
     setLoading(true);
     setError(null);
 
     try {
-      const wines = await fetchUnifiedRecommendations({
-        mode: 'dish_photo',
-        dish_image_base64: photoBase64,
-        user_budget: budget,
-        wine_type_preference: wineType
-      });
+      // NOUVEAU : Vérifier si on est en mode restaurant
+      const restaurantSession = await getActiveRestaurantSession(restaurantSessionId);
+      
+      let wines;
+      
+      if (restaurantSession && restaurantSession.extracted_wines && restaurantSession.extracted_wines.length > 0) {
+        // Mode Restaurant avec photo
+        console.log('📸 Photo en mode restaurant - utilisation de la carte');
+        console.log('🍷 Available wines from restaurant:', restaurantSession.extracted_wines.length);
+        
+        // D'abord analyser la photo pour identifier le plat
+        const photoAnalysis = await analyzePhotoForDish(photoBase64);
+        
+        if (!photoAnalysis.success) {
+          throw new Error(photoAnalysis.error);
+        }
+        
+        console.log('🔍 Photo analysis result:', photoAnalysis.dish_name);
+        
+        // Puis utiliser le mode restaurant_reco avec les vins de la carte
+        wines = await fetchUnifiedRecommendations({
+          mode: 'restaurant_reco',
+          dish_description: photoAnalysis.dish_name,
+          restaurant_session_id: restaurantSession.id,
+          available_wines: restaurantSession.extracted_wines,
+          user_budget: budget,
+          wine_type_preference: wineType
+        });
+      } else {
+        // Mode normal photo (pas en restaurant)
+        console.log('📸 Photo en mode normal - base de données complète');
+        wines = await fetchUnifiedRecommendations({
+          mode: 'dish_photo',
+          dish_image_base64: photoBase64,
+          user_budget: budget,
+          wine_type_preference: wineType
+        });
+      }
 
       if (wines === null) {
         // Ne pas continuer si c'est une photo non analysable
@@ -352,6 +386,81 @@ export function useRecommendations() {
       throw err;
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Nouvelle fonction pour identifier le plat sur la photo
+  const analyzePhotoForDish = async (imageBase64: string) => {
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session?.access_token) {
+        throw new Error('Session non valide');
+      }
+
+      const response = await fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/wine-recommendations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          mode: 'dish_photo_analysis',
+          dish_image_base64: imageBase64
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok || !data.success) {
+        return {
+          success: false,
+          error: data.error || 'Erreur analyse photo'
+        };
+      }
+      
+      return {
+        success: true,
+        dish_name: data.identified_dish,
+        confidence: data.vision_confidence
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: 'Erreur analyse photo'
+      };
+    }
+  };
+
+  // Fonction helper pour récupérer la session restaurant active
+  const getActiveRestaurantSession = async (sessionId?: string) => {
+    if (!sessionId && !user?.id) {
+      return null;
+    }
+
+    try {
+      let query = supabase
+        .from('restaurant_sessions')
+        .select('*')
+        .eq('session_active', true);
+
+      if (sessionId) {
+        query = query.eq('id', sessionId);
+      } else {
+        query = query.eq('user_id', user!.id).order('created_at', { ascending: false }).limit(1);
+      }
+
+      const { data, error } = await query.maybeSingle();
+
+      if (error) {
+        console.error('❌ Error fetching restaurant session:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('❌ Error in getActiveRestaurantSession:', error);
+      return null;
     }
   };
 
@@ -813,7 +922,8 @@ export function useRecommendations() {
     getRestaurantOCR,
     getRestaurantRecommendations,
     getWineCardScan,
-    getWineCardScan,
+    analyzePhotoForDish,
+    getActiveRestaurantSession,
     getRecommendationHistory,
     loading,
     error,
