@@ -14,7 +14,6 @@ export interface WineRecommendation {
   producer: string;
   region: string;
   price: number;
-  rating: number;
   category: 'economique' | 'qualite-prix' | 'premium';
   color: 'rouge' | 'blanc' | 'rose' | 'sparkling';
   reasoning: string;
