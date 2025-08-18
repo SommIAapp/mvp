@@ -108,6 +108,11 @@ export function useRecommendations() {
         wine_type_preference: wineType || null
       });
       
+      if (wines === null) {
+        // Ne pas continuer si c'est un plat non reconnu
+        return [];
+      }
+      
       console.log('🍷 getRecommendations - TEXT_ONLY mode completed, wines:', wines.length);
 
       // Save recommendation to history first
@@ -164,6 +169,11 @@ export function useRecommendations() {
         user_budget: budget,
         wine_type_preference: wineType
       });
+
+      if (wines === null) {
+        // Ne pas continuer si c'est une photo non analysable
+        return [];
+      }
 
       console.log('📸 getRecommendationsFromPhoto - DISH_PHOTO mode completed, wines:', wines.length);
       if (user) {
@@ -525,14 +535,41 @@ export function useRecommendations() {
       const errorTime = Date.now() - startTime;
       console.error('💥 fetchUnifiedRecommendations - API call failed for mode', request.mode + ':', apiError);
       console.error('💥 fetchUnifiedRecommendations - Error occurred after:', errorTime + 'ms');
-      console.error('🔍 Error details:', {
-        message: apiError.message,
-        stack: apiError.stack,
-        name: apiError.name,
-        cause: apiError.cause
-      });
       
-      // Fallback to database if API fails
+      // Extraire le message d'erreur du body de la réponse
+      let errorData = null;
+      try {
+        // Si l'erreur contient le body JSON de la réponse
+        const errorMatch = apiError.message.match(/\{.*\}$/);
+        if (errorMatch) {
+          errorData = JSON.parse(errorMatch[0]);
+        }
+      } catch (e) {
+        console.log('Could not parse error data');
+      }
+      
+      // Si c'est une erreur "Plat non reconnu", ne pas faire de fallback
+      if (errorData && errorData.error === 'Plat non reconnu') {
+        // Utiliser Alert au lieu de throw pour un message user-friendly
+        Alert.alert(
+          'Plat non reconnu',
+          errorData.message || 'Veuillez décrire un plat réel',
+          [{ text: 'OK' }]
+        );
+        return null; // Retourner null pour ne pas continuer
+      }
+      
+      // Si c'est une erreur "Photo non analysable" 
+      if (errorData && errorData.error === 'Photo non analysable') {
+        Alert.alert(
+          'Photo non analysable',
+          errorData.message || 'Veuillez prendre une photo plus claire',
+          [{ text: 'OK' }]
+        );
+        return null;
+      }
+      
+      // Pour les autres erreurs (réseau, serveur, etc.), faire le fallback database
       if (request.mode === 'text_only') {
         console.log('🗄️ fetchUnifiedRecommendations - Falling back to database for text_only mode');
         return await fetchWineRecommendationsFromDatabase(request.dish_description, request.user_budget);
