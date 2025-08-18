@@ -123,12 +123,12 @@ export default function HomeScreen() {
 
       console.log('✅ handleGetRecommendations - Recommendations received:', recommendations);
 
-     // NOUVEAU : Vérifier qu'on a bien des recommendations
-     if (!recommendations || recommendations.length === 0) {
-       console.log('❌ No recommendations received, not navigating');
-       // L'Alert a déjà été affichée dans useRecommendations
-       return; // Ne pas continuer
-     }
+      // Vérifier qu'on a bien des recommendations
+      if (!recommendations || recommendations.length === 0) {
+        console.log('❌ No recommendations received, not navigating');
+        setRecommendationLoading(false); // IMPORTANT : Remettre le bouton à l'état normal
+        return; // Ne pas continuer
+      }
       // Update usage count for free users
       if (profile?.subscription_plan !== 'premium') {
         console.log('📈 handleGetRecommendations - Updating usage count');
@@ -162,7 +162,10 @@ export default function HomeScreen() {
         name: error.name
       });
       setRecommendationLoading(false);
-     // L'erreur a déjà été gérée dans useRecommendations, pas besoin d'Alert ici
+      // L'erreur a déjà été gérée dans useRecommendations
+    } finally {
+      // Toujours remettre à false à la fin (sauf si navigation réussie)
+      // Note: si navigation réussie, le composant sera démonté donc pas besoin
     }
   };
 
