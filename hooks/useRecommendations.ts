@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { Alert } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
+import { useNetworkStatus } from './useNetworkStatus';
 import type { Database } from '@/lib/supabase';
 
 type Wine = Database['public']['Tables']['wines']['Row'];
@@ -60,6 +62,7 @@ export interface RestaurantRecommendation {
 }
 
 export function useRecommendations() {
+  const { isConnected } = useNetworkStatus();
   const { user, updateUsageCount } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,6 +73,19 @@ export function useRecommendations() {
     timestamp?: number,
     wineType?: string | null
   ): Promise<WineRecommendation[]> => {
+    // Check connexion d'abord
+    if (!isConnected) {
+      Alert.alert(
+        'Pas de connexion',
+        'Une connexion internet est nécessaire pour obtenir des recommandations.',
+        [
+          { text: 'Annuler', style: 'cancel' },
+          { text: 'Réessayer', onPress: () => getRecommendations(dishDescription, budget, timestamp, wineType) }
+        ]
+      );
+      throw new Error('Pas de connexion internet');
+    }
+
     console.log('🚀 STARTING TEXT_ONLY MODE for:', dishDescription);
     console.log('🔄 getRecommendations - Starting with params:', {
       dishDescription,
@@ -121,6 +137,19 @@ export function useRecommendations() {
     budget?: number,
     wineType?: string | null
   ): Promise<WineRecommendation[]> => {
+    // Check connexion d'abord
+    if (!isConnected) {
+      Alert.alert(
+        'Pas de connexion',
+        'Une connexion internet est nécessaire pour analyser votre photo.',
+        [
+          { text: 'Annuler', style: 'cancel' },
+          { text: 'Réessayer', onPress: () => getRecommendationsFromPhoto(photoBase64, budget, wineType) }
+        ]
+      );
+      throw new Error('Pas de connexion internet');
+    }
+
     console.log('📸 STARTING DISH_PHOTO MODE - Photo analysis');
     console.log('📸 Photo base64 length:', photoBase64.length);
     console.log('💰 Photo mode budget:', budget);
@@ -158,6 +187,19 @@ export function useRecommendations() {
     menuPhotoBase64: string,
     userId: string
   ): Promise<RestaurantSession> => {
+    // Check connexion d'abord
+    if (!isConnected) {
+      Alert.alert(
+        'Pas de connexion',
+        'Une connexion internet est nécessaire pour analyser la carte des vins.',
+        [
+          { text: 'Annuler', style: 'cancel' },
+          { text: 'Réessayer', onPress: () => getRestaurantOCR(menuPhotoBase64, userId) }
+        ]
+      );
+      throw new Error('Pas de connexion internet');
+    }
+
     console.log('🔍 STARTING RESTAURANT_OCR MODE - Menu OCR analysis');
     console.log('🔍 Menu photo base64 length:', menuPhotoBase64.length);
     console.log('👤 OCR for user:', userId);
@@ -197,6 +239,19 @@ export function useRecommendations() {
     budget?: number,
     wineType?: string | null
   ): Promise<RestaurantRecommendation[]> => {
+    // Check connexion d'abord
+    if (!isConnected) {
+      Alert.alert(
+        'Pas de connexion',
+        'Une connexion internet est nécessaire pour obtenir des recommandations.',
+        [
+          { text: 'Annuler', style: 'cancel' },
+          { text: 'Réessayer', onPress: () => getRestaurantRecommendations(dish, sessionId, availableWines, budget, wineType) }
+        ]
+      );
+      throw new Error('Pas de connexion internet');
+    }
+
     console.log('🍽️ STARTING RESTAURANT_RECO MODE - Restaurant recommendations');
     console.log('🍽️ Dish:', dish);
     console.log('🏪 Session ID:', sessionId);
