@@ -8,7 +8,7 @@ import {
   ActivityIndicator 
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, Star, Wine } from 'lucide-react-native';
+import { ArrowLeft, Wine } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
@@ -218,12 +218,9 @@ export default function WineRecommendationDetailScreen() {
             
             <View style={styles.scoreContainer}>
               <Text style={styles.scoreLabel}>SCORE</Text>
-              <View style={styles.scoreValue}>
-                <Star size={20} color={Colors.secondary} fill={Colors.secondary} />
-                <Text style={styles.scoreText}>
-                  {selectedWine.match_score || selectedWine.rating || 85}/100
-                </Text>
-              </View>
+              <Text style={styles.scoreText}>
+                {selectedWine.match_score || selectedWine.rating || 85}/100
+              </Text>
             </View>
           </View>
 
@@ -461,15 +458,10 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     marginBottom: 4,
   },
-  scoreValue: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   scoreText: {
     fontSize: Typography.sizes.lg,
     fontWeight: Typography.weights.semibold,
     color: Colors.textPrimary,
-    marginLeft: 6,
   },
   reasoningSection: {
     marginBottom: 24,

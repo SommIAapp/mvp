@@ -7,7 +7,7 @@ import {
   TouchableOpacity 
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, Star } from 'lucide-react-native';
+import { ArrowLeft } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { type WineRecommendation } from '@/hooks/useRecommendations';
@@ -54,23 +54,6 @@ export default function WineDetailScreen() {
       case 'premium': return 'Premium';
       default: return category;
     }
-  };
-
-  const renderStars = (rating: number) => {
-    const stars = Math.round(rating / 20); // Convert 100-point scale to 5-star
-    return (
-      <View style={styles.starsContainer}>
-        {[...Array(5)].map((_, index) => (
-          <Star
-            key={index}
-            size={20}
-            color={index < stars ? Colors.secondary : Colors.textLight}
-            fill={index < stars ? Colors.secondary : 'transparent'}
-          />
-        ))}
-        <Text style={styles.ratingText}>{rating}/100</Text>
-      </View>
-    );
   };
 
   return (
@@ -143,7 +126,6 @@ export default function WineDetailScreen() {
             </View>
             <View style={styles.ratingContainer}>
               <Text style={styles.ratingLabel}>Note</Text>
-              {renderStars(wine.rating)}
             </View>
           </View>
 
@@ -309,15 +291,6 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.sm,
     color: Colors.textSecondary,
     marginBottom: 4,
-  },
-  starsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  ratingText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.textSecondary,
-    marginLeft: 8,
   },
   section: {
     marginBottom: 24,
