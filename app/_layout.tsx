@@ -46,12 +46,24 @@ export default function RootLayout() {
 
 const styles = StyleSheet.create({
   offlineIndicator: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     backgroundColor: Colors.error,
     paddingVertical: 8,
+    paddingTop: 50, // Account for status bar
     alignItems: 'center',
+    zIndex: 9999,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 10,
   },
   offlineText: {
-    ...Typography.caption,
+    fontSize: Typography.sizes.sm,
+    fontWeight: Typography.weights.semibold,
     color: Colors.white,
   },
 });
