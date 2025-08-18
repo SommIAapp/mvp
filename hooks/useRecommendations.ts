@@ -165,37 +165,54 @@ export function useRecommendations() {
     setError(null);
 
     try {
-      // NOUVEAU : Vérifier si on est en mode restaurant
-      const restaurantSession = await getActiveRestaurantSession(restaurantSessionId);
+      // Vérifier si on a une session restaurant active
+      const { data: sessionData, error: sessionError } = await supabase
+        .from('restaurant_sessions')
+        .select('*')
+        .eq('session_active', true)
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
       
       let wines;
       
-      if (restaurantSession && restaurantSession.extracted_wines && restaurantSession.extracted_wines.length > 0) {
-        // Mode Restaurant avec photo
-        console.log('📸 Photo en mode restaurant - utilisation de la carte');
-        console.log('🍷 Available wines from restaurant:', restaurantSession.extracted_wines.length);
+      if (sessionData && sessionData.extracted_wines && sessionData.extracted_wines.length > 0) {
+        console.log('📍 Mode Restaurant détecté - Analyse photo en 2 étapes');
+        console.log(`🍷 ${sessionData.extracted_wines.length} vins disponibles dans la carte`);
         
-        // D'abord analyser la photo pour identifier le plat
+        // ÉTAPE 1 : Identifier le plat sur la photo
+        console.log('🔍 Étape 1: Identification du plat...');
         const photoAnalysis = await analyzePhotoForDish(photoBase64);
         
         if (!photoAnalysis.success) {
+          console.error('❌ Échec identification plat:', photoAnalysis.error);
           throw new Error(photoAnalysis.error);
         }
         
-        console.log('🔍 Photo analysis result:', photoAnalysis.dish_name);
+        console.log(`✅ Plat identifié: ${photoAnalysis.dish_name} (confiance: ${photoAnalysis.confidence}%)`);
         
-        // Puis utiliser le mode restaurant_reco avec les vins de la carte
+        // ÉTAPE 2 : Obtenir les recommendations avec les vins du restaurant uniquement
+        console.log('🍷 Étape 2: Recommendations basées sur la carte du restaurant...');
         wines = await fetchUnifiedRecommendations({
           mode: 'restaurant_reco',
           dish_description: photoAnalysis.dish_name,
-          restaurant_session_id: restaurantSession.id,
-          available_wines: restaurantSession.extracted_wines,
+          restaurant_session_id: sessionData.id,
+          available_wines: sessionData.extracted_wines,
           user_budget: budget,
           wine_type_preference: wineType
         });
+        
+        // Ajouter le nom du plat identifié aux recommendations
+        if (wines && wines.length > 0) {
+          wines.forEach(rec => {
+            rec.dish_identified = photoAnalysis.dish_name;
+            rec.photo_confidence = photoAnalysis.confidence;
+          });
+        }
       } else {
-        // Mode normal photo (pas en restaurant)
-        console.log('📸 Photo en mode normal - base de données complète');
+        // Pas en mode restaurant - utiliser le mode photo normal
+        console.log('🏠 Mode normal (pas de session restaurant active)');
         wines = await fetchUnifiedRecommendations({
           mode: 'dish_photo',
           dish_image_base64: photoBase64,
