@@ -207,21 +207,13 @@ export default function WineRecommendationDetailScreen() {
           </View>
 
           {/* Prix et Score */}
-          <View style={styles.priceScoreRow}>
-            <View style={styles.priceContainer}>
-              <Text style={styles.priceLabel}>PRIX</Text>
-              <Text style={styles.priceValue}>€{getPrice(selectedWine).toFixed(0)}</Text>
-              {selectedWine.price_display && (
-                <Text style={styles.priceDisplay}>{selectedWine.price_display}</Text>
-              )}
-            </View>
-            
-            <View style={styles.scoreContainer}>
-              <Text style={styles.scoreLabel}>SCORE</Text>
-              <Text style={styles.scoreText}>
-                {selectedWine.match_score || selectedWine.rating || 85}/100
-              </Text>
-            </View>
+          {/* Prix */}
+          <View style={styles.priceSection}>
+            <Text style={styles.priceLabel}>PRIX</Text>
+            <Text style={styles.priceValue}>€{getPrice(selectedWine).toFixed(0)}</Text>
+            {selectedWine.price_display && (
+              <Text style={styles.priceDisplay}>{selectedWine.price_display}</Text>
+            )}
           </View>
 
           {/* Reasoning */}
@@ -416,17 +408,12 @@ const styles = StyleSheet.create({
     fontWeight: Typography.weights.medium,
     color: Colors.textPrimary,
   },
-  priceScoreRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  priceSection: {
     paddingVertical: 20,
     borderTopWidth: 1,
     borderBottomWidth: 1,
     borderColor: Colors.softGray,
     marginBottom: 24,
-  },
-  priceContainer: {
-    flex: 1,
   },
   priceLabel: {
     fontSize: Typography.sizes.xs,
@@ -445,23 +432,6 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.xs,
     color: Colors.textSecondary,
     marginTop: 2,
-  },
-  scoreContainer: {
-    flex: 1,
-    alignItems: 'flex-end',
-  },
-  scoreLabel: {
-    fontSize: Typography.sizes.xs,
-    fontWeight: Typography.weights.semibold,
-    color: Colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 4,
-  },
-  scoreText: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.semibold,
-    color: Colors.textPrimary,
   },
   reasoningSection: {
     marginBottom: 24,
