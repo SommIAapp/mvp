@@ -25,9 +25,10 @@ import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { ProgressBar } from '@/components/ProgressBar';
 import { useAuth } from '@/hooks/useAuth';
 import { useRestaurantMode, UserCancellationError } from '@/hooks/useRestaurantMode';
-import { sanitizeForLogging } from '@/utils/secureLogging';
+import { sanitizeForLogging, logProfile, logUser } from '@/utils/secureLogging';
 import { tempStore } from '@/utils/tempStore';
 
 const { width } = Dimensions.get('window');
@@ -69,6 +70,9 @@ export default function RestaurantScreen() {
   const [selectedWineType, setSelectedWineType] = useState<string | null>(null);
   const [dishImage, setDishImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [scanProgress, setScanProgress] = useState(0);
+  const [scanMessage, setScanMessage] = useState('');
+  const [isScanning, setIsScanning] = useState(false);
   const [appState, setAppState] = useState(AppState.currentState);
   const hasNavigatedRef = useRef(false);
   const hasLoadedFromHistoryRef = useRef(false);
@@ -186,8 +190,15 @@ export default function RestaurantScreen() {
     console.log('📸 handleScanCard - Début de la prise de photo');
     
     try {
+      setIsScanning(true);
+      setScanProgress(0);
+      setScanMessage('Initialisation...');
+      
       // Vérifier les permissions
       console.log('🔐 handleScanCard - Vérification des permissions caméra...');
+      setScanProgress(10);
+      setScanMessage('Vérification des permissions...');
+      
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
         console.error('❌ handleScanCard - Permission caméra refusée');
@@ -195,6 +206,9 @@ export default function RestaurantScreen() {
         return;
       }
       console.log('✅ handleScanCard - Permissions caméra accordées');
+      
+      setScanProgress(20);
+      setScanMessage('Ouverture de la caméra...');
 
       console.log('📱 handleScanCard - Lancement de la caméra...');
       
@@ -217,10 +231,10 @@ export default function RestaurantScreen() {
       }
 
       console.log('✅ handleScanCard - Photo prise avec succès');
-      console.log('📏 handleScanCard - URI de l\'image:', result.assets[0].uri);
+      console.log('📏 handleScanCard - Image capturée');
 
-      // Afficher un loading pendant le traitement
-      Alert.alert('Traitement', 'Analyse de la carte en cours...', [], { cancelable: false });
+      setScanProgress(30);
+      setScanMessage('Préparation de l\'image...');
 
       console.log('🔄 handleScanCard - Compression et conversion base64...');
       // Base64 avec ImageManipulator SEULEMENT (plus sûr pour Android)
@@ -240,17 +254,33 @@ export default function RestaurantScreen() {
       }
 
       console.log('✅ handleScanCard - Image compressée');
-      console.log('📏 handleScanCard - Taille base64:', manipResult.base64.length, 'caractères');
-      console.log('📏 handleScanCard - Taille base64:', (manipResult.base64.length / 1024).toFixed(2), 'KB');
+      console.log('📏 handleScanCard - Image prête pour analyse');
+      
+      setScanProgress(50);
+      setScanMessage('Envoi vers l\'analyse OCR...');
+      
+      // Simuler progression pendant l'analyse
+      const progressInterval = setInterval(() => {
+        setScanProgress(prev => {
+          if (prev < 85) return prev + 5;
+          return prev;
+        });
+      }, 1000);
+      
+      setScanMessage('Analyse de la carte en cours...');
 
       console.log('🚀 handleScanCard - Envoi vers scanWineCard...');
       const restaurantSession = await scanWineCard(manipResult.base64);
       
-      Alert.alert(
-        'Carte analysée !', 
-        'Continuez pour sélectionner votre plat',
-        [{ text: 'Continuer', onPress: () => setStep('dish') }]
-      );
+      clearInterval(progressInterval);
+      
+      setScanProgress(100);
+      setScanMessage('Analyse terminée!');
+      
+      // Attendre un peu pour montrer 100% puis continuer
+      setTimeout(() => {
+        setStep('dish');
+      }, 1000);
 
     } catch (error: any) {
       console.error('💥 handleScanCard - Erreur capturée:', error);
@@ -261,6 +291,10 @@ export default function RestaurantScreen() {
       }
       
       // Don't show alert for user cancellations
+    } finally {
+      setIsScanning(false);
+      setScanProgress(0);
+      setScanMessage('');
       if (!(error instanceof UserCancellationError)) {
         Alert.alert('Erreur', `Impossible de traiter la photo: ${error.message}`);
       }
@@ -271,8 +305,15 @@ export default function RestaurantScreen() {
     console.log('🖼️ handlePickFromGallery - Début de la sélection galerie');
     
     try {
+      setIsScanning(true);
+      setScanProgress(0);
+      setScanMessage('Initialisation...');
+      
       // Vérifier les permissions
       console.log('🔐 handlePickFromGallery - Vérification des permissions galerie...');
+      setScanProgress(10);
+      setScanMessage('Vérification des permissions...');
+      
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
         console.error('❌ handlePickFromGallery - Permission galerie refusée');
@@ -281,6 +322,9 @@ export default function RestaurantScreen() {
       }
       console.log('✅ handlePickFromGallery - Permissions galerie accordées');
 
+      setScanProgress(20);
+      setScanMessage('Ouverture de la galerie...');
+      
       console.log('🖼️ handlePickFromGallery - Lancement de la galerie...');
       
       // Sélection SANS base64 pour éviter le crash Android
@@ -302,10 +346,10 @@ export default function RestaurantScreen() {
       }
 
       console.log('✅ handlePickFromGallery - Image sélectionnée avec succès');
-      console.log('📏 handlePickFromGallery - URI de l\'image:', result.assets[0].uri);
+      console.log('📏 handlePickFromGallery - Image sélectionnée');
       
-      // Afficher un loading pendant le traitement
-      Alert.alert('Traitement', 'Analyse de la carte en cours...', [], { cancelable: false });
+      setScanProgress(30);
+      setScanMessage('Préparation de l\'image...');
 
       console.log('🔄 handlePickFromGallery - Compression et conversion base64...');
       // Base64 avec ImageManipulator SEULEMENT (plus sûr pour Android)
@@ -325,41 +369,54 @@ export default function RestaurantScreen() {
       }
 
       console.log('✅ handlePickFromGallery - Image compressée');
-      console.log('📏 handlePickFromGallery - Taille base64:', manipResult.base64.length, 'caractères');
-      console.log('📏 handlePickFromGallery - Taille base64:', (manipResult.base64.length / 1024).toFixed(2), 'KB');
+      console.log('📏 handlePickFromGallery - Image prête pour analyse');
+      
+      setScanProgress(50);
+      setScanMessage('Envoi vers l\'analyse OCR...');
+      
+      // Simuler progression pendant l'analyse
+      const progressInterval = setInterval(() => {
+        setScanProgress(prev => {
+          if (prev < 85) return prev + 5;
+          return prev;
+        });
+      }, 1000);
+      
+      setScanMessage('Analyse de la carte en cours...');
 
       console.log('🚀 handlePickFromGallery - Envoi vers scanWineCard...');
       const restaurantSession = await scanWineCard(manipResult.base64);
       
-      Alert.alert(
-        'Carte analysée !', 
-        'Continuez pour sélectionner votre plat',
-        [{ text: 'Continuer', onPress: () => setStep('dish') }]
-      );
+      clearInterval(progressInterval);
+      
+      setScanProgress(100);
+      setScanMessage('Analyse terminée!');
+      
+      // Attendre un peu pour montrer 100% puis continuer
+      setTimeout(() => {
+        setStep('dish');
+      }, 1000);
 
     } catch (error: any) {
       console.error('💥 handlePickFromGallery - Erreur capturée:', error);
       console.error('🔍 handlePickFromGallery - Type d\'erreur:', error.constructor.name);
       console.error('🔍 handlePickFromGallery - Message:', error.message);
-      if (error.stack) {
-        console.error('🔍 handlePickFromGallery - Stack:', error.stack);
-      }
       
       // Don't show alert for user cancellations
       if (!(error instanceof UserCancellationError)) {
         Alert.alert('Erreur', `Impossible de traiter la photo: ${error.message}`);
       }
+    } finally {
+      setIsScanning(false);
+      setScanProgress(0);
+      setScanMessage('');
     }
   };
 
   const handleGetRecommendations = async () => {
     // Debug logs
     console.log('🔍 Checking recommendation quota...');
-    console.log('Profile:', {
-      subscription_plan: profile?.subscription_plan,
-      daily_count: profile?.daily_count,
-      trial_start_date: profile?.trial_start_date ? 'set' : 'null'
-    });
+    logProfile('Profile quota check', profile);
     console.log('Can make recommendation:', canMakeRecommendation());
     
     // Vérification du quota ici
