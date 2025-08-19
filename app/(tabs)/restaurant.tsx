@@ -27,6 +27,7 @@ import { Input } from '@/components/Input';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useRestaurantMode, UserCancellationError } from '@/hooks/useRestaurantMode';
+import { sanitizeForLogging } from '@/utils/secureLogging';
 import { tempStore } from '@/utils/tempStore';
 
 const { width } = Dimensions.get('window');
@@ -354,9 +355,11 @@ export default function RestaurantScreen() {
   const handleGetRecommendations = async () => {
     // Debug logs
     console.log('🔍 Checking recommendation quota...');
-    console.log('Profile:', profile);
-    console.log('Subscription plan:', profile?.subscription_plan);
-    console.log('Daily count:', profile?.daily_count);
+    console.log('Profile:', {
+      subscription_plan: profile?.subscription_plan,
+      daily_count: profile?.daily_count,
+      trial_start_date: profile?.trial_start_date ? 'set' : 'null'
+    });
     console.log('Can make recommendation:', canMakeRecommendation());
     
     // Vérification du quota ici

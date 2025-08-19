@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
+import { sanitizeForLogging } from '@/utils/secureLogging';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useRecommendations } from '@/hooks/useRecommendations';
@@ -62,8 +63,12 @@ export default function HomeScreen() {
 
   const handleGetRecommendations = async () => {
     console.log('🎯 handleGetRecommendations - Starting TEXT_ONLY recommendation request');
-    console.log('👤 handleGetRecommendations - Current user:', user);
-    console.log('📋 handleGetRecommendations - Current profile:', profile);
+    console.log('👤 handleGetRecommendations - Current user:', user ? sanitizeForLogging(user.id) : 'null');
+    console.log('📋 handleGetRecommendations - Current profile:', {
+      subscription_plan: profile?.subscription_plan,
+      daily_count: profile?.daily_count,
+      trial_start_date: profile?.trial_start_date ? 'set' : 'null'
+    });
     
     if (!dishDescription.trim()) {
       Alert.alert('Erreur', 'Peux-tu décrire ton plat plus précisément ?');
@@ -71,8 +76,12 @@ export default function HomeScreen() {
     }
 
     console.log('📊 handleGetRecommendations - Checking quota eligibility');
-    console.log('👤 handleGetRecommendations - User:', user?.id);
-    console.log('📋 handleGetRecommendations - Profile:', profile);
+    console.log('👤 handleGetRecommendations - User:', user ? sanitizeForLogging(user.id) : 'null');
+    console.log('📋 handleGetRecommendations - Profile quota check:', {
+      can_make_recommendation: canMakeRecommendation(),
+      subscription_plan: profile?.subscription_plan,
+      daily_count: profile?.daily_count
+    });
     
     if (!canMakeRecommendation()) {
       console.log('🚫 handleGetRecommendations - Quota exceeded, showing paywall');

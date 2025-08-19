@@ -181,3 +181,34 @@ export function logMinimal(label: string, info: { count?: number; type?: string;
   
   console.log(label, minimal);
 }
+
+// Helper pour logger un profile de manière sécurisée
+export function logProfile(label: string, profile: any) {
+  if (!profile) {
+    console.log(`${label}: null`);
+    return;
+  }
+  
+  secureLog(label, {
+    id: sanitizeForLogging(profile.id),
+    email: sanitizeForLogging(profile.email),
+    subscription: profile.subscription_plan,
+    daily_count: profile.daily_count,
+    trial_active: profile.subscription_plan === 'trial',
+    can_recommend: profile.subscription_plan !== 'free'
+  });
+}
+
+// Helper pour logger un user de manière sécurisée
+export function logUser(label: string, user: any) {
+  if (!user) {
+    console.log(`${label}: null`);
+    return;
+  }
+  
+  secureLog(label, {
+    id: sanitizeForLogging(user.id),
+    email: sanitizeForLogging(user.email),
+    authenticated: true
+  });
+}

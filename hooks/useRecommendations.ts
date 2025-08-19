@@ -160,7 +160,7 @@ export function useRecommendations() {
     logObjectSize('📸 Photo data', photoBase64);
     secureLog('💰 Photo mode budget:', budget);
     secureLog('🍷 Photo mode wine type:', wineType);
-    secureLog('🏪 Restaurant session ID:', sanitizeForLogging(restaurantSessionId));
+    secureLog('🏪 Restaurant session ID:', restaurantSessionId ? sanitizeForLogging(restaurantSessionId) : 'null');
     
     setLoading(true);
     setError(null);
@@ -171,7 +171,7 @@ export function useRecommendations() {
         .from('restaurant_sessions')
         .select('*')
         .eq('session_active', true)
-        .eq('user_id', user?.id)
+        .eq('user_id', user?.id || '')
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -263,7 +263,7 @@ export function useRecommendations() {
 
     secureLog('🔍 STARTING RESTAURANT_OCR MODE - Menu OCR analysis');
     logObjectSize('🔍 Menu photo', menuPhotoBase64);
-    secureLog('👤 OCR for user:', sanitizeForLogging(userId));
+    secureLog('👤 OCR for user:', userId ? sanitizeForLogging(userId) : 'null');
     
     setLoading(true);
     setError(null);
@@ -315,7 +315,7 @@ export function useRecommendations() {
 
     secureLog('🍽️ STARTING RESTAURANT_RECO MODE - Restaurant recommendations');
     secureLog('🍽️ Dish:', dish);
-    secureLog('🏪 Session ID:', sanitizeForLogging(sessionId));
+    secureLog('🏪 Session ID:', sessionId ? sanitizeForLogging(sessionId) : 'null');
     secureLog('🍷 Available wines count:', availableWines.length);
     secureLog('💰 Budget:', budget);
     secureLog('🍷 Wine type preference:', wineType);
@@ -884,7 +884,7 @@ export function useRecommendations() {
   const getWineCardScan = async (imageBase64: string, userId: string) => {
     secureLog('🔍 getWineCardScan called');
     logObjectSize('🔍 getWineCardScan - Image', imageBase64);
-    secureLog('👤 getWineCardScan pour user:', sanitizeForLogging(userId));
+    secureLog('👤 getWineCardScan pour user:', userId ? sanitizeForLogging(userId) : 'null');
     
     if (!imageBase64) {
       throw new Error('Image base64 requise');
@@ -903,11 +903,11 @@ export function useRecommendations() {
         user_id: userId
       });
       
-      secureLog('✅ getWineCardScan - Résultat OCR reçu:', sanitizeForLogging({
-        session_id: result.id,
+      secureLog('✅ getWineCardScan - Résultat OCR reçu:', {
+        session_id: result.id ? sanitizeForLogging(result.id) : 'null',
         restaurant_name: result.restaurant_name,
         wines_count: result.extracted_wines?.length || 0
-      }));
+      });
       
       return result;
     } catch (error) {
