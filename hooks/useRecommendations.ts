@@ -158,11 +158,9 @@ export function useRecommendations() {
 
     secureLog('📸 STARTING DISH_PHOTO MODE - Photo analysis');
     logObjectSize('📸 Photo data', photoBase64);
-    logMinimal('💰 Photo mode params', {
-      type: 'dish_photo',
-      count: 1,
-      status: restaurantSessionId ? 'restaurant' : 'normal'
-    });
+    secureLog('💰 Photo mode budget:', budget);
+    secureLog('🍷 Photo mode wine type:', wineType);
+    secureLog('🏪 Restaurant session ID:', sanitizeForLogging(restaurantSessionId));
     
     setLoading(true);
     setError(null);
@@ -612,9 +610,11 @@ export function useRecommendations() {
       // Handle different response formats based on mode
       if (request.mode === 'restaurant_ocr') {
         secureLog('🔍 Processing restaurant_ocr response');
-        secureLog('🔍 fetchUnifiedRecommendations - OCR session_id:', sanitizeForLogging(apiResult.session_id));
-        secureLog('🔍 fetchUnifiedRecommendations - OCR restaurant_name:', apiResult.restaurant_name);
-        secureLog('🔍 fetchUnifiedRecommendations - OCR extracted_wines count:', apiResult.extracted_wines?.length || 0);
+        logMinimal('🔍 fetchUnifiedRecommendations - OCR result', {
+          id: apiResult.session_id,
+          type: 'restaurant_ocr',
+          count: apiResult.extracted_wines?.length || 0
+        });
         return {
           id: apiResult.session_id,
           restaurant_name: apiResult.restaurant_name,
