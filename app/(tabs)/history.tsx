@@ -18,6 +18,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import { useRestaurantMode } from '@/hooks/useRestaurantMode';
 import { tempStore } from '@/utils/tempStore';
+import { logMinimal } from '@/utils/secureLogging';
 import type { Database } from '@/lib/supabase';
 
 type Recommendation = Database['public']['Tables']['recommendations']['Row'] & {

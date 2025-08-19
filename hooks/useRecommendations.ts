@@ -610,11 +610,9 @@ export function useRecommendations() {
       // Handle different response formats based on mode
       if (request.mode === 'restaurant_ocr') {
         secureLog('🔍 Processing restaurant_ocr response');
-        logMinimal('🔍 fetchUnifiedRecommendations - OCR result', {
-          id: apiResult.session_id,
-          type: 'restaurant_ocr',
-          count: apiResult.extracted_wines?.length || 0
-        });
+        secureLog('🔍 fetchUnifiedRecommendations - OCR session_id:', sanitizeForLogging(apiResult.session_id));
+        secureLog('🔍 fetchUnifiedRecommendations - OCR restaurant_name:', apiResult.restaurant_name);
+        secureLog('🔍 fetchUnifiedRecommendations - OCR extracted_wines count:', apiResult.extracted_wines?.length || 0);
         return {
           id: apiResult.session_id,
           restaurant_name: apiResult.restaurant_name,
@@ -635,16 +633,11 @@ export function useRecommendations() {
         }
         
         secureLog('✅ Final recommendations count for', request.mode + ':', recommendations.length);
-        if (recommendations.length > 0) {
-          secureLog(`🍷 ${request.mode} First recommendation sample:`, sanitizeForLogging({
-            name: recommendations[0].name,
-            producer: recommendations[0].producer,
-            price: recommendations[0].price_estimate || recommendations[0].price,
-            category: recommendations[0].category,
-            color: recommendations[0].color,
-            reasoning: recommendations[0].reasoning?.substring(0, 50) + '...'
-          }));
-        }
+        logMinimal(`🍷 ${request.mode} recommendations`, {
+          count: recommendations.length,
+          type: request.mode,
+          status: 'success'
+        });
         
         return recommendations;
       }

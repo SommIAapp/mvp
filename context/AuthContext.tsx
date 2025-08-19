@@ -284,7 +284,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         },
       },
     });
-    secureLog('🔐 AuthProvider: Sign up result:', { success: !error, error: error?.message });
+    logMinimal('🔐 AuthProvider: Sign up result', {
+      status: error ? 'failed' : 'success',
+      type: 'signup'
+    });
     return { error };
   };
 
