@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { supabase } from '@/lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import type { Database } from '@/lib/supabase';
-import { secureLog, secureError, sanitizeForLogging } from '@/utils/secureLogging';
+import { secureLog, secureError, sanitizeForLogging, logMinimal } from '@/utils/secureLogging';
 
 type UserProfile = Database['public']['Tables']['user_profiles']['Row'] & {
   trial_start_date: string | null;
@@ -34,6 +34,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Helper function for secure state logging
+  const getSecureStateLog = () => {
+    return {
+      loading,
+      user: user ? `${sanitizeForLogging(user.id)} (${sanitizeForLogging(user.email)})` : 'null',
+      profile: profile ? `${profile.subscription_plan} - daily: ${profile.daily_count}` : 'null'
+    };
+  };
 
   useEffect(() => {
     secureLog('🔐 AuthProvider: Initializing session...');
@@ -474,12 +483,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return getTrialDaysRemaining() === 0;
   };
 
-  // Log current state on every render for debugging
-  secureLog('🔐 AuthProvider: Current state -', sanitizeForLogging({
-    user: user ? `${user.id} (${user.email})` : 'null',
-    profile: profile ? `${profile.subscription_plan} - daily: ${profile.daily_count}` : 'null',
-    loading
-  }));
+  // Log current state on every render for debugging (secure)
+  secureLog('🔐 AuthProvider: Current state -', getSecureStateLog());
 
   const value: AuthContextType = {
     user,
