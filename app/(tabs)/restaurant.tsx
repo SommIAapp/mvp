@@ -73,6 +73,9 @@ export default function RestaurantScreen() {
   const [scanProgress, setScanProgress] = useState(0);
   const [scanMessage, setScanMessage] = useState('');
   const [isScanning, setIsScanning] = useState(false);
+  const [recoProgress, setRecoProgress] = useState(0);
+  const [recoMessage, setRecoMessage] = useState('');
+  const [isGettingRecommendations, setIsGettingRecommendations] = useState(false);
   const [appState, setAppState] = useState(AppState.currentState);
   const hasNavigatedRef = useRef(false);
   const hasLoadedFromHistoryRef = useRef(false);
@@ -412,6 +415,56 @@ export default function RestaurantScreen() {
       setScanMessage('');
     }
   };
+  
+  // Overlay de progression pour le scan
+  if (isScanning) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.headerSection}>
+          <LinearGradient
+            colors={['#6B2B3A', '#8B4B5A']}
+            style={styles.headerGradient}
+          >
+            <Text style={styles.headerTitle}>SOMMIA</Text>
+          </LinearGradient>
+          
+          <Svg
+            height={40}
+            width="100%"
+            viewBox="0 0 400 40"
+            style={styles.wave}
+            preserveAspectRatio="none"
+          >
+            <Path
+              d="M0,20 Q100,0 200,15 T400,20 L400,40 L0,40 Z"
+              fill="#FAF6F0"
+            />
+          </Svg>
+        </View>
+        
+        <View style={styles.loadingOverlay}>
+          <View style={styles.loadingContent}>
+            <Text style={styles.loadingTitle}>Analyse de la carte</Text>
+            <ProgressBar 
+              progress={scanProgress} 
+              message={scanMessage}
+              color="#6B2B3A"
+            />
+            <TouchableOpacity 
+              style={styles.cancelButton}
+              onPress={() => {
+                setIsScanning(false);
+                setScanProgress(0);
+                setScanMessage('');
+              }}
+            >
+              <Text style={styles.cancelText}>Annuler</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   const handleGetRecommendations = async () => {
     // Debug logs
@@ -448,9 +501,32 @@ export default function RestaurantScreen() {
     }
 
     try {
-      setLoading(true);
+      setIsGettingRecommendations(true);
+      setRecoProgress(0);
+      setRecoMessage('');
+      
+      // Étape 1: Validation (20%)
+      setRecoProgress(20);
+      setRecoMessage('Validation du plat...');
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
       const budgetValue = selectedBudget ? parseInt(selectedBudget.replace('€', '').replace('+', '')) : undefined;
       let results;
+      
+      // Étape 2: Analyse (40%)
+      setRecoProgress(40);
+      setRecoMessage('Analyse du plat et des préférences...');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Étape 3: Recherche (60-90%)
+      const progressTimer = setInterval(() => {
+        setRecoProgress(prev => {
+          if (prev < 90) return prev + 5;
+          return prev;
+        });
+      }, 800);
+      
+      setRecoMessage('Recherche des meilleurs accords...');
       
       if (dishImage) {
         // Si on a une image, utilise getRecommendationsFromPhoto
@@ -482,7 +558,12 @@ export default function RestaurantScreen() {
         );
       }
       
-      setLoading(false);
+      clearInterval(progressTimer);
+      
+      // Étape 4: Finalisation (100%)
+      setRecoProgress(100);
+      setRecoMessage('Préparation des recommandations...');
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       // Navigation vers les recommandations
       router.push({
@@ -501,9 +582,13 @@ export default function RestaurantScreen() {
       });
     } catch (error: any) {
       console.error('Error getting recommendations:', error);
-      setLoading(false);
       Alert.alert('Erreur', error.message || 'Impossible de générer les recommandations');
     }
+      setTimeout(() => {
+        setIsGettingRecommendations(false);
+        setRecoProgress(0);
+        setRecoMessage('');
+      }, 500);
   };
 
   const handleCameraPress = () => {
@@ -820,14 +905,38 @@ export default function RestaurantScreen() {
             <TouchableOpacity 
               style={[styles.ctaButton, loading && styles.ctaButtonDisabled]}
               onPress={handleGetRecommendations}
-              disabled={!!loading || (!dishDescription.trim() && !dishImage)}
+              disabled={isGettingRecommendations || (!dishDescription.trim() && !dishImage)}
             >
               <Text style={styles.ctaText}>
-                {loading ? "Analyse en cours..." : "Voir les recommandations"}
+                {isGettingRecommendations ? "Analyse en cours..." : "Voir les recommandations"}
               </Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
+        
+        {/* Overlay de progression pour les recommandations */}
+        {isGettingRecommendations && (
+          <View style={styles.loadingOverlay}>
+            <View style={styles.loadingContent}>
+              <Text style={styles.loadingTitle}>Recherche des accords parfaits</Text>
+              <ProgressBar 
+                progress={recoProgress} 
+                message={recoMessage}
+                color="#6B2B3A"
+              />
+              <TouchableOpacity 
+                style={styles.cancelButton}
+                onPress={() => {
+                  setIsGettingRecommendations(false);
+                  setRecoProgress(0);
+                  setRecoMessage('');
+                }}
+              >
+                <Text style={styles.cancelText}>Annuler</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       </View>
     );
   }
@@ -1136,6 +1245,47 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  loadingContent: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 30,
+    marginHorizontal: 40,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  loadingTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 10,
+  },
+  cancelButton: {
+    marginTop: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: '#F5F5F5',
+  },
+  cancelText: {
+    fontSize: 16,
+    color: '#666',
+    fontWeight: '500',
   },
   loadingOverlay: {
     position: 'absolute',
