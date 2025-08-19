@@ -72,12 +72,11 @@ export default function SignUpScreen() {
 
       console.log('✅ handleSignUp - Account created successfully');
       
-      // IMPORTANT : Attendre que le profile et le trial soient bien créés
+      // Navigation vers l'app principale
       setTimeout(() => {
         console.log('✅ handleSignUp - Navigating to app');
-        // Navigation vers l'app principale
         router.replace('/(tabs)');
-      }, 1500); // Attendre 1.5 secondes pour être sûr
+      }, 1500);
 
     } catch (error) {
       console.error('❌ handleSignUp error:', error);
