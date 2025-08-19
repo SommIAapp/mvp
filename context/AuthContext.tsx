@@ -177,7 +177,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           if (createdProfile) {
             setProfile(createdProfile);
             finalProfileData = createdProfile;
-        secureError('❌ updateUsageCount - Database error:', error);
+          }
         }
       } else {
         secureLog('🔐 AuthProvider: Profile found. Checking daily quota reset logic.');
@@ -356,7 +356,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       .eq('id', user.id);
 
     if (error) {
-      console.error('❌ updateUsageCount - Database error:', error);
+      secureError('❌ updateUsageCount - Database error:', error);
       throw error; // Propagate error instead of just logging
     } else {
       // Update local state with the new count
@@ -425,11 +425,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   // Log current state on every render for debugging
-  secureLog('🔐 AuthProvider: Current state -', sanitizeForLogging({
+  console.log('🔐 AuthProvider: Current state -', {
     user: user ? `${user.id} (${user.email})` : 'null',
     profile: profile ? `${profile.subscription_plan} - daily: ${profile.daily_count}` : 'null',
     loading
-  }));
+  });
 
   const value: AuthContextType = {
     user,
