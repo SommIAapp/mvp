@@ -45,19 +45,46 @@ export default function SignUpScreen() {
   };
 
   const handleSignUp = async () => {
-    if (!validateForm()) return;
-    
-    setLoading(true);
-    const { error } = await signUp(email, password, fullName);
-    
-    if (error) {
-      Alert.alert('Erreur', error.message);
-    } else {
-      // Le trial est maintenant démarré automatiquement dans signUp
-      router.replace('/(tabs)');
+    try {
+      if (!validateForm()) return;
+      
+      setLoading(true);
+      console.log('🎯 handleSignUp - Starting signup process');
+
+      // Validation supplémentaire
+      if (!email || !password || !fullName) {
+        Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+        return;
+      }
+
+      if (password.length < 8) {
+        Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 8 caractères');
+        return;
+      }
+
+      // Créer le compte
+      const { error } = await signUp(email, password, fullName);
+
+      if (error) {
+        Alert.alert('Erreur', error.message || 'Impossible de créer le compte');
+        return;
+      }
+
+      console.log('✅ handleSignUp - Account created successfully');
+      
+      // IMPORTANT : Attendre que le profile et le trial soient bien créés
+      setTimeout(() => {
+        console.log('✅ handleSignUp - Navigating to app');
+        // Navigation vers l'app principale
+        router.replace('/(tabs)');
+      }, 1500); // Attendre 1.5 secondes pour être sûr
+
+    } catch (error) {
+      console.error('❌ handleSignUp error:', error);
+      Alert.alert('Erreur', 'Une erreur est survenue lors de la création du compte');
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   return (
