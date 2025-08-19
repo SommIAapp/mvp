@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useNetworkStatus } from './useNetworkStatus';
 import type { Database } from '@/lib/supabase';
+import { secureLog, secureError, logObjectSize, sanitizeForLogging } from '@/utils/secureLogging';
 
 type Wine = Database['public']['Tables']['wines']['Row'];
 type Recommendation = Database['public']['Tables']['recommendations']['Row'];
@@ -85,13 +86,13 @@ export function useRecommendations() {
       throw new Error('Pas de connexion internet');
     }
 
-    console.log('🚀 STARTING TEXT_ONLY MODE for:', dishDescription);
-    console.log('🔄 getRecommendations - Starting with params:', {
+    secureLog('🚀 STARTING TEXT_ONLY MODE for dish');
+    secureLog('🔄 getRecommendations - Starting with params:', sanitizeForLogging({
       dishDescription,
       budget,
       timestamp,
       userId: user?.id
-    });
+    }));
     
     setLoading(true);
     setError(null);
@@ -113,7 +114,7 @@ export function useRecommendations() {
         return [];
       }
       
-      console.log('🍷 getRecommendations - TEXT_ONLY mode completed, wines:', wines.length);
+      secureLog('🍷 getRecommendations - TEXT_ONLY mode completed, wines:', wines.length);
 
       // Save recommendation to history first
       if (user) {
@@ -155,11 +156,11 @@ export function useRecommendations() {
       throw new Error('Pas de connexion internet');
     }
 
-    console.log('📸 STARTING DISH_PHOTO MODE - Photo analysis');
-    console.log('📸 Photo base64 length:', photoBase64.length);
-    console.log('💰 Photo mode budget:', budget);
-    console.log('🍷 Photo mode wine type:', wineType);
-    console.log('🏪 Restaurant session ID:', restaurantSessionId);
+    secureLog('📸 STARTING DISH_PHOTO MODE - Photo analysis');
+    logObjectSize('📸 Photo data', photoBase64);
+    secureLog('💰 Photo mode budget:', budget);
+    secureLog('🍷 Photo mode wine type:', wineType);
+    secureLog('🏪 Restaurant session ID:', sanitizeForLogging(restaurantSessionId));
     
     setLoading(true);
     setError(null);
@@ -178,22 +179,22 @@ export function useRecommendations() {
       let wines;
       
       if (sessionData && sessionData.extracted_wines && sessionData.extracted_wines.length > 0) {
-        console.log('📍 Mode Restaurant détecté - Analyse photo en 2 étapes');
-        console.log(`🍷 ${sessionData.extracted_wines.length} vins disponibles dans la carte`);
+        secureLog('📍 Mode Restaurant détecté - Analyse photo en 2 étapes');
+        secureLog(`🍷 ${sessionData.extracted_wines.length} vins disponibles dans la carte`);
         
         // ÉTAPE 1 : Identifier le plat sur la photo
-        console.log('🔍 Étape 1: Identification du plat...');
+        secureLog('🔍 Étape 1: Identification du plat...');
         const photoAnalysis = await analyzePhotoForDish(photoBase64);
         
         if (!photoAnalysis.success) {
-          console.error('❌ Échec identification plat:', photoAnalysis.error);
+          secureError('❌ Échec identification plat:', photoAnalysis.error);
           throw new Error(photoAnalysis.error);
         }
         
-        console.log(`✅ Plat identifié: ${photoAnalysis.dish_name} (confiance: ${photoAnalysis.confidence}%)`);
+        secureLog(`✅ Plat identifié: ${photoAnalysis.dish_name} (confiance: ${photoAnalysis.confidence}%)`);
         
         // ÉTAPE 2 : Obtenir les recommendations avec les vins du restaurant uniquement
-        console.log('🍷 Étape 2: Recommendations basées sur la carte du restaurant...');
+        secureLog('🍷 Étape 2: Recommendations basées sur la carte du restaurant...');
         wines = await fetchUnifiedRecommendations({
           mode: 'restaurant_reco',
           dish_description: photoAnalysis.dish_name,
@@ -212,7 +213,7 @@ export function useRecommendations() {
         }
       } else {
         // Pas en mode restaurant - utiliser le mode photo normal
-        console.log('🏠 Mode normal (pas de session restaurant active)');
+        secureLog('🏠 Mode normal (pas de session restaurant active)');
         wines = await fetchUnifiedRecommendations({
           mode: 'dish_photo',
           dish_image_base64: photoBase64,
@@ -226,7 +227,7 @@ export function useRecommendations() {
         return [];
       }
 
-      console.log('📸 getRecommendationsFromPhoto - DISH_PHOTO mode completed, wines:', wines.length);
+      secureLog('📸 getRecommendationsFromPhoto - DISH_PHOTO mode completed, wines:', wines.length);
       if (user) {
         await saveRecommendationToHistory(user.id, 'Photo de plat', budget, wines, 'dish_photo');
         await updateUsageCount();
@@ -260,9 +261,9 @@ export function useRecommendations() {
       throw new Error('Pas de connexion internet');
     }
 
-    console.log('🔍 STARTING RESTAURANT_OCR MODE - Menu OCR analysis');
-    console.log('🔍 Menu photo base64 length:', menuPhotoBase64.length);
-    console.log('👤 OCR for user:', userId);
+    secureLog('🔍 STARTING RESTAURANT_OCR MODE - Menu OCR analysis');
+    logObjectSize('🔍 Menu photo', menuPhotoBase64);
+    secureLog('👤 OCR for user:', sanitizeForLogging(userId));
     
     setLoading(true);
     setError(null);
@@ -274,9 +275,9 @@ export function useRecommendations() {
         user_id: userId
       });
 
-      console.log('🔍 getRestaurantOCR - RESTAURANT_OCR mode completed');
-      console.log('🏪 Restaurant detected:', result.restaurant_name);
-      console.log('🍷 Wines extracted:', result.extracted_wines?.length || 0);
+      secureLog('🔍 getRestaurantOCR - RESTAURANT_OCR mode completed');
+      secureLog('🏪 Restaurant detected:', result.restaurant_name);
+      secureLog('🍷 Wines extracted:', result.extracted_wines?.length || 0);
       // Update usage count for OCR
       if (user) {
         await updateUsageCount();
@@ -312,12 +313,12 @@ export function useRecommendations() {
       throw new Error('Pas de connexion internet');
     }
 
-    console.log('🍽️ STARTING RESTAURANT_RECO MODE - Restaurant recommendations');
-    console.log('🍽️ Dish:', dish);
-    console.log('🏪 Session ID:', sessionId);
-    console.log('🍷 Available wines count:', availableWines.length);
-    console.log('💰 Budget:', budget);
-    console.log('🍷 Wine type preference:', wineType);
+    secureLog('🍽️ STARTING RESTAURANT_RECO MODE - Restaurant recommendations');
+    secureLog('🍽️ Dish:', dish);
+    secureLog('🏪 Session ID:', sanitizeForLogging(sessionId));
+    secureLog('🍷 Available wines count:', availableWines.length);
+    secureLog('💰 Budget:', budget);
+    secureLog('🍷 Wine type preference:', wineType);
     
     setLoading(true);
     setError(null);
@@ -341,13 +342,13 @@ export function useRecommendations() {
         wine_type_preference: wineType || null
       });
 
-      console.log('🍽️ getRestaurantRecommendations - RESTAURANT_RECO mode completed');
-      console.log('🎯 Restaurant recommendations count:', recommendations.length);
+      secureLog('🍽️ getRestaurantRecommendations - RESTAURANT_RECO mode completed');
+      secureLog('🎯 Restaurant recommendations count:', recommendations.length);
 
       // SAUVEGARDER DANS L'HISTORIQUE PRINCIPAL
       if (user && recommendations.length > 0) {
         try {
-          console.log('💾 Saving restaurant recommendation to history...');
+          secureLog('💾 Saving restaurant recommendation to history...');
           
           // Sauvegarder dans la table recommendations principale
           const { data, error: saveError } = await supabase
@@ -363,14 +364,14 @@ export function useRecommendations() {
             .single();
 
           if (saveError) {
-            console.error('❌ Error saving restaurant recommendation to history:', saveError);
+            secureError('❌ Error saving restaurant recommendation to history:', saveError);
           } else {
-            console.log('✅ Restaurant recommendation saved to main history with ID:', data.id);
+            secureLog('✅ Restaurant recommendation saved to main history with ID:', sanitizeForLogging(data.id));
           }
 
           // Mettre à jour le compteur d'usage
           await updateUsageCount();
-          console.log('✅ Usage count updated');
+          secureLog('✅ Usage count updated');
           
           // Logger l'analytics
           const standardFormat = recommendations.map(rec => ({
@@ -386,14 +387,14 @@ export function useRecommendations() {
           }));
           
           await logRecommendationAnalytics(user.id, dish, budget, standardFormat);
-          console.log('✅ Analytics logged');
+          secureLog('✅ Analytics logged');
           
         } catch (error) {
-          console.error('❌ Error in restaurant save process:', error);
+          secureError('❌ Error in restaurant save process:', error);
           // Ne pas throw pour ne pas casser le flow
         }
       } else {
-        console.log('⚠️ No user or no recommendations to save');
+        secureLog('⚠️ No user or no recommendations to save');
       }
 
       return recommendations as RestaurantRecommendation[];
@@ -488,41 +489,41 @@ export function useRecommendations() {
              RestaurantRecoRequest
   ): Promise<any> => {
     const startTime = Date.now();
-    console.log('🔍 fetchUnifiedRecommendations - Starting API call with mode:', request.mode);
-    console.log('⏰ fetchUnifiedRecommendations - Start time:', new Date().toISOString());
+    secureLog('🔍 fetchUnifiedRecommendations - Starting API call with mode:', request.mode);
+    secureLog('⏰ fetchUnifiedRecommendations - Start time:', new Date().toISOString());
     
     // Log request details based on mode
     if (request.mode === 'dish_photo' && 'dish_image_base64' in request) {
-      console.log('📸 fetchUnifiedRecommendations - Dish photo mode');
-      console.log('📏 fetchUnifiedRecommendations - Base64 image size:', request.dish_image_base64.length, 'characters');
-      console.log('💰 fetchUnifiedRecommendations - Budget:', request.user_budget || 'No budget');
+      secureLog('📸 fetchUnifiedRecommendations - Dish photo mode');
+      logObjectSize('📏 fetchUnifiedRecommendations - Photo data', request.dish_image_base64);
+      secureLog('💰 fetchUnifiedRecommendations - Budget:', request.user_budget || 'No budget');
     } else if (request.mode === 'restaurant_ocr' && 'menu_image_base64' in request) {
-      console.log('🔍 fetchUnifiedRecommendations - Restaurant OCR mode');
-      console.log('📏 fetchUnifiedRecommendations - Base64 image size:', request.menu_image_base64.length, 'characters');
-      console.log('👤 fetchUnifiedRecommendations - User ID:', request.user_id);
+      secureLog('🔍 fetchUnifiedRecommendations - Restaurant OCR mode');
+      logObjectSize('📏 fetchUnifiedRecommendations - Menu photo', request.menu_image_base64);
+      secureLog('👤 fetchUnifiedRecommendations - User ID:', sanitizeForLogging(request.user_id));
     } else if (request.mode === 'restaurant_reco' && 'available_wines' in request) {
-      console.log('🍽️ fetchUnifiedRecommendations - Restaurant reco mode');
-      console.log('🍷 fetchUnifiedRecommendations - Available wines count:', request.available_wines.length);
-      console.log('🏪 fetchUnifiedRecommendations - Session ID:', request.restaurant_session_id);
+      secureLog('🍽️ fetchUnifiedRecommendations - Restaurant reco mode');
+      secureLog('🍷 fetchUnifiedRecommendations - Available wines count:', request.available_wines.length);
+      secureLog('🏪 fetchUnifiedRecommendations - Session ID:', sanitizeForLogging(request.restaurant_session_id));
     } else if (request.mode === 'text_only') {
-      console.log('📝 fetchUnifiedRecommendations - Text only mode');
-      console.log('🍽️ fetchUnifiedRecommendations - Dish:', request.dish_description);
-      console.log('💰 fetchUnifiedRecommendations - Budget:', request.user_budget || 'No budget');
+      secureLog('📝 fetchUnifiedRecommendations - Text only mode');
+      secureLog('🍽️ fetchUnifiedRecommendations - Dish:', request.dish_description);
+      secureLog('💰 fetchUnifiedRecommendations - Budget:', request.user_budget || 'No budget');
     }
     
     // Get current session for authorization
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
     if (sessionError || !session?.access_token) {
-      console.error('❌ fetchUnifiedRecommendations - Session error:', sessionError);
+      secureError('❌ fetchUnifiedRecommendations - Session error:', sessionError);
       throw new Error('Session non valide');
     }
 
-    console.log('🔑 fetchUnifiedRecommendations - Session token available:', !!session?.access_token);
+    secureLog('🔑 fetchUnifiedRecommendations - Session token available:', !!session?.access_token);
 
     // Prepare API call
     const apiUrl = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/wine-recommendations`;
-    console.log('📍 fetchUnifiedRecommendations - API URL:', apiUrl);
+    secureLog('📍 fetchUnifiedRecommendations - API URL:', apiUrl);
     
     const headers = {
       'Content-Type': 'application/json',
@@ -532,32 +533,25 @@ export function useRecommendations() {
       'Expires': '0',
     };
     
-    console.log('📋 fetchUnifiedRecommendations - Request headers prepared');
+    secureLog('📋 fetchUnifiedRecommendations - Request headers prepared');
     
     // Calculate request body size
     const requestBodyString = JSON.stringify(request);
     const requestBodySize = new Blob([requestBodyString]).size;
-    console.log('📦 fetchUnifiedRecommendations - Request body size:', requestBodySize, 'bytes');
-    console.log('📦 fetchUnifiedRecommendations - Request body size:', (requestBodySize / 1024).toFixed(2), 'KB');
+    logObjectSize('📦 fetchUnifiedRecommendations - Request body', request);
     
     if (requestBodySize > 1024 * 1024) { // > 1MB
-      console.warn('⚠️ fetchUnifiedRecommendations - Large request body detected:', (requestBodySize / 1024 / 1024).toFixed(2), 'MB');
+      secureLog('⚠️ fetchUnifiedRecommendations - Large request body detected:', (requestBodySize / 1024 / 1024).toFixed(2), 'MB');
     }
     
     try {
-      console.log('🌐 fetchUnifiedRecommendations - Making fetch request...');
+      secureLog('🌐 fetchUnifiedRecommendations - Making fetch request...');
       const fetchStartTime = Date.now();
       
-      console.log('🔍 DEBUG - Full body:', requestBodyString);
-      console.log('🔍 DEBUG - Available wines:', JSON.stringify(request.available_wines, null, 2));
-
-      // Vérifie particulièrement les vins pour des caractères bizarres
-      request.available_wines?.forEach((wine, index) => {
-        console.log(`🍷 Wine ${index}:`, wine.name);
-        console.log(`   Has newlines: ${wine.name?.includes('\n')}`);
-        console.log(`   Has tabs: ${wine.name?.includes('\t')}`);
-        console.log(`   Has quotes: ${wine.name?.includes('"')}`);
-      });
+      logObjectSize('🔍 DEBUG - Request', request);
+      if ('available_wines' in request && request.available_wines) {
+        secureLog('🔍 DEBUG - Available wines count:', request.available_wines.length);
+      }
 
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -569,58 +563,56 @@ export function useRecommendations() {
       const fetchTime = fetchEndTime - fetchStartTime;
       const totalTime = fetchEndTime - startTime;
       
-      console.log('📊 fetchUnifiedRecommendations - Response status:', response.status);
-      console.log('📊 fetchUnifiedRecommendations - Response status text:', response.statusText);
-      console.log('⏱️ fetchUnifiedRecommendations - Fetch time:', fetchTime + 'ms');
-      console.log('⏱️ fetchUnifiedRecommendations - Total time:', totalTime + 'ms');
-      console.log('📡 fetchUnifiedRecommendations - Response headers:', Object.fromEntries(response.headers.entries()));
+      secureLog('📊 fetchUnifiedRecommendations - Response status:', response.status);
+      secureLog('📊 fetchUnifiedRecommendations - Response status text:', response.statusText);
+      secureLog('⏱️ fetchUnifiedRecommendations - Fetch time:', fetchTime + 'ms');
+      secureLog('⏱️ fetchUnifiedRecommendations - Total time:', totalTime + 'ms');
       
       if (!response.ok) {
-        console.error('❌ fetchUnifiedRecommendations - Response not OK');
+        secureError('❌ fetchUnifiedRecommendations - Response not OK');
         let errorText;
         try {
           errorText = await response.text();
-          console.error('❌ fetchUnifiedRecommendations - Error response body:', errorText);
+          secureError('❌ fetchUnifiedRecommendations - Error response body:', errorText);
         } catch (textError) {
-          console.error('❌ fetchUnifiedRecommendations - Could not read error response:', textError);
+          secureError('❌ fetchUnifiedRecommendations - Could not read error response:', textError);
           errorText = 'Could not read error response';
         }
         throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorText}`);
       }
       
-      console.log('✅ fetchUnifiedRecommendations - Response OK, parsing JSON...');
+      secureLog('✅ fetchUnifiedRecommendations - Response OK, parsing JSON...');
       let apiResult;
       try {
         apiResult = await response.json();
-        console.log('✅ fetchUnifiedRecommendations - JSON parsed successfully');
+        secureLog('✅ fetchUnifiedRecommendations - JSON parsed successfully');
       } catch (jsonError) {
-        console.error('❌ fetchUnifiedRecommendations - JSON parsing error:', jsonError);
+        secureError('❌ fetchUnifiedRecommendations - JSON parsing error:', jsonError);
         const responseText = await response.text();
-        console.error('❌ fetchUnifiedRecommendations - Raw response text:', responseText);
+        secureError('❌ fetchUnifiedRecommendations - Raw response text:', responseText);
         throw new Error(`JSON parsing error: ${jsonError.message}`);
       }
       
-      console.log('🎯 fetchUnifiedRecommendations - API Response for mode', request.mode + ':');
-      console.log('🎯 fetchUnifiedRecommendations - Response keys:', Object.keys(apiResult));
+      secureLog('🎯 fetchUnifiedRecommendations - API Response for mode', request.mode + ':');
+      secureLog('🎯 fetchUnifiedRecommendations - Response keys:', Object.keys(apiResult));
       
       // Log response size
       const responseSize = JSON.stringify(apiResult).length;
-      console.log('📦 fetchUnifiedRecommendations - Response size:', responseSize, 'characters');
-      console.log('📦 fetchUnifiedRecommendations - Response size:', (responseSize / 1024).toFixed(2), 'KB');
+      logObjectSize('📦 fetchUnifiedRecommendations - Response', apiResult);
       
       // Check if we got the new algorithm response
       if (apiResult.algorithm) {
-        console.log('🤖 Algorithm version detected:', apiResult.algorithm);
+        secureLog('🤖 Algorithm version detected:', apiResult.algorithm);
       } else {
-        console.log('⚠️ NO ALGORITHM VERSION in response - using fallback?');
+        secureLog('⚠️ NO ALGORITHM VERSION in response - using fallback?');
       }
       
       // Handle different response formats based on mode
       if (request.mode === 'restaurant_ocr') {
-        console.log('🔍 Processing restaurant_ocr response');
-        console.log('🔍 fetchUnifiedRecommendations - OCR session_id:', apiResult.session_id);
-        console.log('🔍 fetchUnifiedRecommendations - OCR restaurant_name:', apiResult.restaurant_name);
-        console.log('🔍 fetchUnifiedRecommendations - OCR extracted_wines count:', apiResult.extracted_wines?.length || 0);
+        secureLog('🔍 Processing restaurant_ocr response');
+        secureLog('🔍 fetchUnifiedRecommendations - OCR session_id:', sanitizeForLogging(apiResult.session_id));
+        secureLog('🔍 fetchUnifiedRecommendations - OCR restaurant_name:', apiResult.restaurant_name);
+        secureLog('🔍 fetchUnifiedRecommendations - OCR extracted_wines count:', apiResult.extracted_wines?.length || 0);
         return {
           id: apiResult.session_id,
           restaurant_name: apiResult.restaurant_name,
@@ -628,39 +620,39 @@ export function useRecommendations() {
           confidence_score: apiResult.confidence_score
         };
       } else if (request.mode === 'restaurant_reco') {
-        console.log('🍽️ Processing restaurant_reco response');
-        console.log('🍽️ fetchUnifiedRecommendations - Restaurant recommendations count:', apiResult.recommendations?.length || 0);
+        secureLog('🍽️ Processing restaurant_reco response');
+        secureLog('🍽️ fetchUnifiedRecommendations - Restaurant recommendations count:', apiResult.recommendations?.length || 0);
         return apiResult.recommendations || [];
       } else {
-        console.log('🍷 Processing', request.mode, 'recommendations response');
+        secureLog('🍷 Processing', request.mode, 'recommendations response');
         const recommendations = apiResult.recommendations || apiResult;
         
         if (!Array.isArray(recommendations) || recommendations.length === 0) {
-          console.error('❌ Invalid recommendations format:', typeof recommendations, recommendations);
+          secureError('❌ Invalid recommendations format:', typeof recommendations, recommendations);
           throw new Error('Aucune recommandation reçue de l\'API');
         }
         
-        console.log('✅ Final recommendations count for', request.mode + ':', recommendations.length);
+        secureLog('✅ Final recommendations count for', request.mode + ':', recommendations.length);
         if (recommendations.length > 0) {
-          console.log(`🍷 ${request.mode} First recommendation sample:`, {
+          secureLog(`🍷 ${request.mode} First recommendation sample:`, sanitizeForLogging({
             name: recommendations[0].name,
             producer: recommendations[0].producer,
             price: recommendations[0].price_estimate || recommendations[0].price,
             category: recommendations[0].category,
             color: recommendations[0].color,
             reasoning: recommendations[0].reasoning?.substring(0, 50) + '...'
-          });
+          }));
         }
         
         return recommendations;
       }
       
-      console.log('✅ fetchUnifiedRecommendations - API CALL SUCCESSFUL for mode:', request.mode, '- Total time:', totalTime + 'ms');
+      secureLog('✅ fetchUnifiedRecommendations - API CALL SUCCESSFUL for mode:', request.mode, '- Total time:', totalTime + 'ms');
       
     } catch (apiError) {
       const errorTime = Date.now() - startTime;
-      console.error('💥 fetchUnifiedRecommendations - API call failed for mode', request.mode + ':', apiError);
-      console.error('💥 fetchUnifiedRecommendations - Error occurred after:', errorTime + 'ms');
+      secureError('💥 fetchUnifiedRecommendations - API call failed for mode', request.mode + ':', apiError);
+      secureError('💥 fetchUnifiedRecommendations - Error occurred after:', errorTime + 'ms');
       
       // Extraire le message d'erreur du body de la réponse
       let errorData = null;
@@ -671,7 +663,7 @@ export function useRecommendations() {
           errorData = JSON.parse(errorMatch[0]);
         }
       } catch (e) {
-        console.log('Could not parse error data');
+        secureLog('Could not parse error data');
       }
       
       // Si c'est une erreur "Plat non reconnu", ne pas faire de fallback
@@ -697,10 +689,10 @@ export function useRecommendations() {
       
       // Pour les autres erreurs (réseau, serveur, etc.), faire le fallback database
       if (request.mode === 'text_only') {
-        console.log('🗄️ fetchUnifiedRecommendations - Falling back to database for text_only mode');
+        secureLog('🗄️ fetchUnifiedRecommendations - Falling back to database for text_only mode');
         return await fetchWineRecommendationsFromDatabase(request.dish_description, request.user_budget);
       } else {
-        console.log('❌ No fallback available for mode:', request.mode);
+        secureLog('❌ No fallback available for mode:', request.mode);
         throw apiError;
       }
     }
@@ -710,8 +702,8 @@ export function useRecommendations() {
     dishDescription: string,
     budget?: number
   ): Promise<WineRecommendation[]> => {
-    console.log('🗄️ fetchWineRecommendationsFromDatabase - Using database fallback for:', dishDescription);
-    console.log('💰 fetchWineRecommendationsFromDatabase - Budget filter:', budget);
+    secureLog('🗄️ fetchWineRecommendationsFromDatabase - Using database fallback for:', dishDescription);
+    secureLog('💰 fetchWineRecommendationsFromDatabase - Budget filter:', budget);
     
     let query = supabase
       .from('wines')
@@ -721,13 +713,13 @@ export function useRecommendations() {
 
     // Apply budget filter if provided
     if (budget) {
-      console.log('💰 fetchWineRecommendationsFromDatabase - Applying budget filter:', budget);
+      secureLog('💰 fetchWineRecommendationsFromDatabase - Applying budget filter:', budget);
       query = query.lte('price_estimate', budget);
     }
 
     const { data: wines, error } = await query.limit(50);
     
-    console.log('🗄️ fetchWineRecommendationsFromDatabase - Database query result:', {
+    secureLog('🗄️ fetchWineRecommendationsFromDatabase - Database query result:', {
       winesCount: wines?.length || 0,
       error: error?.message
     });
@@ -758,11 +750,11 @@ export function useRecommendations() {
         appellation: wine.appellation || undefined,
       };
       
-      console.log(`🍷 fetchWineRecommendationsFromDatabase - Recommendation ${index + 1}:`, recommendation);
+      secureLog(`🍷 fetchWineRecommendationsFromDatabase - Recommendation ${index + 1}:`, sanitizeForLogging(recommendation));
       return recommendation;
     });
     
-    console.log('✅ DATABASE FALLBACK - Final recommendations count:', recommendations.length);
+    secureLog('✅ DATABASE FALLBACK - Final recommendations count:', recommendations.length);
     return recommendations;
   };
 
@@ -788,11 +780,11 @@ export function useRecommendations() {
         });
 
       if (error) {
-        console.error('❌ Analytics error:', error);
+        secureError('❌ Analytics error:', error);
         // Don't throw error - analytics failure shouldn't break the flow
       }
     } catch (error) {
-      console.error('❌ Analytics error:', error);
+      secureError('❌ Analytics error:', error);
       // Don't throw error - analytics failure shouldn't break the flow
     }
   };
@@ -816,11 +808,11 @@ export function useRecommendations() {
         });
 
       if (error) {
-        console.error('❌ Save recommendation error:', error);
+        secureError('❌ Save recommendation error:', error);
         throw error; // Propagate error to make it visible
       }
     } catch (error) {
-      console.error('❌ Save recommendation error:', error);
+      secureError('❌ Save recommendation error:', error);
       throw error; // Propagate error to make it visible
     }
   };
@@ -833,7 +825,7 @@ export function useRecommendations() {
       .maybeSingle();
 
     if (fetchError) {
-      console.error('Error fetching popular dish:', fetchError);
+      secureError('Error fetching popular dish:', fetchError);
       return;
     }
 
@@ -859,7 +851,7 @@ export function useRecommendations() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('❌ Get recommendation history error:', error);
+      secureError('❌ Get recommendation history error:', error);
       throw error;
     }
 
@@ -895,8 +887,9 @@ export function useRecommendations() {
 
   // FONCTION POUR SCAN CARTE RESTAURANT
   const getWineCardScan = async (imageBase64: string, userId: string) => {
-    console.log('🔍 getWineCardScan appelé avec image de taille:', imageBase64.length);
-    console.log('👤 getWineCardScan pour user:', userId);
+    secureLog('🔍 getWineCardScan called');
+    logObjectSize('🔍 getWineCardScan - Image', imageBase64);
+    secureLog('👤 getWineCardScan pour user:', sanitizeForLogging(userId));
     
     if (!imageBase64) {
       throw new Error('Image base64 requise');
@@ -907,7 +900,7 @@ export function useRecommendations() {
     }
     
     try {
-      console.log('🚀 getWineCardScan - Appel fetchUnifiedRecommendations avec mode restaurant_ocr');
+      secureLog('🚀 getWineCardScan - Appel fetchUnifiedRecommendations avec mode restaurant_ocr');
       
       const result = await fetchUnifiedRecommendations({
         mode: 'restaurant_ocr',
@@ -915,16 +908,16 @@ export function useRecommendations() {
         user_id: userId
       });
       
-      console.log('✅ getWineCardScan - Résultat OCR reçu:', {
+      secureLog('✅ getWineCardScan - Résultat OCR reçu:', sanitizeForLogging({
         session_id: result.id,
         restaurant_name: result.restaurant_name,
         wines_count: result.extracted_wines?.length || 0
-      });
+      }));
       
       return result;
     } catch (error) {
-      console.error('❌ getWineCardScan - Erreur:', error);
-      console.error('🔍 getWineCardScan - Error details:', {
+      secureError('❌ getWineCardScan - Erreur:', error);
+      secureError('🔍 getWineCardScan - Error details:', {
         message: error.message,
         stack: error.stack,
         name: error.name

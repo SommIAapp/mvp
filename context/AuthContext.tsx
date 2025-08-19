@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { supabase } from '@/lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import type { Database } from '@/lib/supabase';
+import { secureLog, secureError, sanitizeForLogging } from '@/utils/secureLogging';
 
 type UserProfile = Database['public']['Tables']['user_profiles']['Row'] & {
   trial_start_date: string | null;
@@ -35,14 +36,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log('🔐 AuthProvider: Initializing session...');
+    secureLog('🔐 AuthProvider: Initializing session...');
     
     // Get initial session
     const initializeAuth = async () => {
       // Check if Supabase is properly configured
       if (!process.env.EXPO_PUBLIC_SUPABASE_URL || !process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY) {
-        console.error('❌ Supabase environment variables not configured');
-        console.log('🔐 AuthProvider: Environment variables missing, setting user to null');
+        secureError('❌ Supabase environment variables not configured');
+        secureLog('🔐 AuthProvider: Environment variables missing, setting user to null');
         setUser(null);
         setProfile(null);
         setLoading(false);
@@ -51,10 +52,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
-        console.log('🔐 AuthProvider: getSession result:', { session: !!session, user: session?.user?.id, error: error?.message });
+        secureLog('🔐 AuthProvider: getSession result:', sanitizeForLogging({ 
+          session: !!session, 
+          user: session?.user?.id, 
+          error: error?.message 
+        }));
         
         if (error && error.message.includes('Refresh Token Not Found')) {
-          console.log('🔐 AuthProvider: Refresh Token Not Found, signing out.');
+          secureLog('🔐 AuthProvider: Refresh Token Not Found, signing out.');
           // Clear invalid session
           await supabase.auth.signOut();
           setUser(null);
@@ -65,14 +70,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         
         setUser(session?.user ?? null);
         if (session?.user) {
-          console.log('🔐 AuthProvider: Valid session found, fetching profile for user:', session.user.id);
+          secureLog('🔐 AuthProvider: Valid session found, fetching profile for user:', sanitizeForLogging(session.user.id));
           await fetchProfile(session.user.id);
         } else {
-          console.log('🔐 AuthProvider: No valid session found, setting loading to false');
+          secureLog('🔐 AuthProvider: No valid session found, setting loading to false');
           setLoading(false);
         }
       } catch (error) {
-        console.error('🔐 AuthProvider: Initialization error caught:', error);
+        secureError('🔐 AuthProvider: Initialization error caught:', error);
         // Clear any potentially corrupted auth state
         await supabase.auth.signOut();
         setUser(null);
@@ -86,24 +91,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔐 AuthProvider: State change detected. Event:', event, 'Session:', !!session, 'User:', session?.user?.id);
+        secureLog('🔐 AuthProvider: State change detected. Event:', event, 'Session:', !!session, 'User:', sanitizeForLogging(session?.user?.id));
         
         // Log detailed event information when user becomes null
         if (!session?.user) {
-          console.log('🚨 AuthProvider: User became null! Event details:', {
+          secureLog('🚨 AuthProvider: User became null! Event details:', sanitizeForLogging({
             event,
             hasSession: !!session,
             sessionUser: session?.user?.id || 'null',
             timestamp: new Date().toISOString()
-          });
+          }));
         }
         
         setUser(session?.user ?? null);
         if (session?.user) {
-          console.log('🔐 AuthProvider: Auth state change - fetching profile for user:', session.user.id);
+          secureLog('🔐 AuthProvider: Auth state change - fetching profile for user:', sanitizeForLogging(session.user.id));
           await fetchProfile(session.user.id);
         } else {
-          console.log('🔐 AuthProvider: Auth state change - no session, clearing profile');
+          secureLog('🔐 AuthProvider: Auth state change - no session, clearing profile');
           setProfile(null);
           setLoading(false);
         }
@@ -114,28 +119,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []); // Empty dependency array - only run once on mount
 
   const fetchProfile = async (userId: string) => {
-    console.log('🔐 AuthProvider: Fetching profile for userId:', userId);
+    secureLog('🔐 AuthProvider: Fetching profile for userId:', sanitizeForLogging(userId));
     let finalProfileData: UserProfile | null = null;
     
     try {
       const now = new Date().toISOString();
       
-      console.log('🔐 AuthProvider: Querying user_profiles for ID:', userId);
+      secureLog('🔐 AuthProvider: Querying user_profiles for ID:', sanitizeForLogging(userId));
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('id', userId)
         .maybeSingle();
 
-      console.log('🔐 AuthProvider: User profile query result:', { data: !!data, error: error?.message });
+      secureLog('🔐 AuthProvider: User profile query result:', { data: !!data, error: error?.message });
 
       if (error) {
-        console.error('🔐 AuthProvider: Error fetching profile from DB:', error);
+        secureError('🔐 AuthProvider: Error fetching profile from DB:', error);
         throw error;
       }
       
       if (!data) {
-        console.log('🔐 AuthProvider: Profile not found, attempting to create new profile.');
+        secureLog('🔐 AuthProvider: Profile not found, attempting to create new profile.');
         const newProfile = {
           id: userId,
           email: user?.email || '',
@@ -156,9 +161,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
           .select()
           .maybeSingle();
 
-        console.log('🔐 AuthProvider: New profile creation result:', { createdProfile: !!createdProfile, createError: createError?.message });
+        secureLog('🔐 AuthProvider: New profile creation result:', { createdProfile: !!createdProfile, createError: createError?.message });
         if (createError) {
-          console.error('❌ fetchProfile - Error creating profile:', createError);
+          secureError('❌ fetchProfile - Error creating profile:', createError);
           // Don't throw error, continue with minimal profile
           setProfile({
             ...newProfile,
@@ -172,16 +177,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
           if (createdProfile) {
             setProfile(createdProfile);
             finalProfileData = createdProfile;
-          }
+        secureError('❌ updateUsageCount - Database error:', error);
         }
       } else {
-        console.log('🔐 AuthProvider: Profile found. Checking daily quota reset logic.');
+        secureLog('🔐 AuthProvider: Profile found. Checking daily quota reset logic.');
         // Check if we need to reset daily count
         const today = new Date().toDateString();
         const lastReset = data.last_daily_reset ? new Date(data.last_daily_reset).toDateString() : null;
         
         if (lastReset !== today) {
-          console.log('🔐 AuthProvider: Daily quota needs reset. Last reset:', lastReset, 'Today:', today);
+          secureLog('🔐 AuthProvider: Daily quota needs reset. Last reset:', lastReset, 'Today:', today);
           // Reset daily count for new day
           const { data: updatedProfile, error: updateError } = await supabase
             .from('user_profiles')
@@ -194,18 +199,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
             .maybeSingle();
             
           if (!updateError && updatedProfile) {
-            console.log('🔐 AuthProvider: Daily quota reset successful');
+            secureLog('🔐 AuthProvider: Daily quota reset successful');
             setProfile(updatedProfile);
             finalProfileData = updatedProfile;
           } else {
-            console.error('❌ fetchProfile - Error resetting daily count:', updateError);
+            secureError('❌ fetchProfile - Error resetting daily count:', updateError);
             setProfile(data);
             finalProfileData = data;
           }
         } else {
           // Check if free user has non-zero daily count and reset it
           if (data.subscription_plan === 'free' && (data.daily_count || 0) > 0) {
-            console.log('🔐 AuthProvider: Free user has non-zero daily count, resetting to 0');
+            secureLog('🔐 AuthProvider: Free user has non-zero daily count, resetting to 0');
             const { data: updatedProfile, error: updateError } = await supabase
               .from('user_profiles')
               .update({
@@ -217,25 +222,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
               .maybeSingle();
               
             if (!updateError && updatedProfile) {
-              console.log('🔐 AuthProvider: Free user daily count reset successful');
+              secureLog('🔐 AuthProvider: Free user daily count reset successful');
               setProfile(updatedProfile);
               finalProfileData = updatedProfile;
             } else {
-              console.error('❌ fetchProfile - Error resetting free user daily count:', updateError);
+              secureError('❌ fetchProfile - Error resetting free user daily count:', updateError);
               // Set daily_count to 0 in local state even if DB update failed
               const correctedData = { ...data, daily_count: 0, last_daily_reset: now };
               setProfile(correctedData);
               finalProfileData = correctedData;
             }
           } else {
-            console.log('🔐 AuthProvider: Profile is up to date, no changes needed');
+            secureLog('🔐 AuthProvider: Profile is up to date, no changes needed');
             setProfile(data);
             finalProfileData = data;
           }
         }
       }
     } catch (error) {
-      console.error('🔐 AuthProvider: Unexpected error in fetchProfile:', error);
+      secureError('🔐 AuthProvider: Unexpected error in fetchProfile:', error);
       
       // Fail-safe: create minimal profile to allow app to continue
       const minimalProfile = {
@@ -249,27 +254,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
         created_at: new Date().toISOString(),
       } as UserProfile;
       
-      console.log('🔐 AuthProvider: Setting minimal profile as fallback:', minimalProfile);
+      secureLog('🔐 AuthProvider: Setting minimal profile as fallback:', sanitizeForLogging(minimalProfile));
       setProfile(minimalProfile);
       finalProfileData = minimalProfile;
     } finally {
-      console.log('🔐 AuthProvider: fetchProfile finished. Loading set to false.');
+      secureLog('🔐 AuthProvider: fetchProfile finished. Loading set to false.');
       setLoading(false);
     }
   };
 
   const signIn = async (email: string, password: string) => {
-    console.log('🔐 AuthProvider: Attempting to sign in with email:', email);
+    secureLog('🔐 AuthProvider: Attempting to sign in with email:', sanitizeForLogging(email));
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    console.log('🔐 AuthProvider: Sign in result:', { success: !error, error: error?.message });
+    secureLog('🔐 AuthProvider: Sign in result:', { success: !error, error: error?.message });
     return { error };
   };
 
   const signUp = async (email: string, password: string, fullName?: string) => {
-    console.log('🔐 AuthProvider: Attempting to sign up with email:', email);
+    secureLog('🔐 AuthProvider: Attempting to sign up with email:', sanitizeForLogging(email));
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -279,14 +284,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         },
       },
     });
-    console.log('🔐 AuthProvider: Sign up result:', { success: !error, error: error?.message });
+    secureLog('🔐 AuthProvider: Sign up result:', { success: !error, error: error?.message });
     return { error };
   };
 
   const signOut = async () => {
-    console.log('🔐 AuthProvider: Attempting to sign out.');
+    secureLog('🔐 AuthProvider: Attempting to sign out.');
     const { error } = await supabase.auth.signOut();
-    console.log('🔐 AuthProvider: Sign out result:', { success: !error, error: error?.message });
+    secureLog('🔐 AuthProvider: Sign out result:', { success: !error, error: error?.message });
     return { error };
   };
 
@@ -365,7 +370,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const startFreeTrial = async () => {
     if (!user) {
-      console.error('❌ startFreeTrial - No user found');
+      secureError('❌ startFreeTrial - No user found');
       return { error: new Error('Utilisateur non connecté') };
     }
 
@@ -389,7 +394,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         .maybeSingle();
 
       if (error) {
-        console.error('❌ startFreeTrial - Error:', error);
+        secureError('❌ startFreeTrial - Error:', error);
         throw error;
       }
 
@@ -399,7 +404,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       return { error: null };
     } catch (error) {
-      console.error('❌ startFreeTrial - Error:', error);
+      secureError('❌ startFreeTrial - Error:', error);
       return { error };
     }
   };
@@ -420,11 +425,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   // Log current state on every render for debugging
-  console.log('🔐 AuthProvider: Current state -', {
+  secureLog('🔐 AuthProvider: Current state -', sanitizeForLogging({
     user: user ? `${user.id} (${user.email})` : 'null',
     profile: profile ? `${profile.subscription_plan} - daily: ${profile.daily_count}` : 'null',
     loading
-  });
+  }));
 
   const value: AuthContextType = {
     user,
