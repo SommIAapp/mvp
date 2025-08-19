@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useNetworkStatus } from './useNetworkStatus';
 import type { Database } from '@/lib/supabase';
-import { secureLog, secureError, logObjectSize, sanitizeForLogging } from '@/utils/secureLogging';
+import { secureLog, secureError, logObjectSize, sanitizeForLogging, logMinimal } from '@/utils/secureLogging';
 
 type Wine = Database['public']['Tables']['wines']['Row'];
 type Recommendation = Database['public']['Tables']['recommendations']['Row'];

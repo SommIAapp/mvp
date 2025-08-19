@@ -18,7 +18,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import { useRestaurantMode } from '@/hooks/useRestaurantMode';
 import { tempStore } from '@/utils/tempStore';
-import { logMinimal } from '@/utils/secureLogging';
+import { secureLog, sanitizeForLogging } from '@/utils/secureLogging';
 import type { Database } from '@/lib/supabase';
 
 type Recommendation = Database['public']['Tables']['recommendations']['Row'] & {
@@ -91,7 +91,7 @@ export default function HistoryScreen() {
       );
       
       if (sortedHistory && sortedHistory.length > 0) {
-        console.log('📚 loadHistory - Sample combined recommendation structure:', {
+        secureLog('📚 loadHistory - Sample combined recommendation structure:', sanitizeForLogging({
           id: sortedHistory[0].id,
           dish_description: sortedHistory[0].dish_description,
           type: sortedHistory[0].type,
@@ -100,7 +100,7 @@ export default function HistoryScreen() {
           recommended_wines_isArray: Array.isArray(sortedHistory[0].recommended_wines),
           recommended_wines_length: Array.isArray(sortedHistory[0].recommended_wines) ? sortedHistory[0].recommended_wines.length : 'N/A',
           created_at: sortedHistory[0].created_at
-        });
+        }));
       }
       
       setHistory(sortedHistory);

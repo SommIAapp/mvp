@@ -334,11 +334,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     }
 
-    logMinimal('🔐 AuthProvider: Sign up result', {
-      status: 'success',
-      type: 'signup',
-      trialStarted: true
-    });
+    secureLog('🔐 AuthProvider: Sign up result - success with trial started');
     return { error: null };
   };
 
