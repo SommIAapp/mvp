@@ -158,9 +158,11 @@ export function useRecommendations() {
 
     secureLog('📸 STARTING DISH_PHOTO MODE - Photo analysis');
     logObjectSize('📸 Photo data', photoBase64);
-    secureLog('💰 Photo mode budget:', budget);
-    secureLog('🍷 Photo mode wine type:', wineType);
-    secureLog('🏪 Restaurant session ID:', sanitizeForLogging(restaurantSessionId));
+    logMinimal('💰 Photo mode params', {
+      type: 'dish_photo',
+      count: 1,
+      status: restaurantSessionId ? 'restaurant' : 'normal'
+    });
     
     setLoading(true);
     setError(null);
