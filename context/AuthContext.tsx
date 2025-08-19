@@ -425,11 +425,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   // Log current state on every render for debugging
-  console.log('🔐 AuthProvider: Current state -', {
+  secureLog('🔐 AuthProvider: Current state -', sanitizeForLogging({
     user: user ? `${user.id} (${user.email})` : 'null',
     profile: profile ? `${profile.subscription_plan} - daily: ${profile.daily_count}` : 'null',
     loading
-  });
+  }));
 
   const value: AuthContextType = {
     user,
