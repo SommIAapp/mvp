@@ -275,7 +275,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signUp = async (email: string, password: string, fullName?: string) => {
     secureLog('🔐 AuthProvider: Attempting to sign up with email:', sanitizeForLogging(email));
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -284,11 +284,62 @@ export function AuthProvider({ children }: AuthProviderProps) {
         },
       },
     });
+    
+    if (error) {
+      secureError('❌ AuthProvider: Sign up error:', error.message);
+      return { error };
+    }
+
+    if (data.user) {
+      secureLog('🎯 AuthProvider: Starting free trial for new user');
+      
+      // Attendre un peu pour que le profile soit créé par le trigger
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      try {
+        const now = new Date().toISOString();
+        
+        const { data: updatedProfile, error: trialError } = await supabase
+          .from('user_profiles')
+          .upsert({
+            id: data.user.id,
+            email: data.user.email || '',
+            subscription_plan: 'trial',
+            trial_start_date: now,
+            daily_count: 0,
+            monthly_count: 0,
+            last_daily_reset: now,
+            full_name: fullName || null,
+          }, {
+            onConflict: 'id',
+            ignoreDuplicates: false
+          })
+          .select()
+          .single();
+        
+        if (trialError) {
+          secureError('❌ AuthProvider: Failed to start trial:', trialError);
+          // Ne pas bloquer la création du compte pour autant
+        } else {
+          secureLog('✅ AuthProvider: Trial started successfully');
+          
+          // Mettre à jour le state local immédiatement
+          if (updatedProfile) {
+            setProfile(updatedProfile);
+          }
+        }
+      } catch (trialError) {
+        secureError('❌ AuthProvider: Trial setup exception:', trialError);
+        // Ne pas bloquer la création du compte
+      }
+    }
+
     logMinimal('🔐 AuthProvider: Sign up result', {
-      status: error ? 'failed' : 'success',
-      type: 'signup'
+      status: 'success',
+      type: 'signup',
+      trialStarted: true
     });
-    return { error };
+    return { error: null };
   };
 
   const signOut = async () => {

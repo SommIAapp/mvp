@@ -53,7 +53,8 @@ export default function SignUpScreen() {
     if (error) {
       Alert.alert('Erreur', error.message);
     } else {
-      router.replace('/subscription');
+      // Le trial est maintenant démarré automatiquement dans signUp
+      router.replace('/(tabs)');
     }
     
     setLoading(false);
