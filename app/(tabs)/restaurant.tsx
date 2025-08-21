@@ -192,4 +192,4 @@ export default function RestaurantScreen() {
   }, [params.fromHistory, params.sessionId, params.dish, params.restaurantName, setCurrentSession]);
 
   const handleScanCard = async () => {
-    try
+    try {
