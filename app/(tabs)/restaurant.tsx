@@ -193,3 +193,7 @@ export default function RestaurantScreen() {
 
   const handleScanCard = async () => {
     try {
+    } catch (error) {
+    }
+  };
+}
