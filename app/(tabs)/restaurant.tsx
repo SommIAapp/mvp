@@ -363,6 +363,24 @@ export default function RestaurantScreen() {
       const scanProgressInterval = setInterval(() => {
         setScanProgress(prev => {
           if (prev < 85) return prev + 3;
+          return prev;
+        });
+      }, 1000);
+      
+      setScanMessage('Analyse de la carte en cours...');
+
+      console.log('🚀 onScanComplete - Envoi vers scanWineCard...');
+      const restaurantSession = await scanWineCard(imageBase64);
+      
+      clearInterval(scanProgressInterval);
+      
+      setScanProgress(100);
+      setScanMessage('Analyse terminée!');
+      
+      // Attendre un peu pour montrer 100% puis continuer
+      setTimeout(() => {
+        setStep('dish');
+      }, 1000);
 
     } catch (error: any) {
       console.error('💥 handleScanCard - Erreur capturée:', error);
@@ -384,8 +402,14 @@ export default function RestaurantScreen() {
     console.log('🖼️ handlePickFromGallery - Début de la sélection galerie');
     
     try {
+      setIsScanning(true);
+      setScanProgress(0);
+      setScanMessage('Initialisation...');
+      
       // Vérifier les permissions
       console.log('🔐 handlePickFromGallery - Vérification des permissions galerie...');
+      setScanProgress(10);
+      setScanMessage('Vérification des permissions...');
       
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
@@ -395,6 +419,9 @@ export default function RestaurantScreen() {
       }
       console.log('✅ handlePickFromGallery - Permissions galerie accordées');
 
+      setScanProgress(20);
+      setScanMessage('Ouverture de la galerie...');
+      
       console.log('🖼️ handlePickFromGallery - Lancement de la galerie...');
       
       // Sélection avec qualité optimisée
@@ -418,6 +445,9 @@ export default function RestaurantScreen() {
       console.log('✅ handlePickFromGallery - Image sélectionnée avec succès');
       const uri = result.assets[0].uri;
       
+      setScanProgress(30);
+      setScanMessage('Préparation de l\'image...');
+
       // NOUVELLE COMPRESSION OPTIMISÉE
       console.log('🔄 handlePickFromGallery - Compression optimisée de l\'image...');
       
@@ -478,8 +508,31 @@ export default function RestaurantScreen() {
 
       console.log('✅ handlePickFromGallery - Image compressée et prête pour analyse');
       
-      // Appeler la fonction de scan avec cache
-      await scanWineCard(base64);
+      setScanProgress(50);
+      setScanMessage('Envoi vers l\'analyse OCR...');
+      
+      // Simuler progression pendant l'analyse
+      const galleryProgressTimer = setInterval(() => {
+        setScanProgress(prev => {
+          if (prev < 85) return prev + 5;
+          return prev;
+        });
+      }, 1000);
+      
+      setScanMessage('Analyse de la carte en cours...');
+
+      console.log('🚀 handlePickFromGallery - Envoi vers scanWineCard...');
+      const restaurantSession = await scanWineCard(base64);
+      
+      clearInterval(galleryProgressTimer);
+      
+      setScanProgress(100);
+      setScanMessage('Analyse terminée!');
+      
+      // Attendre un peu pour montrer 100% puis continuer
+      setTimeout(() => {
+        setStep('dish');
+      }, 1000);
 
     } catch (error: any) {
       console.error('💥 handlePickFromGallery - Erreur capturée:', error);
@@ -490,6 +543,10 @@ export default function RestaurantScreen() {
       if (!(error instanceof UserCancellationError)) {
         Alert.alert('Erreur', `Impossible de traiter la photo: ${error.message}`);
       }
+    } finally {
+      setIsScanning(false);
+      setScanProgress(0);
+      setScanMessage('');
     }
   };
   
@@ -586,13 +643,6 @@ export default function RestaurantScreen() {
       setRecoProgress(20);
       setRecoMessage('Validation du plat...');
       await new Promise(resolve => setTimeout(resolve, 300));
-      setRecoProgress(0);
-      setRecoMessage('');
-      
-      // Étape 1: Validation (20%)
-      setRecoProgress(20);
-      setRecoMessage('Validation du plat...');
-      await new Promise(resolve => setTimeout(resolve, 300));
       
       const budgetValue = selectedBudget ? parseInt(selectedBudget.replace('€', '').replace('+', '')) : undefined;
       let results;
@@ -604,21 +654,6 @@ export default function RestaurantScreen() {
       
       // Étape 3: Recherche (60-90%)
       const recoProgressTimer = setInterval(() => {
-        setRecoProgress(prev => {
-          if (prev < 90) return prev + 5;
-          return prev;
-        });
-      }, 800);
-      
-      setRecoMessage('Recherche des meilleurs accords...');
-      
-      // Étape 2: Analyse (40%)
-      setRecoProgress(40);
-      setRecoMessage('Analyse du plat et des préférences...');
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Étape 3: Recherche (60-90%)
-      const recoProgressTimer2 = setInterval(() => {
         setRecoProgress(prev => {
           if (prev < 90) return prev + 5;
           return prev;
@@ -664,26 +699,19 @@ export default function RestaurantScreen() {
       setRecoMessage('Préparation des recommandations...');
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      clearInterval(recoProgressTimer2);
-      
-      // Étape 4: Finalisation (100%)
-      setRecoProgress(100);
-      setRecoMessage('Préparation des recommandations...');
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
       // Navigation vers les recommandations
       router.push({
         pathname: '/recommendations',
         params: {
           mode: 'restaurant',
           dish: dishImage ? 'Photo de plat' : dishDescription,
-         budget: budgetValue?.toString() || '0',
-         wineType: selectedWineType || 'all',
+          budget: budgetValue?.toString() || '0',
+          wineType: selectedWineType || 'all',
           recommendations: JSON.stringify(results),
-         restaurantName: currentSession?.restaurant_name || 'Restaurant',
+          restaurantName: currentSession?.restaurant_name || 'Restaurant',
           photoMode: dishImage ? 'true' : 'false',
-         fromHistory: 'false',
-         visionConfidence: '0',
+          fromHistory: 'false',
+          visionConfidence: '0',
         }
       });
     } catch (error: any) {
@@ -1044,30 +1072,6 @@ export default function RestaurantScreen() {
             </View>
           </View>
         )}
-        
-        {/* Overlay de progression pour les recommandations */}
-        {isGettingRecommendations && (
-          <View style={styles.loadingOverlay}>
-            <View style={styles.loadingContent}>
-              <Text style={styles.loadingTitle}>Recherche des accords parfaits</Text>
-              <ProgressBar 
-                progress={recoProgress} 
-                message={recoMessage}
-                color="#6B2B3A"
-              />
-              <TouchableOpacity 
-                style={styles.cancelButton}
-                onPress={() => {
-                  setIsGettingRecommendations(false);
-                  setRecoProgress(0);
-                  setRecoMessage('');
-                }}
-              >
-                <Text style={styles.cancelText}>Annuler</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
       </View>
     );
   }
@@ -1376,47 +1380,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  loadingOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
-  },
-  loadingContent: {
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 30,
-    marginHorizontal: 40,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 10,
-  },
-  loadingTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 10,
-  },
-  cancelButton: {
-    marginTop: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: '#F5F5F5',
-  },
-  cancelText: {
-    fontSize: 16,
-    color: '#666',
-    fontWeight: '500',
   },
   loadingOverlay: {
     position: 'absolute',
