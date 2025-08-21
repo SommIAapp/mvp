@@ -446,23 +446,13 @@ export default function RestaurantScreen() {
       setScanMessage('Préparation de l\'image...');
 
       // NOUVELLE COMPRESSION OPTIMISÉE
-      // Créer une session restaurant à partir du cache
-      const cachedSession = {
-        id: cached.sessionId,
-        restaurant_name: cached.restaurantName,
-        extracted_wines: cached.wines,
-        confidence_score: 0.9,
-        session_active: true,
-      };
-      
-      setCurrentSession(cachedSession);
       let compressedResult = await ImageManipulator.manipulateAsync(
         uri,
         [{ resize: { width: 800 } }],
         { 
           compress: 0.5, // Compression agressive
-          format: ImageManipulator.SaveFormat.JPEG,
-        [{ text: 'Parfait!', onPress: () => setStep('dish') }]
+          format: ImageManipulator.SaveFormat.JPEG
+        }
       );
 
       // Convertir en base64
