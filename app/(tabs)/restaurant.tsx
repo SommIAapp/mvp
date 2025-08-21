@@ -16,6 +16,7 @@ import { useRouter } from 'expo-router';
 import { Camera, Upload, Check, Wine, User, RotateCcw, X } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
+import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
@@ -73,6 +74,9 @@ export default function RestaurantScreen() {
   const [scanProgress, setScanProgress] = useState(0);
   const [scanMessage, setScanMessage] = useState('');
   const [isScanning, setIsScanning] = useState(false);
+  const [recoProgress, setRecoProgress] = useState(0);
+  const [recoMessage, setRecoMessage] = useState('');
+  const [isGettingRecommendations, setIsGettingRecommendations] = useState(false);
   const [recoProgress, setRecoProgress] = useState(0);
   const [recoMessage, setRecoMessage] = useState('');
   const [isGettingRecommendations, setIsGettingRecommendations] = useState(false);
@@ -215,12 +219,12 @@ export default function RestaurantScreen() {
 
       console.log('📱 handleScanCard - Lancement de la caméra...');
       
-      // Photo SANS base64 pour éviter le crash Android
+      // Photo avec qualité optimisée
       const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.5,
-        base64: false, // CRITICAL: false ici pour éviter crash Android !
+        quality: 0.7, // Réduire dès la capture
       });
 
       if (result.canceled) {
@@ -234,30 +238,70 @@ export default function RestaurantScreen() {
       }
 
       console.log('✅ handleScanCard - Photo prise avec succès');
-      console.log('📏 handleScanCard - Image capturée');
+      const uri = result.assets[0].uri;
 
       setScanProgress(30);
       setScanMessage('Préparation de l\'image...');
 
-      console.log('🔄 handleScanCard - Compression et conversion base64...');
-      // Base64 avec ImageManipulator SEULEMENT (plus sûr pour Android)
-      const manipResult = await ImageManipulator.manipulateAsync(
-        result.assets[0].uri,
-        [{ resize: { width: 600 } }], // Réduire à 600px max pour éviter crash
+      // NOUVELLE COMPRESSION OPTIMISÉE
+      console.log('🔄 handleScanCard - Compression optimisée de l\'image...');
+      
+      // Première compression à 800px
+      let compressedResult = await ImageManipulator.manipulateAsync(
+        uri,
+        [{ resize: { width: 800 } }],
         { 
-          compress: 0.4, // Compression plus forte
+          compress: 0.5, // Compression agressive
           format: ImageManipulator.SaveFormat.JPEG,
-          base64: true // base64 ICI seulement
         }
       );
       
-      if (!manipResult.base64) {
-        console.error('❌ handleScanCard - Pas de base64 après manipulation');
-        throw new Error('Impossible de convertir l\'image');
+      // Convertir en base64
+      let base64 = await FileSystem.readAsStringAsync(compressedResult.uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      
+      console.log('📏 Taille après première compression:', (base64.length / 1024).toFixed(2), 'KB');
+      
+      // Si toujours trop gros, recompresser
+      if (base64.length > 40000) { // 40KB max
+        console.log('🔄 Recompression nécessaire...');
+        compressedResult = await ImageManipulator.manipulateAsync(
+          uri,
+          [{ resize: { width: 600 } }], // Plus petit
+          { 
+            compress: 0.4, // Encore plus compressé
+            format: ImageManipulator.SaveFormat.JPEG 
+          }
+        );
+        
+        base64 = await FileSystem.readAsStringAsync(compressedResult.uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        
+        console.log('📏 Taille finale après recompression:', (base64.length / 1024).toFixed(2), 'KB');
+      }
+      
+      // Si ENCORE trop gros, dernière tentative
+      if (base64.length > 40000) {
+        console.log('⚠️ Dernière compression agressive...');
+        compressedResult = await ImageManipulator.manipulateAsync(
+          uri,
+          [{ resize: { width: 480 } }],
+          { 
+            compress: 0.3,
+            format: ImageManipulator.SaveFormat.JPEG 
+          }
+        );
+        
+        base64 = await FileSystem.readAsStringAsync(compressedResult.uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        
+        console.log('📏 Taille minimale atteinte:', (base64.length / 1024).toFixed(2), 'KB');
       }
 
-      console.log('✅ handleScanCard - Image compressée');
-      console.log('📏 handleScanCard - Image prête pour analyse');
+      console.log('✅ handleScanCard - Image compressée et prête pour analyse');
       
       setScanProgress(50);
       setScanMessage('Envoi vers l\'analyse OCR...');
@@ -273,7 +317,7 @@ export default function RestaurantScreen() {
       setScanMessage('Analyse de la carte en cours...');
 
       console.log('🚀 handleScanCard - Envoi vers scanWineCard...');
-      const restaurantSession = await scanWineCard(manipResult.base64);
+      const restaurantSession = await scanWineCard(base64);
       
       clearInterval(progressInterval);
       
@@ -289,18 +333,15 @@ export default function RestaurantScreen() {
       console.error('💥 handleScanCard - Erreur capturée:', error);
       console.error('🔍 handleScanCard - Type d\'erreur:', error.constructor.name);
       console.error('🔍 handleScanCard - Message:', error.message);
-      if (error.stack) {
-        console.error('🔍 handleScanCard - Stack:', error.stack);
-      }
       
       // Don't show alert for user cancellations
+      if (!(error instanceof UserCancellationError)) {
+        Alert.alert('Erreur', `Impossible de traiter la photo: ${error.message}`);
+      }
     } finally {
       setIsScanning(false);
       setScanProgress(0);
       setScanMessage('');
-      if (!(error instanceof UserCancellationError)) {
-        Alert.alert('Erreur', `Impossible de traiter la photo: ${error.message}`);
-      }
     }
   };
 
@@ -330,12 +371,12 @@ export default function RestaurantScreen() {
       
       console.log('🖼️ handlePickFromGallery - Lancement de la galerie...');
       
-      // Sélection SANS base64 pour éviter le crash Android
+      // Sélection avec qualité optimisée
       const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.5,
-        base64: false, // CRITICAL: false ici pour éviter crash Android !
+        quality: 0.7, // Réduire dès la sélection
       });
 
       if (result.canceled) {
@@ -349,30 +390,70 @@ export default function RestaurantScreen() {
       }
 
       console.log('✅ handlePickFromGallery - Image sélectionnée avec succès');
-      console.log('📏 handlePickFromGallery - Image sélectionnée');
+      const uri = result.assets[0].uri;
       
       setScanProgress(30);
       setScanMessage('Préparation de l\'image...');
 
-      console.log('🔄 handlePickFromGallery - Compression et conversion base64...');
-      // Base64 avec ImageManipulator SEULEMENT (plus sûr pour Android)
-      const manipResult = await ImageManipulator.manipulateAsync(
-        result.assets[0].uri,
-        [{ resize: { width: 600 } }], // Réduire à 600px max pour éviter crash
+      // NOUVELLE COMPRESSION OPTIMISÉE
+      console.log('🔄 handlePickFromGallery - Compression optimisée de l\'image...');
+      
+      // Première compression à 800px
+      let compressedResult = await ImageManipulator.manipulateAsync(
+        uri,
+        [{ resize: { width: 800 } }],
         { 
-          compress: 0.4, // Compression plus forte
+          compress: 0.5, // Compression agressive
           format: ImageManipulator.SaveFormat.JPEG,
-          base64: true // base64 ICI seulement
         }
       );
 
-      if (!manipResult.base64) {
-        console.error('❌ handlePickFromGallery - Pas de base64 après manipulation');
-        throw new Error('Impossible de convertir l\'image');
+      // Convertir en base64
+      let base64 = await FileSystem.readAsStringAsync(compressedResult.uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      
+      console.log('📏 Taille après première compression:', (base64.length / 1024).toFixed(2), 'KB');
+      
+      // Si toujours trop gros, recompresser
+      if (base64.length > 40000) { // 40KB max
+        console.log('🔄 Recompression nécessaire...');
+        compressedResult = await ImageManipulator.manipulateAsync(
+          uri,
+          [{ resize: { width: 600 } }], // Plus petit
+          { 
+            compress: 0.4, // Encore plus compressé
+            format: ImageManipulator.SaveFormat.JPEG 
+          }
+        );
+        
+        base64 = await FileSystem.readAsStringAsync(compressedResult.uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        
+        console.log('📏 Taille finale après recompression:', (base64.length / 1024).toFixed(2), 'KB');
+      }
+      
+      // Si ENCORE trop gros, dernière tentative
+      if (base64.length > 40000) {
+        console.log('⚠️ Dernière compression agressive...');
+        compressedResult = await ImageManipulator.manipulateAsync(
+          uri,
+          [{ resize: { width: 480 } }],
+          { 
+            compress: 0.3,
+            format: ImageManipulator.SaveFormat.JPEG 
+          }
+        );
+        
+        base64 = await FileSystem.readAsStringAsync(compressedResult.uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        
+        console.log('📏 Taille minimale atteinte:', (base64.length / 1024).toFixed(2), 'KB');
       }
 
-      console.log('✅ handlePickFromGallery - Image compressée');
-      console.log('📏 handlePickFromGallery - Image prête pour analyse');
+      console.log('✅ handlePickFromGallery - Image compressée et prête pour analyse');
       
       setScanProgress(50);
       setScanMessage('Envoi vers l\'analyse OCR...');
@@ -388,7 +469,7 @@ export default function RestaurantScreen() {
       setScanMessage('Analyse de la carte en cours...');
 
       console.log('🚀 handlePickFromGallery - Envoi vers scanWineCard...');
-      const restaurantSession = await scanWineCard(manipResult.base64);
+      const restaurantSession = await scanWineCard(base64);
       
       clearInterval(progressInterval);
       
@@ -406,6 +487,9 @@ export default function RestaurantScreen() {
       console.error('🔍 handlePickFromGallery - Message:', error.message);
       
       // Don't show alert for user cancellations
+      if (!(error instanceof UserCancellationError)) {
+        Alert.alert('Erreur', `Impossible de traiter la photo: ${error.message}`);
+      }
       if (!(error instanceof UserCancellationError)) {
         Alert.alert('Erreur', `Impossible de traiter la photo: ${error.message}`);
       }
@@ -467,7 +551,7 @@ export default function RestaurantScreen() {
   }
 
   const handleGetRecommendations = async () => {
-    // Debug logs
+    // Debug logs sécurisés
     console.log('🔍 Checking recommendation quota...');
     logProfile('Profile quota check', profile);
     console.log('Can make recommendation:', canMakeRecommendation());
@@ -509,6 +593,13 @@ export default function RestaurantScreen() {
       setRecoProgress(20);
       setRecoMessage('Validation du plat...');
       await new Promise(resolve => setTimeout(resolve, 300));
+      setRecoProgress(0);
+      setRecoMessage('');
+      
+      // Étape 1: Validation (20%)
+      setRecoProgress(20);
+      setRecoMessage('Validation du plat...');
+      await new Promise(resolve => setTimeout(resolve, 300));
       
       const budgetValue = selectedBudget ? parseInt(selectedBudget.replace('€', '').replace('+', '')) : undefined;
       let results;
@@ -528,10 +619,25 @@ export default function RestaurantScreen() {
       
       setRecoMessage('Recherche des meilleurs accords...');
       
+      // Étape 2: Analyse (40%)
+      setRecoProgress(40);
+      setRecoMessage('Analyse du plat et des préférences...');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Étape 3: Recherche (60-90%)
+      const progressTimer = setInterval(() => {
+        setRecoProgress(prev => {
+          if (prev < 90) return prev + 5;
+          return prev;
+        });
+      }, 800);
+      
+      setRecoMessage('Recherche des meilleurs accords...');
+      
       if (dishImage) {
         // Si on a une image, utilise getRecommendationsFromPhoto
         // Récupérer le base64 de l'image
-        const manipResult = await ImageManipulator.manipulateAsync(
+        const imageResult = await ImageManipulator.manipulateAsync(
           dishImage,
           [{ resize: { width: 600 } }],
           { 
@@ -541,9 +647,9 @@ export default function RestaurantScreen() {
           }
         );
         
-        if (manipResult.base64) {
+        if (imageResult.base64) {
           results = await getRecommendationsFromPhoto(
-            manipResult.base64,
+            imageResult.base64,
             budgetValue,
             selectedWineType  // Passe le wine type ici aussi
           );
@@ -557,6 +663,13 @@ export default function RestaurantScreen() {
           selectedWineType      // 4ème paramètre = wineType
         );
       }
+      
+      clearInterval(progressTimer);
+      
+      // Étape 4: Finalisation (100%)
+      setRecoProgress(100);
+      setRecoMessage('Préparation des recommandations...');
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       clearInterval(progressTimer);
       
@@ -583,12 +696,13 @@ export default function RestaurantScreen() {
     } catch (error: any) {
       console.error('Error getting recommendations:', error);
       Alert.alert('Erreur', error.message || 'Impossible de générer les recommandations');
-    }
+    } finally {
       setTimeout(() => {
         setIsGettingRecommendations(false);
         setRecoProgress(0);
         setRecoMessage('');
       }, 500);
+    }
   };
 
   const handleCameraPress = () => {
@@ -903,7 +1017,7 @@ export default function RestaurantScreen() {
 
             {/* CTA Premium */}
             <TouchableOpacity 
-              style={[styles.ctaButton, loading && styles.ctaButtonDisabled]}
+              style={[styles.ctaButton, isGettingRecommendations && styles.ctaButtonDisabled]}
               onPress={handleGetRecommendations}
               disabled={isGettingRecommendations || (!dishDescription.trim() && !dishImage)}
             >
@@ -913,6 +1027,30 @@ export default function RestaurantScreen() {
             </TouchableOpacity>
           </View>
         </ScrollView>
+        
+        {/* Overlay de progression pour les recommandations */}
+        {isGettingRecommendations && (
+          <View style={styles.loadingOverlay}>
+            <View style={styles.loadingContent}>
+              <Text style={styles.loadingTitle}>Recherche des accords parfaits</Text>
+              <ProgressBar 
+                progress={recoProgress} 
+                message={recoMessage}
+                color="#6B2B3A"
+              />
+              <TouchableOpacity 
+                style={styles.cancelButton}
+                onPress={() => {
+                  setIsGettingRecommendations(false);
+                  setRecoProgress(0);
+                  setRecoMessage('');
+                }}
+              >
+                <Text style={styles.cancelText}>Annuler</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
         
         {/* Overlay de progression pour les recommandations */}
         {isGettingRecommendations && (
