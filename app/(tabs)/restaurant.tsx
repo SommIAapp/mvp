@@ -72,9 +72,6 @@ export default function RestaurantScreen() {
   const [selectedWineType, setSelectedWineType] = useState<string | null>(null);
   const [dishImage, setDishImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [extractedWines, setExtractedWines] = useState<any[]>([]);
-  const [restaurantName, setRestaurantName] = useState<string>('');
-  const [restaurantSessionId, setRestaurantSessionId] = useState<string>('');
   const [scanProgress, setScanProgress] = useState(0);
   const [scanMessage, setScanMessage] = useState('');
   const [isScanning, setIsScanning] = useState(false);
@@ -449,16 +446,23 @@ export default function RestaurantScreen() {
       setScanMessage('Préparation de l\'image...');
 
       // NOUVELLE COMPRESSION OPTIMISÉE
-      console.log('🔄 handlePickFromGallery - Compression optimisée de l\'image...');
+      // Créer une session restaurant à partir du cache
+      const cachedSession = {
+        id: cached.sessionId,
+        restaurant_name: cached.restaurantName,
+        extracted_wines: cached.wines,
+        confidence_score: 0.9,
+        session_active: true,
+      };
       
-      // Première compression à 800px
+      setCurrentSession(cachedSession);
       let compressedResult = await ImageManipulator.manipulateAsync(
         uri,
         [{ resize: { width: 800 } }],
         { 
           compress: 0.5, // Compression agressive
           format: ImageManipulator.SaveFormat.JPEG,
-        }
+        [{ text: 'Parfait!', onPress: () => setStep('dish') }]
       );
 
       // Convertir en base64
