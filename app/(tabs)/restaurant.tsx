@@ -31,6 +31,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRestaurantMode, UserCancellationError } from '@/hooks/useRestaurantMode';
 import { sanitizeForLogging, logProfile, logUser } from '@/utils/secureLogging';
 import { tempStore } from '@/utils/tempStore';
+import { getCachedWineCard, setCachedWineCard, cleanOldCache } from '@/utils/wineCardCache';
 
 const { width } = Dimensions.get('window');
 
