@@ -384,14 +384,8 @@ export default function RestaurantScreen() {
     console.log('🖼️ handlePickFromGallery - Début de la sélection galerie');
     
     try {
-      setIsScanning(true);
-      setScanProgress(0);
-      setScanMessage('Initialisation...');
-      
       // Vérifier les permissions
       console.log('🔐 handlePickFromGallery - Vérification des permissions galerie...');
-      setScanProgress(10);
-      setScanMessage('Vérification des permissions...');
       
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
@@ -401,9 +395,6 @@ export default function RestaurantScreen() {
       }
       console.log('✅ handlePickFromGallery - Permissions galerie accordées');
 
-      setScanProgress(20);
-      setScanMessage('Ouverture de la galerie...');
-      
       console.log('🖼️ handlePickFromGallery - Lancement de la galerie...');
       
       // Sélection avec qualité optimisée
@@ -427,9 +418,6 @@ export default function RestaurantScreen() {
       console.log('✅ handlePickFromGallery - Image sélectionnée avec succès');
       const uri = result.assets[0].uri;
       
-      setScanProgress(30);
-      setScanMessage('Préparation de l\'image...');
-
       // NOUVELLE COMPRESSION OPTIMISÉE
       console.log('🔄 handlePickFromGallery - Compression optimisée de l\'image...');
       
@@ -490,31 +478,8 @@ export default function RestaurantScreen() {
 
       console.log('✅ handlePickFromGallery - Image compressée et prête pour analyse');
       
-      setScanProgress(50);
-      setScanMessage('Envoi vers l\'analyse OCR...');
-      
-      // Simuler progression pendant l'analyse
-      const galleryProgressTimer = setInterval(() => {
-        setScanProgress(prev => {
-          if (prev < 85) return prev + 5;
-          return prev;
-        });
-      }, 1000);
-      
-      setScanMessage('Analyse de la carte en cours...');
-
-      console.log('🚀 handlePickFromGallery - Envoi vers scanWineCard...');
-      const restaurantSession = await scanWineCard(base64);
-      
-      clearInterval(galleryProgressTimer);
-      
-      setScanProgress(100);
-      setScanMessage('Analyse terminée!');
-      
-      // Attendre un peu pour montrer 100% puis continuer
-      setTimeout(() => {
-        setStep('dish');
-      }, 1000);
+      // Appeler la fonction de scan avec cache
+      await scanWineCard(base64);
 
     } catch (error: any) {
       console.error('💥 handlePickFromGallery - Erreur capturée:', error);
@@ -525,13 +490,6 @@ export default function RestaurantScreen() {
       if (!(error instanceof UserCancellationError)) {
         Alert.alert('Erreur', `Impossible de traiter la photo: ${error.message}`);
       }
-      if (!(error instanceof UserCancellationError)) {
-        Alert.alert('Erreur', `Impossible de traiter la photo: ${error.message}`);
-      }
-    } finally {
-      setIsScanning(false);
-      setScanProgress(0);
-      setScanMessage('');
     }
   };
   
