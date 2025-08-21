@@ -192,4 +192,53 @@ export default function RestaurantScreen() {
   }, [params.fromHistory, params.sessionId, params.dish, params.restaurantName, setCurrentSession]);
 
   const handleScanCard = async () => {
-    try
+    try {
+      setError(null);
+      console.log('📸 handleScanCard - Début de la prise de photo');
+      
+      if (!canMakeRecommendation()) {
+        console.log('🚫 handleScanCard - Quota exceeded, showing paywall');
+        router.push('/paywall');
+        return;
+      }
+
+      setIsScanning(true);
+      setScanProgress(0);
+      setScanMessage('Préparation de la caméra...');
+
+      const result = await scanWineCard(
+        (progress, message) => {
+          setScanProgress(progress);
+          setScanMessage(message);
+        }
+      );
+
+      if (result) {
+        console.log('✅ handleScanCard - Scan successful, moving to dish step');
+        setStep('dish');
+      }
+    } catch (error) {
+      console.error('❌ handleScanCard error:', error);
+      console.error('🔍 handleScanCard - Error type:', error.constructor.name);
+      console.error('🔍 handleScanCard - Error message:', error.message);
+      
+      // Don't treat user cancellation as a critical error
+      if (error instanceof UserCancellationError) {
+        console.log('ℹ️ handleScanCard - User cancelled operation');
+        return;
+      }
+      
+      // Handle other errors
+      if (error.message?.includes('quota')) {
+        router.push('/paywall');
+      } else {
+        const errorMessage = error.message || 'Une erreur est survenue lors du scan';
+        setError(errorMessage);
+        Alert.alert('Erreur', errorMessage);
+      }
+    } finally {
+      setIsScanning(false);
+      setScanProgress(0);
+      setScanMessage('');
+    }
+  };
