@@ -77,9 +77,6 @@ export default function RestaurantScreen() {
   const [recoProgress, setRecoProgress] = useState(0);
   const [recoMessage, setRecoMessage] = useState('');
   const [isGettingRecommendations, setIsGettingRecommendations] = useState(false);
-  const [recoProgress, setRecoProgress] = useState(0);
-  const [recoMessage, setRecoMessage] = useState('');
-  const [isGettingRecommendations, setIsGettingRecommendations] = useState(false);
   const [appState, setAppState] = useState(AppState.currentState);
   const hasNavigatedRef = useRef(false);
   const hasLoadedFromHistoryRef = useRef(false);
