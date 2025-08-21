@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNetworkStatus } from './useNetworkStatus';
 import type { Database } from '@/lib/supabase';
 import { secureLog, secureError, logObjectSize, sanitizeForLogging, logMinimal } from '@/utils/secureLogging';
+import { getCachedWineCard, setCachedWineCard, cleanOldCache } from '@/utils/wineCardCache';
 
 type Wine = Database['public']['Tables']['wines']['Row'];
 type Recommendation = Database['public']['Tables']['recommendations']['Row'];
@@ -488,10 +489,19 @@ export function useRecommendations() {
              RestaurantOCRRequest |
              RestaurantRecoRequest
   ): Promise<any> => {
+    const TIMEOUT_MS = 25000; // 25 secondes max
     const startTime = Date.now();
     secureLog('🔍 fetchUnifiedRecommendations - Starting API call with mode:', request.mode);
     secureLog('⏰ fetchUnifiedRecommendations - Start time:', new Date().toISOString());
     
+    try {
+      // Créer un controller pour le timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+        console.log('⏱️ Request timeout après 25 secondes');
+      }, TIMEOUT_MS);
+      
     // Log request details based on mode
     if (request.mode === 'dish_photo' && 'dish_image_base64' in request) {
       secureLog('📸 fetchUnifiedRecommendations - Dish photo mode');
@@ -516,6 +526,7 @@ export function useRecommendations() {
     
     if (sessionError || !session?.access_token) {
       secureError('❌ fetchUnifiedRecommendations - Session error:', sessionError);
+       clearTimeout(timeoutId);
       throw new Error('Session non valide');
     }
 
@@ -544,7 +555,6 @@ export function useRecommendations() {
       secureLog('⚠️ fetchUnifiedRecommendations - Large request body detected:', (requestBodySize / 1024 / 1024).toFixed(2), 'MB');
     }
     
-    try {
       secureLog('🌐 fetchUnifiedRecommendations - Making fetch request...');
       const fetchStartTime = Date.now();
       
@@ -556,8 +566,12 @@ export function useRecommendations() {
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers,
-        body: requestBodyString
+        body: requestBodyString,
+        signal: controller.signal
       });
+      
+      // Nettoyer le timeout si succès
+      clearTimeout(timeoutId);
       
       const fetchEndTime = Date.now();
       const fetchTime = fetchEndTime - fetchStartTime;
@@ -645,6 +659,12 @@ export function useRecommendations() {
       secureLog('✅ fetchUnifiedRecommendations - API CALL SUCCESSFUL for mode:', request.mode, '- Total time:', totalTime + 'ms');
       
     } catch (apiError) {
+      // AJOUT : Gestion spécifique du timeout
+      if (apiError.name === 'AbortError') {
+        secureError('⏱️ La requête a dépassé le timeout de 25 secondes');
+        throw new Error('La requête a pris trop de temps. Veuillez réessayer.');
+      }
+      
       const errorTime = Date.now() - startTime;
       secureError('💥 fetchUnifiedRecommendations - API call failed for mode', request.mode + ':', apiError);
       secureError('💥 fetchUnifiedRecommendations - Error occurred after:', errorTime + 'ms');
