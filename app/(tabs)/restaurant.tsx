@@ -72,6 +72,9 @@ export default function RestaurantScreen() {
   const [selectedWineType, setSelectedWineType] = useState<string | null>(null);
   const [dishImage, setDishImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [extractedWines, setExtractedWines] = useState<any[]>([]);
+  const [restaurantName, setRestaurantName] = useState<string>('');
+  const [restaurantSessionId, setRestaurantSessionId] = useState<string>('');
   const [scanProgress, setScanProgress] = useState(0);
   const [scanMessage, setScanMessage] = useState('');
   const [isScanning, setIsScanning] = useState(false);
@@ -192,140 +195,174 @@ export default function RestaurantScreen() {
   }, [params.fromHistory, params.sessionId, params.dish, params.restaurantName, setCurrentSession]);
 
   const handleScanCard = async () => {
-    console.log('📸 handleScanCard - Début de la prise de photo');
-    
     try {
       setIsScanning(true);
-      setScanProgress(0);
-      setScanMessage('Initialisation...');
-      
+      setError(null);
+      console.log('📸 handleScanCard - Début de la prise de photo');
+
       // Vérifier les permissions
       console.log('🔐 handleScanCard - Vérification des permissions caméra...');
-      setScanProgress(10);
-      setScanMessage('Vérification des permissions...');
-      
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      
       if (status !== 'granted') {
-        console.error('❌ handleScanCard - Permission caméra refusée');
-        Alert.alert('Permission refusée', 'L\'accès à la caméra est nécessaire');
+        Alert.alert('Permission refusée', 'L\'accès à la caméra est nécessaire pour scanner la carte des vins.');
         return;
       }
-      console.log('✅ handleScanCard - Permissions caméra accordées');
-      
-      setScanProgress(20);
-      setScanMessage('Ouverture de la caméra...');
 
+      console.log('✅ handleScanCard - Permissions caméra accordées');
       console.log('📱 handleScanCard - Lancement de la caméra...');
-      
-      // Photo avec qualité optimisée
+
+      // Prendre la photo
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
+        allowsEditing: false,
         quality: 0.7, // Réduire dès la capture
       });
 
-      if (result.canceled) {
-        console.log('📸 handleScanCard - User cancelled photo');
+      if (!result.canceled && result.assets && result.assets[0]) {
+        console.log('✅ handleScanCard - Photo prise avec succès');
+        const uri = result.assets[0].uri;
+        
+        // NOUVELLE COMPRESSION OPTIMISÉE
+        console.log('🔄 handleScanCard - Compression optimisée de l\'image...');
+        
+        // Première compression à 800px
+        let compressedResult = await ImageManipulator.manipulateAsync(
+          uri,
+          [{ resize: { width: 800 } }],
+          { 
+            compress: 0.5, // Compression agressive
+            format: ImageManipulator.SaveFormat.JPEG 
+          }
+        );
+        
+        // Convertir en base64
+        let base64 = await FileSystem.readAsStringAsync(compressedResult.uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        
+        console.log('📏 Taille après première compression:', (base64.length / 1024).toFixed(2), 'KB');
+        
+        // Si toujours trop gros, recompresser
+        if (base64.length > 40000) { // 40KB max
+          console.log('🔄 Recompression nécessaire...');
+          compressedResult = await ImageManipulator.manipulateAsync(
+            uri,
+            [{ resize: { width: 600 } }], // Plus petit
+            { 
+              compress: 0.4, // Encore plus compressé
+              format: ImageManipulator.SaveFormat.JPEG 
+            }
+          );
+          
+          base64 = await FileSystem.readAsStringAsync(compressedResult.uri, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+          
+          console.log('📏 Taille finale après recompression:', (base64.length / 1024).toFixed(2), 'KB');
+        }
+        
+        // Si ENCORE trop gros, dernière tentative
+        if (base64.length > 40000) {
+          console.log('⚠️ Dernière compression agressive...');
+          compressedResult = await ImageManipulator.manipulateAsync(
+            uri,
+            [{ resize: { width: 480 } }],
+            { 
+              compress: 0.3,
+              format: ImageManipulator.SaveFormat.JPEG 
+            }
+          );
+          
+          base64 = await FileSystem.readAsStringAsync(compressedResult.uri, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+          
+          console.log('📏 Taille minimale atteinte:', (base64.length / 1024).toFixed(2), 'KB');
+        }
+        
+        console.log('🚀 handleScanCard - Envoi vers scanWineCard...');
+        await onScanComplete(base64);
+      } else {
+        console.log('❌ handleScanCard - Photo annulée');
+      }
+    } catch (error) {
+      console.error('❌ handleScanCard error:', error);
+      setError('Erreur lors de la prise de photo. Veuillez réessayer.');
+      Alert.alert('Erreur', 'Impossible de prendre la photo. Veuillez réessayer.');
+    } finally {
+      setTimeout(() => {
+        setIsScanning(false);
+        setScanProgress(0);
+        setScanMessage('');
+      }, 1000);
+    }
+  };
+
+  // Nouvelle fonction pour traiter le scan (avec ou sans cache)
+  const onScanComplete = async (imageBase64: string) => {
+    try {
+      setScanProgress(0);
+      setScanMessage('Initialisation...');
+      
+      // Nettoyer le vieux cache périodiquement (10% de chance)
+      if (Math.random() < 0.1) {
+        cleanOldCache().catch(console.error);
+      }
+      
+      // Étape 1: Vérifier le cache (0-20%)
+      setScanProgress(10);
+      setScanMessage('Vérification du cache...');
+      
+      const cached = await getCachedWineCard(imageBase64);
+      
+      if (cached) {
+        // Animation rapide jusqu'à 100%
+        setScanProgress(50);
+        setScanMessage('Carte trouvée dans le cache!');
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        setScanProgress(100);
+        setScanMessage('Chargement des données...');
+        
+        // Créer une session restaurant à partir du cache
+        const cachedSession = {
+          id: cached.sessionId,
+          restaurant_name: cached.restaurantName,
+          extracted_wines: cached.wines,
+          confidence_score: 0.9,
+          session_active: true,
+        };
+        
+        setCurrentSession(cachedSession);
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        Alert.alert(
+          '✨ Carte reconnue!',
+          `${cached.restaurantName}\n${cached.wines.length} vins disponibles\n(Chargé depuis le cache)`,
+          [{ text: 'Parfait!', onPress: () => setStep('dish') }]
+        );
+        
         return;
       }
       
-      if (!result.assets[0]) {
-        console.error('❌ handleScanCard - Pas d\'asset dans le résultat');
-        throw new Error('Aucune image capturée');
+      // Pas en cache, continuer avec l'OCR
+      setScanProgress(20);
+      setScanMessage('Préparation de l\'analyse...');
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      if (!user) {
+        throw new Error('Utilisateur non connecté');
       }
-
-      console.log('✅ handleScanCard - Photo prise avec succès');
-      const uri = result.assets[0].uri;
-
+      
       setScanProgress(30);
-      setScanMessage('Préparation de l\'image...');
-
-      // NOUVELLE COMPRESSION OPTIMISÉE
-      console.log('🔄 handleScanCard - Compression optimisée de l\'image...');
-      
-      // Première compression à 800px
-      let compressedResult = await ImageManipulator.manipulateAsync(
-        uri,
-        [{ resize: { width: 800 } }],
-        { 
-          compress: 0.5, // Compression agressive
-          format: ImageManipulator.SaveFormat.JPEG,
-        }
-      );
-      
-      // Convertir en base64
-      let base64 = await FileSystem.readAsStringAsync(compressedResult.uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      
-      console.log('📏 Taille après première compression:', (base64.length / 1024).toFixed(2), 'KB');
-      
-      // Si toujours trop gros, recompresser
-      if (base64.length > 40000) { // 40KB max
-        console.log('🔄 Recompression nécessaire...');
-        compressedResult = await ImageManipulator.manipulateAsync(
-          uri,
-          [{ resize: { width: 600 } }], // Plus petit
-          { 
-            compress: 0.4, // Encore plus compressé
-            format: ImageManipulator.SaveFormat.JPEG 
-          }
-        );
-        
-        base64 = await FileSystem.readAsStringAsync(compressedResult.uri, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-        
-        console.log('📏 Taille finale après recompression:', (base64.length / 1024).toFixed(2), 'KB');
-      }
-      
-      // Si ENCORE trop gros, dernière tentative
-      if (base64.length > 40000) {
-        console.log('⚠️ Dernière compression agressive...');
-        compressedResult = await ImageManipulator.manipulateAsync(
-          uri,
-          [{ resize: { width: 480 } }],
-          { 
-            compress: 0.3,
-            format: ImageManipulator.SaveFormat.JPEG 
-          }
-        );
-        
-        base64 = await FileSystem.readAsStringAsync(compressedResult.uri, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-        
-        console.log('📏 Taille minimale atteinte:', (base64.length / 1024).toFixed(2), 'KB');
-      }
-
-      console.log('✅ handleScanCard - Image compressée et prête pour analyse');
-      
-      setScanProgress(50);
       setScanMessage('Envoi vers l\'analyse OCR...');
       
-      // Simuler progression pendant l'analyse
-      const scanProgressTimer = setInterval(() => {
+      // Simuler une progression pendant l'attente
+      const scanProgressInterval = setInterval(() => {
         setScanProgress(prev => {
-          if (prev < 85) return prev + 5;
-          return prev;
-        });
-      }, 1000);
-      
-      setScanMessage('Analyse de la carte en cours...');
-
-      console.log('🚀 handleScanCard - Envoi vers scanWineCard...');
-      const restaurantSession = await scanWineCard(base64);
-      
-      clearInterval(scanProgressTimer);
-      
-      setScanProgress(100);
-      setScanMessage('Analyse terminée!');
-      
-      // Attendre un peu pour montrer 100% puis continuer
-      setTimeout(() => {
-        setStep('dish');
-      }, 1000);
+          if (prev < 85) return prev + 3;
 
     } catch (error: any) {
       console.error('💥 handleScanCard - Erreur capturée:', error);
