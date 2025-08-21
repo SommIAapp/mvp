@@ -304,7 +304,7 @@ export default function RestaurantScreen() {
       setScanMessage('Envoi vers l\'analyse OCR...');
       
       // Simuler progression pendant l'analyse
-      const progressInterval = setInterval(() => {
+      const scanProgressTimer = setInterval(() => {
         setScanProgress(prev => {
           if (prev < 85) return prev + 5;
           return prev;
@@ -316,7 +316,7 @@ export default function RestaurantScreen() {
       console.log('🚀 handleScanCard - Envoi vers scanWineCard...');
       const restaurantSession = await scanWineCard(base64);
       
-      clearInterval(progressInterval);
+      clearInterval(scanProgressTimer);
       
       setScanProgress(100);
       setScanMessage('Analyse terminée!');
@@ -456,7 +456,7 @@ export default function RestaurantScreen() {
       setScanMessage('Envoi vers l\'analyse OCR...');
       
       // Simuler progression pendant l'analyse
-      const progressInterval = setInterval(() => {
+      const galleryProgressTimer = setInterval(() => {
         setScanProgress(prev => {
           if (prev < 85) return prev + 5;
           return prev;
@@ -468,7 +468,7 @@ export default function RestaurantScreen() {
       console.log('🚀 handlePickFromGallery - Envoi vers scanWineCard...');
       const restaurantSession = await scanWineCard(base64);
       
-      clearInterval(progressInterval);
+      clearInterval(galleryProgressTimer);
       
       setScanProgress(100);
       setScanMessage('Analyse terminée!');
@@ -607,7 +607,7 @@ export default function RestaurantScreen() {
       await new Promise(resolve => setTimeout(resolve, 500));
       
       // Étape 3: Recherche (60-90%)
-      const progressTimer = setInterval(() => {
+      const recoProgressTimer = setInterval(() => {
         setRecoProgress(prev => {
           if (prev < 90) return prev + 5;
           return prev;
@@ -622,7 +622,7 @@ export default function RestaurantScreen() {
       await new Promise(resolve => setTimeout(resolve, 500));
       
       // Étape 3: Recherche (60-90%)
-      const progressTimer = setInterval(() => {
+      const recoProgressTimer2 = setInterval(() => {
         setRecoProgress(prev => {
           if (prev < 90) return prev + 5;
           return prev;
@@ -661,14 +661,14 @@ export default function RestaurantScreen() {
         );
       }
       
-      clearInterval(progressTimer);
+      clearInterval(recoProgressTimer);
       
       // Étape 4: Finalisation (100%)
       setRecoProgress(100);
       setRecoMessage('Préparation des recommandations...');
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      clearInterval(progressTimer);
+      clearInterval(recoProgressTimer2);
       
       // Étape 4: Finalisation (100%)
       setRecoProgress(100);
