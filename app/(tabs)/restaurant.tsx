@@ -226,9 +226,9 @@ export default function RestaurantScreen() {
         // Première compression à 800px
         let compressedResult = await ImageManipulator.manipulateAsync(
           uri,
-          [{ resize: { width: 1200 } }],
+          [{ resize: { width: 1000 } }],
           { 
-            compress: 0.8,
+            compress: 0.6,
             format: ImageManipulator.SaveFormat.JPEG 
           }
         );
