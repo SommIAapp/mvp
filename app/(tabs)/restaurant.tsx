@@ -50,7 +50,6 @@ export default function RestaurantScreen() {
   const { 
     currentSession,
     loading: restaurantLoading,
-    error,
     setCurrentSession,
     scanWineCard,
     pickFromGallery,
@@ -79,6 +78,7 @@ export default function RestaurantScreen() {
   const [recoMessage, setRecoMessage] = useState('');
   const [isGettingRecommendations, setIsGettingRecommendations] = useState(false);
   const [appState, setAppState] = useState(AppState.currentState);
+  const [error, setError] = useState<string | null>(null);
   const hasNavigatedRef = useRef(false);
   const hasLoadedFromHistoryRef = useRef(false);
   const [showBudgetOptions, setShowBudgetOptions] = useState(false);
