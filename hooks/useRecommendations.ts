@@ -68,6 +68,21 @@ export function useRecommendations() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Fonction pour obtenir le timeout selon le mode
+  const getTimeoutForMode = (mode: string): number => {
+    switch (mode) {
+      case 'restaurant_ocr':
+        return 35000; // 35 secondes - OCR prend plus de temps
+      case 'dish_photo':
+      case 'dish_photo_analysis':
+        return 25000; // 25 secondes - Analyse photo
+      case 'restaurant_reco':
+        return 20000; // 20 secondes - Recommandations restaurant
+      default:
+        return 15000; // 15 secondes - Modes texte et autres
+    }
+  };
+
   const getRecommendations = async (
     dishDescription: string,
     budget?: number,
@@ -489,9 +504,10 @@ export function useRecommendations() {
              RestaurantOCRRequest |
              RestaurantRecoRequest
   ): Promise<any> => {
-    const TIMEOUT_MS = 25000; // 25 secondes max
+    const TIMEOUT_MS = getTimeoutForMode(request.mode);
     const startTime = Date.now();
     secureLog('🔍 fetchUnifiedRecommendations - Starting API call with mode:', request.mode);
+    secureLog('⏰ fetchUnifiedRecommendations - Timeout set to:', TIMEOUT_MS + 'ms');
     secureLog('⏰ fetchUnifiedRecommendations - Start time:', new Date().toISOString());
     
     try {
@@ -499,7 +515,7 @@ export function useRecommendations() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => {
         controller.abort();
-        console.log('⏱️ Request timeout après 25 secondes');
+        console.log(`⏱️ Request timeout après ${TIMEOUT_MS / 1000} secondes`);
       }, TIMEOUT_MS);
       
     // Log request details based on mode
@@ -661,8 +677,9 @@ export function useRecommendations() {
     } catch (apiError) {
       // AJOUT : Gestion spécifique du timeout
       if (apiError.name === 'AbortError') {
-        secureError('⏱️ La requête a dépassé le timeout de 25 secondes');
-        throw new Error('La requête a pris trop de temps. Veuillez réessayer.');
+        const timeoutSeconds = TIMEOUT_MS / 1000;
+        secureError(`⏱️ La requête a dépassé le timeout de ${timeoutSeconds} secondes`);
+        throw new Error(`La requête a dépassé le timeout de ${timeoutSeconds} secondes. Veuillez réessayer.`);
       }
       
       const errorTime = Date.now() - startTime;
