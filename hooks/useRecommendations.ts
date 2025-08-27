@@ -579,23 +579,12 @@ export function useRecommendations() {
         secureLog('🔍 DEBUG - Available wines count:', request.available_wines.length);
       }
 
-      console.log('📏 Nombre de vins à analyser:', winesWithRegions.length);
-      console.log('📝 Taille du prompt:', prompt.length, 'caractères');
-      console.log('🔍 Prompt complet:', prompt); // Pour voir s'il y a des répétitions
-
-      // Vérifier s'il n'y a pas de doublons dans les vins
-      const uniqueWineNames = new Set(winesWithRegions.map(w => w.name));
-      console.log('🍷 Vins uniques:', uniqueWineNames.size, 'vs total:', winesWithRegions.length);
-
-      // Mesurer le temps de chaque étape
-      const startMistral = Date.now();
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers,
         body: requestBodyString,
         signal: controller.signal
       });
-      console.log('⏱️ Temps requête Mistral:', Date.now() - startMistral, 'ms');
       
       // Nettoyer le timeout si succès
       clearTimeout(timeoutId);
