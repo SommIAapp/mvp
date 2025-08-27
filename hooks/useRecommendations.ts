@@ -918,8 +918,29 @@ export function useRecommendations() {
   };
 
   // FONCTION POUR SCAN CARTE RESTAURANT
+  const checkOCRStatus = async (taskId: string): Promise<any> => {
+    secureLog('🔍 checkOCRStatus - Checking status for task:', taskId);
+    
+    try {
+      const result = await fetchUnifiedRecommendations({
+        mode: 'check_ocr_status',
+        task_id: taskId
+      } as any); // as any pour bypasser le typage temporairement
+      
+      secureLog('✅ checkOCRStatus - Status response:', {
+        status: result.status,
+        progress: result.progress
+      });
+      
+      return result;
+    } catch (error) {
+      secureError('❌ checkOCRStatus - Error:', error);
+      throw error;
+    }
+  };
+
   const getWineCardScan = async (imageBase64: string, userId: string) => {
-    secureLog('🔍 getWineCardScan called');
+    secureLog('🔍 getWineCardScan called (async version)');
     logObjectSize('🔍 getWineCardScan - Image', imageBase64);
     secureLog('👤 getWineCardScan pour user:', userId ? sanitizeForLogging(userId) : 'null');
     
@@ -940,7 +961,14 @@ export function useRecommendations() {
         user_id: userId
       });
       
-      secureLog('✅ getWineCardScan - Résultat OCR reçu:', {
+      // Si on reçoit un task_id, c'est le mode asynchrone
+      if (result.task_id && !result.extracted_wines) {
+        secureLog('📝 Mode asynchrone détecté - Task ID:', result.task_id);
+        return result; // Retourner le task_id pour que useRestaurantMode gère le polling
+      }
+      
+      // Sinon, mode synchrone (ancien comportement)
+      secureLog('✅ getWineCardScan - Résultat OCR reçu (mode synchrone):', {
         session_id: result.id ? sanitizeForLogging(result.id) : 'null',
         restaurant_name: result.restaurant_name,
         wines_count: result.extracted_wines?.length || 0
@@ -964,6 +992,7 @@ export function useRecommendations() {
     getRestaurantOCR,
     getRestaurantRecommendations,
     getWineCardScan,
+    checkOCRStatus,
     analyzePhotoForDish,
     getActiveRestaurantSession,
     getRecommendationHistory,
