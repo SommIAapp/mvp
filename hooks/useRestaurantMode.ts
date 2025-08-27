@@ -45,7 +45,7 @@ interface RestaurantRecommendation {
 
 export function useRestaurantMode() {
   const { user, updateUsageCount } = useAuth();
-  const { getRestaurantOCR, getRestaurantRecommendations: getUnifiedRestaurantRecommendations, getWineCardScan } = useRecommendations();
+  const { getRestaurantOCR, getRestaurantRecommendations: getUnifiedRestaurantRecommendations, getWineCardScan, checkOCRStatus } = useRecommendations();
   const [currentSession, setCurrentSession] = useState<RestaurantSession | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
