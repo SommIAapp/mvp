@@ -11,161 +11,6 @@ class UserCancellationError extends Error {
     this.name = 'UserCancellationError';
   }
 }
-  // RECOMMANDATIONS BASÉES SUR LA CARTE
-  const getRestaurantRecommendations = async (
-    dishDescription: string,
-    sessionId?: string,
-    budget?: number,
-    wineType?: string | null
-  ): Promise<RestaurantRecommendation[]> => {
-    if (!currentSession && !sessionId) {
-      throw new Error('Aucune session restaurant active');
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const session = currentSession || await getSessionById(sessionId!);
-      
-      console.log('🤖 Calling RESTAURANT_RECO mode via unified service for:', dishDescription, 'with wine type:', wineType);
-      const recommendations = await getUnifiedRestaurantRecommendations(
-        dishDescription,
-        session.id,
-        session.extracted_wines,
-        budget,
-        wineType
-      );
-      
-      await saveRestaurantRecommendation(session.id, dishDescription, recommendations);
-      
-      console.log('✅ RESTAURANT_RECO mode completed, recommendations:', recommendations.length);
-      
-      return recommendations;
-
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur recommandations';
-      setError(errorMessage);
-      console.error('❌ Restaurant recommendations error:', errorMessage);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // UTILITAIRES
-  const getSessionById = async (sessionId: string): Promise<RestaurantSession> => {
-    const { data, error } = await supabase
-      .from('restaurant_sessions')
-      .select('*')
-      .eq('id', sessionId)
-      .single();
-
-    if (error) {
-      console.error('❌ Error fetching session:', error);
-      throw error;
-    }
-    
-    return data;
-  };
-
-  const saveRestaurantRecommendation = async (
-    sessionId: string,
-    dishDescription: string,
-    recommendations: RestaurantRecommendation[]
-  ) => {
-    try {
-      const { error } = await supabase
-        .from('restaurant_recommendations')
-        .insert({
-          session_id: sessionId,
-          user_id: user?.id,
-          dish_description: dishDescription,
-          recommended_wines: recommendations,
-          match_quality: recommendations.length > 0 ? 
-            recommendations.reduce((sum, r) => sum + r.match_score, 0) / recommendations.length / 100 : 0.5
-        });
-
-      if (error) {
-        console.error('❌ Error saving recommendation:', error);
-      }
-    } catch (error) {
-      console.error('❌ Error saving recommendation:', error);
-    }
-  };
-
-  const clearSession = () => {
-    setCurrentSession(null);
-    setError(null);
-  };
-
-  const pickFromGallery = async (): Promise<RestaurantSession> => {
-    throw new Error('Cette fonction doit être appelée depuis le composant avec l\'image base64');
-  };
-
-  return {
-    currentSession,
-    loading,
-    error,
-    setCurrentSession: setCurrentSessionExternal,
-    scanWineCard,
-    pickFromGallery,
-    getRestaurantRecommendations,
-    getRestaurantRecommendationHistory,
-    clearSession,
-  };
-}
-
-// RÉCUPÉRER L'HISTORIQUE DES RECOMMANDATIONS RESTAURANT
-export const getRestaurantRecommendationHistory = async (userId: string) => {
-  try {
-    console.log('📚 Loading restaurant recommendations for user:', userId);
-    
-    const { data, error } = await supabase
-      .from('restaurant_recommendations')
-      .select(`
-        *,
-        restaurant_sessions!inner(
-          id,
-          restaurant_name,
-          extracted_wines
-        )
-      `)
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('❌ Error fetching restaurant history:', error);
-      throw error;
-    }
-
-    console.log('📚 Restaurant recommendations raw data:', data);
-
-    const transformedData = data?.map(item => ({
-      id: item.id,
-      dish_description: item.dish_description,
-      recommended_wines: item.recommended_wines,
-      created_at: item.created_at,
-      user_id: item.user_id,
-      user_budget: null,
-      type: 'restaurant',
-      restaurant_sessions: {
-        restaurant_name: item.restaurant_sessions?.restaurant_name || 'Restaurant',
-        extracted_wines: item.restaurant_sessions?.extracted_wines || []
-      }
-    })) || [];
-
-    console.log('📚 Restaurant recommendations transformed:', transformedData.length);
-    
-    return transformedData;
-  } catch (error) {
-    console.error('❌ Error in getRestaurantRecommendationHistory:', error);
-    return [];
-  }
-};
-
-// Export the custom error for use in components
-export { UserCancellationError };
 
 interface RestaurantSession {
   id: string;
@@ -321,4 +166,159 @@ export function useRestaurantMode() {
       setLoading(false);
     }
   };
+
+  // RECOMMANDATIONS BASÉES SUR LA CARTE
+  const getRestaurantRecommendations = async (
+    dishDescription: string,
+    sessionId?: string,
+    budget?: number,
+    wineType?: string | null
+  ): Promise<RestaurantRecommendation[]> => {
+    if (!currentSession && !sessionId) {
+      throw new Error('Aucune session restaurant active');
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const session = currentSession || await getSessionById(sessionId!);
+      
+      console.log('🤖 Calling RESTAURANT_RECO mode via unified service for:', dishDescription, 'with wine type:', wineType);
+      const recommendations = await getUnifiedRestaurantRecommendations(
+        dishDescription,
+        session.id,
+        session.extracted_wines,
+        budget,
+        wineType
+      );
+      
+      await saveRestaurantRecommendation(session.id, dishDescription, recommendations);
+      
+      console.log('✅ RESTAURANT_RECO mode completed, recommendations:', recommendations.length);
+      
+      return recommendations;
+
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erreur recommandations';
+      setError(errorMessage);
+      console.error('❌ Restaurant recommendations error:', errorMessage);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // UTILITAIRES
+  const getSessionById = async (sessionId: string): Promise<RestaurantSession> => {
+    const { data, error } = await supabase
+      .from('restaurant_sessions')
+      .select('*')
+      .eq('id', sessionId)
+      .single();
+
+    if (error) {
+      console.error('❌ Error fetching session:', error);
+      throw error;
+    }
+    
+    return data;
+  };
+
+  const saveRestaurantRecommendation = async (
+    sessionId: string,
+    dishDescription: string,
+    recommendations: RestaurantRecommendation[]
+  ) => {
+    try {
+      const { error } = await supabase
+        .from('restaurant_recommendations')
+        .insert({
+          session_id: sessionId,
+          user_id: user?.id,
+          dish_description: dishDescription,
+          recommended_wines: recommendations,
+          match_quality: recommendations.length > 0 ? 
+            recommendations.reduce((sum, r) => sum + r.match_score, 0) / recommendations.length / 100 : 0.5
+        });
+
+      if (error) {
+        console.error('❌ Error saving recommendation:', error);
+      }
+    } catch (error) {
+      console.error('❌ Error saving recommendation:', error);
+    }
+  };
+
+  const clearSession = () => {
+    setCurrentSession(null);
+    setError(null);
+  };
+
+  const pickFromGallery = async (): Promise<RestaurantSession> => {
+    throw new Error('Cette fonction doit être appelée depuis le composant avec l\'image base64');
+  };
+
+  return {
+    currentSession,
+    loading,
+    error,
+    setCurrentSession: setCurrentSessionExternal,
+    scanWineCard,
+    pickFromGallery,
+    getRestaurantRecommendations,
+    getRestaurantRecommendationHistory,
+    clearSession,
+  };
 }
+
+// RÉCUPÉRER L'HISTORIQUE DES RECOMMANDATIONS RESTAURANT
+export const getRestaurantRecommendationHistory = async (userId: string) => {
+  try {
+    console.log('📚 Loading restaurant recommendations for user:', userId);
+    
+    const { data, error } = await supabase
+      .from('restaurant_recommendations')
+      .select(`
+        *,
+        restaurant_sessions!inner(
+          id,
+          restaurant_name,
+          extracted_wines
+        )
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('❌ Error fetching restaurant history:', error);
+      throw error;
+    }
+
+    console.log('📚 Restaurant recommendations raw data:', data);
+
+    const transformedData = data?.map(item => ({
+      id: item.id,
+      dish_description: item.dish_description,
+      recommended_wines: item.recommended_wines,
+      created_at: item.created_at,
+      user_id: item.user_id,
+      user_budget: null,
+      type: 'restaurant',
+      restaurant_sessions: {
+        restaurant_name: item.restaurant_sessions?.restaurant_name || 'Restaurant',
+        extracted_wines: item.restaurant_sessions?.extracted_wines || []
+      }
+    })) || [];
+
+    console.log('📚 Restaurant recommendations transformed:', transformedData.length);
+    
+    return transformedData;
+  } catch (error) {
+    console.error('❌ Error in getRestaurantRecommendationHistory:', error);
+    return [];
+  }
+};
+
+// Export the custom error for use in components
+export { UserCancellationError };
