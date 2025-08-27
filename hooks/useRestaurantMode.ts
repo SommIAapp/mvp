@@ -81,33 +81,6 @@ export function useRestaurantMode() {
       if (ocrResult.task_id && !ocrResult.extracted_wines) {
         console.log('📝 Mode asynchrone détecté - Task ID:', ocrResult.task_id);
         
-        // Fonction checkOCRStatus locale
-        const checkOCRStatus = async (taskId: string) => {
-          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-          
-          if (sessionError || !session?.access_token) {
-            throw new Error('Session non valide');
-          }
-
-          const response = await fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/wine-recommendations`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({
-              mode: 'check_ocr_status',
-              task_id: taskId
-            }),
-          });
-
-          if (!response.ok) {
-            throw new Error('Erreur vérification statut');
-          }
-
-          return await response.json();
-        };
-        
         // Polling pour vérifier le statut
         const pollInterval = 2000; // 2 secondes
         const maxAttempts = 45; // 90 secondes max
@@ -117,6 +90,7 @@ export function useRestaurantMode() {
           console.log(`🔄 Vérification statut OCR (${attempts + 1}/${maxAttempts})...`);
           
           try {
+           // Utiliser la fonction importée au lieu de la locale
             const statusResponse = await checkOCRStatus(ocrResult.task_id);
             console.log('📊 Statut OCR:', statusResponse.status);
             
