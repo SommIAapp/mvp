@@ -192,3 +192,4 @@ export function useRestaurantMode() {
       setLoading(false);
     }
   };
+}
