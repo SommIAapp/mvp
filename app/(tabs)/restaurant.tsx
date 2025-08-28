@@ -595,6 +595,16 @@ export default function RestaurantScreen() {
   }
 
   const handleGetRecommendations = async () => {
+    // Vérifier que la session a des vins extraits
+    if (!currentSession?.extracted_wines || currentSession.extracted_wines.length === 0) {
+      Alert.alert(
+        'Carte en cours d\'analyse',
+        'La carte des vins est encore en cours d\'analyse. Veuillez patienter quelques instants.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
     // Debug logs sécurisés
     console.log('🔍 Checking recommendation quota...');
     logProfile('Profile quota check', profile);
@@ -868,7 +878,7 @@ export default function RestaurantScreen() {
   }
 
   // ÉCRAN 2: DESCRIPTION PLAT
-  if (step === 'dish' && currentSession) {
+  if (step === 'dish' && currentSession && currentSession.extracted_wines && currentSession.extracted_wines.length > 0) {
     return (
       <View style={styles.container}>
         <View style={styles.headerSection}>
