@@ -640,14 +640,26 @@ export function useRecommendations() {
       // Handle different response formats based on mode
       if (request.mode === 'restaurant_ocr') {
         secureLog('🔍 Processing restaurant_ocr response');
+        
+        // Vérifier si c'est une réponse asynchrone
+        if (apiResult.task_id && apiResult.status === 'processing') {
+          secureLog('📝 Mode asynchrone détecté - Task ID:', apiResult.task_id);
+          return {
+            task_id: apiResult.task_id,
+            status: 'processing',
+            message: apiResult.message
+          };
+        }
+        
+        // Sinon, traiter comme synchrone (ancien format)
         secureLog('🔍 fetchUnifiedRecommendations - OCR session_id:', sanitizeForLogging(apiResult.session_id));
         secureLog('🔍 fetchUnifiedRecommendations - OCR restaurant_name:', apiResult.restaurant_name);
         secureLog('🔍 fetchUnifiedRecommendations - OCR extracted_wines count:', apiResult.extracted_wines?.length || 0);
         return {
           id: apiResult.session_id,
           restaurant_name: apiResult.restaurant_name,
-          extracted_wines: apiResult.extracted_wines,
-          confidence_score: apiResult.confidence_score
+          extracted_wines: apiResult.extracted_wines || [],
+          confidence_score: apiResult.confidence_score || 0.85
         };
       } else if (request.mode === 'restaurant_reco') {
         secureLog('🍽️ Processing restaurant_reco response');
