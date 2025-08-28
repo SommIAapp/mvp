@@ -224,7 +224,9 @@ export default function WineRecommendationDetailScreen() {
           {/* Prix */}
           <View style={styles.priceSection}>
             <Text style={styles.priceLabel}>PRIX</Text>
-            <Text style={styles.priceValue}>€{getPrice(selectedWine).toFixed(0)}</Text>
+            <Text style={styles.priceValue}>
+              {getPrice(selectedWine) > 0 ? `€${getPrice(selectedWine).toFixed(0)}` : 'Prix sur demande'}
+            </Text>
             {selectedWine.price_display && (
               <Text style={styles.priceDisplay}>{selectedWine.price_display}</Text>
             )}
