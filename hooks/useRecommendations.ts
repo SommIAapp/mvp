@@ -502,7 +502,8 @@ export function useRecommendations() {
     request: { mode: 'text_only'; dish_description: string; user_budget?: number } |
              PhotoRecommendationRequest |
              RestaurantOCRRequest |
-             RestaurantRecoRequest
+            RestaurantRecoRequest |
+            { mode: 'check_ocr_status'; task_id: string }
   ): Promise<any> => {
     const TIMEOUT_MS = getTimeoutForMode(request.mode);
     const startTime = Date.now();
