@@ -133,10 +133,10 @@ export default function ProfileScreen() {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.headerSection}>
         <LinearGradient
-          colors={['#722F37', '#8B3B47']}
+          colors={['#6B2B3A', '#8B4B5A']}
           style={styles.headerGradient}
         >
-          <Text style={styles.headerTitle}>Mon Profil</Text>
+          <Text style={styles.headerTitle}>SOMMIA</Text>
         </LinearGradient>
         
         <Svg
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
-    marginTop: -20,
+    marginTop: 20,
     marginBottom: 40,
   },
   userSection: {
