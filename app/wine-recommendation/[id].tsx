@@ -21,6 +21,21 @@ export default function WineRecommendationDetailScreen() {
   const [recommendation, setRecommendation] = useState<any>(null);
   const [selectedWineIndex, setSelectedWineIndex] = useState(0);
 
+  // Helper function to get price from different wine formats
+  const getPrice = (wine: any) => {
+    if (!wine) return 0;
+    
+    // Pour les recommandations restaurant
+    if (wine.price_bottle !== undefined && wine.price_bottle !== null) return wine.price_bottle;
+    if (wine.price_glass !== undefined && wine.price_glass !== null) return wine.price_glass;
+    
+    // Pour les recommandations normales
+    if (wine.price_estimate !== undefined && wine.price_estimate !== null) return wine.price_estimate;
+    
+    // Fallback
+    return 0;
+  };
+
   useEffect(() => {
     loadRecommendation();
   }, [id]);
@@ -81,10 +96,6 @@ export default function WineRecommendationDetailScreen() {
   const getCategoryColor = (wine: any) => {
     const price = getPrice(wine);
     if (price <= 15) return Colors.success;
-    if (price <= 30) return Colors.warning;
-    return Colors.secondary;
-  };
-
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
