@@ -72,7 +72,7 @@ export function useRecommendations() {
   const getTimeoutForMode = (mode: string): number => {
     switch (mode) {
       case 'restaurant_ocr':
-        return 35000; // 35 secondes - OCR prend plus de temps
+        return 60000; // 60 secondes - OCR peut prendre jusqu'à 45s pour cartes complexes
       case 'dish_photo':
       case 'dish_photo_analysis':
         return 25000; // 25 secondes - Analyse photo
