@@ -178,12 +178,17 @@ export function useRestaurantMode() {
       throw new Error('Aucune session restaurant active');
     }
 
+   // Vérifier que la session a des vins extraits
+   const session = currentSession || await getSessionById(sessionId!);
+   
+   if (!session.extracted_wines || session.extracted_wines.length === 0) {
+     throw new Error('La carte des vins est encore en cours d\'analyse. Veuillez patienter.');
+   }
+
     setLoading(true);
     setError(null);
 
     try {
-      const session = currentSession || await getSessionById(sessionId!);
-      
       console.log('🤖 Calling RESTAURANT_RECO mode via unified service for:', dishDescription, 'with wine type:', wineType);
       const recommendations = await getUnifiedRestaurantRecommendations(
         dishDescription,
