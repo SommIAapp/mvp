@@ -348,3 +348,9 @@ export default function RestaurantScreen() {
       setScanProgress(20);
       setScanMessage('Préparation de l\'analyse...');
       await new Promise(resolve => setTimeout(resolve, 300));
+    } catch (error) {
+      console.error('❌ onScanComplete error:', error);
+      setError('Erreur lors du traitement de l\'image. Veuillez réessayer.');
+    }
+  };
+}
