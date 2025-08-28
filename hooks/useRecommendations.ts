@@ -666,6 +666,20 @@ export function useRecommendations() {
         secureLog('🍽️ Processing restaurant_reco response');
         secureLog('🍽️ fetchUnifiedRecommendations - Restaurant recommendations count:', apiResult.recommendations?.length || 0);
         return apiResult.recommendations || [];
+      } else if (request.mode === 'check_ocr_status') {
+        secureLog('📊 Processing check_ocr_status response');
+        
+        // Retourner directement la réponse de statut
+        return {
+          status: apiResult.status,
+          progress: apiResult.progress || 0,
+          session_id: apiResult.session_id,
+          restaurant_name: apiResult.restaurant_name,
+          extracted_wines: apiResult.extracted_wines,
+          wines_count: apiResult.wines_count,
+          processing_time_ms: apiResult.processing_time_ms,
+          error: apiResult.error
+        };
       } else {
         secureLog('🍷 Processing', request.mode, 'recommendations response');
         const recommendations = apiResult.recommendations || apiResult;
