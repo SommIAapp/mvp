@@ -347,4 +347,4 @@ export default function RestaurantScreen() {
       // Pas en cache, continuer avec l'OCR
       setScanProgress(20);
       setScanMessage('Préparation de l\'analyse...');
-      await new Promise(resolve => setTimeout(resolve, 300
+      await new Promise(resolve => setTimeout(resolve, 300));
