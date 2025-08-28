@@ -86,12 +86,10 @@ export default function WineDetailScreen() {
                   backgroundColor: getWineColorBackground(wine.color),
                   borderColor: getWineColorBackground(wine.color)
                 }
-              ]}>
-                <Text style={[
-                  styles.categoryText,
-                  { color: getCategoryBadgeTextColor(wine.color) }
-                ]}>
-                  {getCategoryLabel(wine.category)}
+                  €{(() => {
+                    const price = wine.price_estimate || wine.price_bottle || wine.price_glass || 0;
+                    return price > 0 ? (Number.isInteger(price) ? price.toString() : price.toFixed(2)) : '0';
+                  })()}
                 </Text>
               </View>
             </View>
