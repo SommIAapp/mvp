@@ -6,20 +6,17 @@ import {
   ScrollView, 
   TouchableOpacity,
   Alert,
-  ActivityIndicator
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { User, Crown, Calendar, ChartBar as BarChart3, Settings, LogOut, Wine } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
-import { getCacheStats, cleanOldCache } from '@/utils/wineCardCache';
 import { supabase } from '@/lib/supabase';
 
 export default function ProfileScreen() {
@@ -28,12 +25,6 @@ export default function ProfileScreen() {
   const { subscription, loading: subscriptionLoading, isPremium } = useSubscription();
   const [totalRecommendationsCount, setTotalRecommendationsCount] = useState(0);
   const [loadingStats, setLoadingStats] = useState(true);
-  const [cacheStats, setCacheStats] = useState<{
-    totalEntries: number;
-    totalSize: number;
-    oldestEntry: string | null;
-  } | null>(null);
-  const [isLoadingCache, setIsLoadingCache] = useState(false);
 
   useEffect(() => {
     console.log('👤 Profile: Component mounted');
@@ -45,7 +36,6 @@ export default function ProfileScreen() {
   useEffect(() => {
     if (user) {
       fetchTotalRecommendations();
-      loadCacheStats();
     }
   }, [user, profile]);
 
@@ -76,52 +66,6 @@ export default function ProfileScreen() {
     }
   };
 
-  const loadCacheStats = async () => {
-    try {
-      setIsLoadingCache(true);
-      const stats = await getCacheStats();
-      setCacheStats(stats);
-    } catch (error) {
-      console.error('Erreur chargement stats cache:', error);
-    } finally {
-      setIsLoadingCache(false);
-    }
-  };
-
-  const clearAllCache = async () => {
-    Alert.alert(
-      'Vider le cache',
-      'Êtes-vous sûr de vouloir supprimer toutes les cartes de restaurant en cache ? Cela permettra de libérer de l\'espace mais les prochains scans seront plus longs.',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Vider le cache',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setIsLoadingCache(true);
-              const keys = await AsyncStorage.getAllKeys();
-              const cacheKeys = keys.filter(key => key.startsWith('wine_card_cache_'));
-              await AsyncStorage.multiRemove(cacheKeys);
-              
-              Alert.alert(
-                'Cache vidé', 
-                'Toutes les cartes en cache ont été supprimées avec succès.',
-                [{ text: 'OK' }]
-              );
-              
-              // Recharger les stats
-              await loadCacheStats();
-            } catch (error) {
-              Alert.alert('Erreur', 'Impossible de vider le cache');
-            } finally {
-              setIsLoadingCache(false);
-            }
-          }
-        }
-      ]
-    );
-  };
   const handleSignOut = async () => {
     Alert.alert(
       'Déconnexion',
@@ -189,10 +133,10 @@ export default function ProfileScreen() {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.headerSection}>
         <LinearGradient
-          colors={['#6B2B3A', '#8B4B5A']}
+          colors={['#722F37', '#8B3B47']}
           style={styles.headerGradient}
         >
-          <Text style={styles.headerTitle}>SOMMIA</Text>
+          <Text style={styles.headerTitle}>Mon Profil</Text>
         </LinearGradient>
         
         <Svg
@@ -279,48 +223,6 @@ export default function ProfileScreen() {
         </View>
 
         {/* Menu Section */}
-        {/* Section Cache */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Cache des cartes</Text>
-          
-          {isLoadingCache ? (
-            <ActivityIndicator size="small" color="#722F37" />
-          ) : cacheStats ? (
-            <View style={styles.cacheContainer}>
-              <View style={styles.cacheInfo}>
-                <Text style={styles.cacheLabel}>Cartes en cache :</Text>
-                <Text style={styles.cacheValue}>{cacheStats.totalEntries}</Text>
-              </View>
-              
-              <View style={styles.cacheInfo}>
-                <Text style={styles.cacheLabel}>Espace utilisé :</Text>
-                <Text style={styles.cacheValue}>{cacheStats.totalSize} KB</Text>
-              </View>
-              
-              {cacheStats.oldestEntry && (
-                <View style={styles.cacheInfo}>
-                  <Text style={styles.cacheLabel}>Plus ancien :</Text>
-                  <Text style={styles.cacheValue}>
-                    {new Date(cacheStats.oldestEntry).toLocaleDateString('fr-FR')}
-                  </Text>
-                </View>
-              )}
-              
-              <TouchableOpacity 
-                style={[styles.clearCacheButton, cacheStats.totalEntries === 0 && styles.disabledButton]}
-                onPress={clearAllCache}
-                disabled={cacheStats.totalEntries === 0}
-              >
-                <Text style={styles.clearCacheButtonText}>
-                  {cacheStats.totalEntries === 0 ? 'Cache vide' : 'Vider le cache'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <Text style={styles.cacheEmpty}>Aucune donnée de cache</Text>
-          )}
-        </View>
-
         <View style={styles.menuSection}>
           <TouchableOpacity style={styles.menuItem}>
             <Settings size={24} color={Colors.textSecondary} />
@@ -360,10 +262,9 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 36,
-    fontWeight: '700',
+    fontWeight: Typography.weights.bold,
     color: 'white',
     textAlign: 'center',
-    letterSpacing: 1.5,
     marginTop: 50,
   },
   wave: {
@@ -375,19 +276,21 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
+    marginTop: -20,
+    marginBottom: 40,
   },
   userSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.softGray,
+    backgroundColor: 'white',
     borderRadius: 16,
     padding: 20,
     marginBottom: 24,
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 5,
   },
   avatarContainer: {
     width: 64,
@@ -397,11 +300,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   userInfo: {
     flex: 1,
@@ -417,15 +320,15 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   subscriptionCard: {
-    backgroundColor: Colors.softGray,
+    backgroundColor: 'white',
     borderRadius: 16,
     padding: 20,
     marginBottom: 24,
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 5,
   },
   subscriptionHeader: {
     flexDirection: 'row',
@@ -464,15 +367,15 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: Colors.softGray,
+    backgroundColor: 'white',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 5,
   },
   statValue: {
     fontSize: Typography.sizes.xl,
@@ -500,49 +403,5 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.base,
     color: Colors.textPrimary,
     marginLeft: 16,
-  },
-  section: {
-    marginBottom: 24,
-  },
-  cacheContainer: {
-    marginTop: 10,
-  },
-  cacheInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  cacheLabel: {
-    fontSize: 14,
-    color: '#666',
-  },
-  cacheValue: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
-  },
-  clearCacheButton: {
-    marginTop: 15,
-    backgroundColor: '#f0f0f0',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  clearCacheButtonText: {
-    color: '#722F37',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  disabledButton: {
-    opacity: 0.5,
-  },
-  cacheEmpty: {
-    fontSize: 14,
-    color: '#999',
-    textAlign: 'center',
-    marginTop: 10,
   },
 });
