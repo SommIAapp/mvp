@@ -364,7 +364,7 @@ export default function RestaurantScreen() {
         });
       }, 1000);
       
-      setScanMessage('Analyse de la carte en cours...');
+      setScanMessage('Analyse de la carte en cours, cela peut prendre quelques instants...');
 
       console.log('🚀 onScanComplete - Envoi vers scanWineCard...');
       const restaurantSession = await scanWineCard(imageBase64);
