@@ -32,6 +32,9 @@ export default function WineRecommendationDetailScreen() {
     // Pour les recommandations normales
     if (wine.price_estimate !== undefined && wine.price_estimate !== null) return wine.price_estimate;
     
+    // Legacy support
+    if (wine.price !== undefined && wine.price !== null) return wine.price;
+    
     // Fallback
     return 0;
   };
