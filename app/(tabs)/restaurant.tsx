@@ -550,7 +550,7 @@ export default function RestaurantScreen() {
       const restaurantRecommendations = await getRestaurantRecommendations(
         dishDescription,
         currentSession.id,
-        budget,
+        budgetValue,
         selectedWineType
       );
 
