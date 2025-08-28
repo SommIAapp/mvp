@@ -32,6 +32,7 @@ import { useRestaurantMode, UserCancellationError } from '@/hooks/useRestaurantM
 import { sanitizeForLogging, logProfile, logUser } from '@/utils/secureLogging';
 import { tempStore } from '@/utils/tempStore';
 import { getCachedWineCard, setCachedWineCard, cleanOldCache } from '@/utils/wineCardCache';
+import { supabase } from '@/lib/supabase';
 
 const { width } = Dimensions.get('window');
 
