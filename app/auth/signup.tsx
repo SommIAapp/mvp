@@ -134,6 +134,16 @@ export default function SignUpScreen() {
             fullWidth
             loading={loading}
           />
+          
+          <Text style={styles.termsText}>
+            En créant un compte, vous acceptez nos{' '}
+            <Text 
+              style={styles.termsLink}
+              onPress={() => router.push('/terms-of-service')}
+            >
+              Conditions d'Utilisation
+            </Text>
+          </Text>
         </View>
 
         <View style={styles.footer}>
@@ -188,5 +198,15 @@ const styles = StyleSheet.create({
   link: {
     color: Colors.primary,
     fontWeight: Typography.weights.semibold,
+  },
+  termsText: {
+    fontSize: Typography.sizes.xs,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 16,
+  },
+  termsLink: {
+    color: Colors.primary,
+    textDecorationLine: 'underline',
   },
 });

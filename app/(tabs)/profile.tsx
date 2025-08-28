@@ -224,6 +224,14 @@ export default function ProfileScreen() {
 
         {/* Menu Section */}
         <View style={styles.menuSection}>
+          <TouchableOpacity 
+            style={styles.menuItem}
+            onPress={() => router.push('/terms-of-service')}
+          >
+            <Settings size={24} color={Colors.textSecondary} />
+            <Text style={styles.menuText}>Conditions d'Utilisation</Text>
+          </TouchableOpacity>
+          
           <TouchableOpacity style={styles.menuItem}>
             <Settings size={24} color={Colors.textSecondary} />
             <Text style={styles.menuText}>Paramètres</Text>
