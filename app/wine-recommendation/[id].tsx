@@ -82,10 +82,6 @@ export default function WineRecommendationDetailScreen() {
     }
   };
 
-  const getPrice = (wine: any) => {
-    return wine?.price_bottle || wine?.price_glass || wine?.price_estimate || wine?.price || 0;
-  };
-
   const getCategoryLabel = (wine: any) => {
     const price = getPrice(wine);
     if (price <= 15) return 'Économique';
@@ -96,6 +92,10 @@ export default function WineRecommendationDetailScreen() {
   const getCategoryColor = (wine: any) => {
     const price = getPrice(wine);
     if (price <= 15) return Colors.success;
+    if (price <= 30) return Colors.warning;
+    return Colors.primary;
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
