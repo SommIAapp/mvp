@@ -6,7 +6,7 @@ import {
   ScrollView, 
   TouchableOpacity,
   Alert,
-  Linking
+  Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { User, Crown, Calendar, ChartBar as BarChart3, LogOut, Wine, FileText, Shield, Mail } from 'lucide-react-native';
@@ -152,16 +152,6 @@ export default function ProfileScreen() {
             fill="#FAF6F0"
           />
         </Svg>
-
-        {/* Bouton pour gérer l'abonnement Apple */}
-        <TouchableOpacity 
-          style={styles.manageSubscriptionButton}
-          onPress={() => Linking.openURL('https://apps.apple.com/account/subscriptions')}
-        >
-          <Text style={styles.manageSubscriptionText}>
-            Gérer mon abonnement Apple
-          </Text>
-        </TouchableOpacity>
       </View>
 
       <View style={styles.content}>
@@ -433,15 +423,5 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.base,
     color: Colors.textPrimary,
     marginLeft: 16,
-  },
-  manageSubscriptionButton: {
-    marginTop: 12,
-    paddingVertical: 8,
-  },
-  manageSubscriptionText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.primary,
-    textAlign: 'center',
-    textDecorationLine: 'underline',
   },
 });
