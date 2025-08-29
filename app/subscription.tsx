@@ -359,11 +359,9 @@ export default function SubscriptionScreen() {
               loading={loading}
             />
 
-            <View style={styles.trustBadges}>
-              <Text style={styles.trustText}>✓ Accords illimités</Text>
-              <Text style={styles.trustText}>✓ Annulation facile</Text>
-              <Text style={styles.trustText}>✓ Paiement sécurisé</Text>
-            </View>
+            <Text style={styles.healthWarning}>
+              L'abus d'alcool est dangereux pour la santé, à consommer avec modération
+            </Text>
           </View>
         </>
       ) : (
@@ -697,5 +695,13 @@ const styles = StyleSheet.create({
   },
   checkoutActions: {
     width: '100%',
+  },
+  healthWarning: {
+    fontSize: Typography.sizes.xs,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 24,
+    paddingHorizontal: 40,
+    fontStyle: 'italic',
   },
 });

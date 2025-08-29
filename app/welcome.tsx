@@ -71,6 +71,10 @@ export default function WelcomeScreen() {
           />
         </View>
       </View>
+
+       <Text style={styles.healthWarning}>
+         L'abus d'alcool est dangereux pour la santé, à consommer avec modération
+       </Text>
     </View>
   );
 }
@@ -157,5 +161,14 @@ const styles = StyleSheet.create({
   },
   buttonSection: {
     gap: 16,
+  },
+  healthWarning: {
+    fontSize: Typography.sizes.xs,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 24,
+    marginBottom: 20,
+    paddingHorizontal: 40,
+    fontStyle: 'italic',
   },
 });
