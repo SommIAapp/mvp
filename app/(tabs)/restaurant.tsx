@@ -13,7 +13,7 @@ import {
   AppState,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Camera, Upload, Check, Wine, User, RotateCcw, X } from 'lucide-react-native';
+import { Camera, Upload, Check, Wine, User, RotateCcw, X, ArrowLeft } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system';
@@ -624,4 +624,604 @@ export default function RestaurantScreen() {
             colors={['#6B2B3A', '#8B4B5A']}
             style={styles.headerGradient}
           >
-            <Text style={styles.
+            <Text style={styles.headerTitle}>{t('restaurant.title')}</Text>
+          </LinearGradient>
+          
+          <Svg
+            height={40}
+            width="100%"
+            viewBox="0 0 400 40"
+            style={styles.wave}
+            preserveAspectRatio="none"
+          >
+            <Path
+              d="M0,20 Q100,0 200,15 T400,20 L400,40 L0,40 Z"
+              fill="#FAF6F0"
+            />
+          </Svg>
+        </View>
+
+        <View style={styles.content}>
+          <View style={styles.scanSection}>
+            <Text style={styles.scanTitle}>{t('restaurant.scanMenu')}</Text>
+            <Text style={styles.scanSubtitle}>
+              {t('restaurant.scanInstruction')}
+            </Text>
+
+            <View style={styles.scanButtons}>
+              <TouchableOpacity 
+                style={styles.scanButton}
+                onPress={handleScanCard}
+                disabled={isScanning}
+              >
+                <Camera size={32} color="white" />
+                <Text style={styles.scanButtonText}>
+                  {t('restaurant.takePhoto')}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.scanButton, styles.galleryButton]}
+                onPress={handlePickFromGallery}
+                disabled={isScanning}
+              >
+                <Upload size={32} color={Colors.primary} />
+                <Text style={[styles.scanButtonText, styles.galleryButtonText]}>
+                  {t('restaurant.chooseFromGallery')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {isScanning && (
+              <View style={styles.progressContainer}>
+                <ProgressBar 
+                  progress={scanProgress} 
+                  message={scanMessage}
+                  color={Colors.primary}
+                />
+              </View>
+            )}
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  // Écran de sélection du plat
+  if (step === 'dish') {
+    return (
+      <View style={styles.container}>
+        <View style={styles.headerSection}>
+          <LinearGradient
+            colors={['#6B2B3A', '#8B4B5A']}
+            style={styles.headerGradient}
+          >
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => setStep('scan')}
+            >
+              <ArrowLeft size={24} color="white" />
+            </TouchableOpacity>
+            
+            <Text style={styles.headerTitle}>{t('restaurant.title')}</Text>
+          </LinearGradient>
+          
+          <Svg
+            height={40}
+            width="100%"
+            viewBox="0 0 400 40"
+            style={styles.wave}
+            preserveAspectRatio="none"
+          >
+            <Path
+              d="M0,20 Q100,0 200,15 T400,20 L400,40 L0,40 Z"
+              fill="#FAF6F0"
+            />
+          </Svg>
+        </View>
+
+        <View style={styles.content}>
+          {/* Session info */}
+          {currentSession && (
+            <View style={styles.sessionCard}>
+              <View style={styles.sessionHeader}>
+                <Check size={20} color={Colors.success} />
+                <Text style={styles.sessionTitle}>
+                  {currentSession.restaurant_name}
+                </Text>
+              </View>
+              <Text style={styles.sessionSubtitle}>
+                {t('restaurant.winesDetected', { count: currentSession.extracted_wines?.length || 0 })}
+              </Text>
+            </View>
+          )}
+
+          {/* Dish input */}
+          <View style={styles.dishSection}>
+            <Text style={styles.dishTitle}>{t('restaurant.whatAreYouEating')}</Text>
+            
+            <Input
+              placeholder={t('restaurant.describeDish')}
+              value={dishDescription}
+              onChangeText={setDishDescription}
+              multiline
+              numberOfLines={2}
+              maxLength={200}
+            />
+          </View>
+
+          {/* Budget section */}
+          <View style={styles.optionsSection}>
+            <TouchableOpacity 
+              style={styles.sectionHeader}
+              onPress={() => setShowBudgetOptions(!showBudgetOptions)}
+            >
+              <View>
+                <Text style={styles.sectionTitle}>{t('restaurant.budgetPerBottle')}</Text>
+                <Text style={styles.sectionSubtitle}>
+                  {selectedBudget || t('restaurant.optional')}
+                </Text>
+              </View>
+              <View style={styles.chevronContainer}>
+                <Text style={styles.chevron}>
+                  {showBudgetOptions ? '−' : '+'}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            
+            {showBudgetOptions && (
+              <View style={styles.budgetGrid}>
+                {BUDGET_OPTIONS.map(budget => (
+                  <TouchableOpacity
+                    key={budget}
+                    style={[
+                      styles.budgetPill,
+                      selectedBudget === budget && styles.budgetPillActive
+                    ]}
+                    onPress={() => {
+                      setSelectedBudget(selectedBudget === budget ? null : budget);
+                      setShowBudgetOptions(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.budgetText,
+                      selectedBudget === budget && styles.budgetTextActive
+                    ]}>
+                      {budget}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
+
+          {/* Wine type section */}
+          <View style={styles.optionsSection}>
+            <TouchableOpacity 
+              style={styles.sectionHeader}
+              onPress={() => setShowWineTypeOptions(!showWineTypeOptions)}
+            >
+              <View>
+                <Text style={styles.sectionTitle}>{t('restaurant.wineTypePreferred')}</Text>
+                <Text style={styles.sectionSubtitle}>
+                  {selectedWineType ? WINE_TYPES.find(type => type.id === selectedWineType)?.label : t('restaurant.optional')}
+                </Text>
+              </View>
+              <View style={styles.chevronContainer}>
+                <Text style={styles.chevron}>
+                  {showWineTypeOptions ? '−' : '+'}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            
+            {showWineTypeOptions && (
+              <View style={styles.wineTypeGrid}>
+                {WINE_TYPES.map(type => (
+                  <TouchableOpacity
+                    key={type.id}
+                    style={[
+                      styles.wineTypePill,
+                      selectedWineType === type.id && styles.wineTypePillActive,
+                      selectedWineType === type.id && { backgroundColor: type.color }
+                    ]}
+                    onPress={() => {
+                      setSelectedWineType(selectedWineType === type.id ? null : type.id);
+                      setShowWineTypeOptions(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.wineTypeText,
+                      selectedWineType === type.id && styles.wineTypeTextActive
+                    ]}>
+                      {type.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
+
+          {/* Get recommendations button */}
+          <TouchableOpacity 
+            style={styles.ctaButton}
+            onPress={handleGetRecommendations}
+            disabled={isGettingRecommendations}
+          >
+            <Text style={styles.ctaText}>
+              {isGettingRecommendations ? t('restaurant.analyzing') : t('restaurant.getMyRecommendations')}
+            </Text>
+          </TouchableOpacity>
+
+          {isGettingRecommendations && (
+            <View style={styles.progressContainer}>
+              <ProgressBar 
+                progress={recoProgress} 
+                message={recoMessage}
+                color={Colors.primary}
+              />
+            </View>
+          )}
+        </View>
+      </View>
+    );
+  }
+
+  // Écran de résultats
+  if (step === 'results') {
+    return (
+      <View style={styles.container}>
+        <View style={styles.headerSection}>
+          <LinearGradient
+            colors={['#6B2B3A', '#8B4B5A']}
+            style={styles.headerGradient}
+          >
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => setStep('dish')}
+            >
+              <ArrowLeft size={24} color="white" />
+            </TouchableOpacity>
+            
+            <Text style={styles.headerTitle}>{t('restaurant.recommendations')}</Text>
+          </LinearGradient>
+          
+          <Svg
+            height={40}
+            width="100%"
+            viewBox="0 0 400 40"
+            style={styles.wave}
+            preserveAspectRatio="none"
+          >
+            <Path
+              d="M0,20 Q100,0 200,15 T400,20 L400,40 L0,40 Z"
+              fill="#FAF6F0"
+            />
+          </Svg>
+        </View>
+
+        <View style={styles.content}>
+          <View style={styles.resultsCard}>
+            <Text style={styles.resultsTitle}>
+              {t('restaurant.forDishAt', { 
+                dish: dishDescription, 
+                restaurant: currentSession?.restaurant_name || 'Restaurant' 
+              })}
+            </Text>
+            
+            <TouchableOpacity 
+              style={styles.viewButton}
+              onPress={handleViewResults}
+            >
+              <Text style={styles.viewButtonText}>
+                {t('restaurant.viewRecommendations', { count: recommendations.length })}
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.newScanButton}
+              onPress={handleNewScan}
+            >
+              <RotateCcw size={20} color={Colors.primary} />
+              <Text style={styles.newScanText}>
+                {t('restaurant.newScan')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  return null;
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FAF6F0',
+  },
+  headerSection: {
+    position: 'relative',
+  },
+  headerGradient: {
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    paddingBottom: 50,
+    position: 'relative',
+  },
+  headerTitle: {
+    fontSize: 36,
+    fontWeight: '700',
+    color: 'white',
+    textAlign: 'center',
+    letterSpacing: 1.5,
+    marginTop: 50,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  wave: {
+    position: 'absolute',
+    bottom: -1,
+    left: 0,
+    right: 0,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 20,
+  },
+  scanSection: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  scanTitle: {
+    fontSize: Typography.sizes.xl,
+    fontWeight: Typography.weights.bold,
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  scanSubtitle: {
+    fontSize: Typography.sizes.base,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: Typography.sizes.base * Typography.lineHeights.relaxed,
+    marginBottom: 40,
+    paddingHorizontal: 20,
+  },
+  scanButtons: {
+    width: '100%',
+    gap: 16,
+  },
+  scanButton: {
+    backgroundColor: Colors.primary,
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  galleryButton: {
+    backgroundColor: 'white',
+    borderWidth: 2,
+    borderColor: Colors.primary,
+  },
+  scanButtonText: {
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.semibold,
+    color: 'white',
+    marginLeft: 12,
+  },
+  galleryButtonText: {
+    color: Colors.primary,
+  },
+  progressContainer: {
+    marginTop: 32,
+    width: '100%',
+  },
+  sessionCard: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 5,
+  },
+  sessionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  sessionTitle: {
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.bold,
+    color: Colors.textPrimary,
+    marginLeft: 12,
+  },
+  sessionSubtitle: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.textSecondary,
+  },
+  dishSection: {
+    marginBottom: 24,
+  },
+  dishTitle: {
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.bold,
+    color: Colors.textPrimary,
+    marginBottom: 16,
+  },
+  optionsSection: {
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  sectionTitle: {
+    fontSize: Typography.sizes.base,
+    fontWeight: Typography.weights.semibold,
+    color: Colors.textPrimary,
+  },
+  sectionSubtitle: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.textSecondary,
+    marginTop: 2,
+  },
+  chevronContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.softGray,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  chevron: {
+    fontSize: 20,
+    color: Colors.primary,
+    fontWeight: Typography.weights.semibold,
+  },
+  budgetGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  budgetPill: {
+    backgroundColor: 'white',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    minWidth: '45%',
+    alignItems: 'center',
+  },
+  budgetPillActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  budgetText: {
+    fontSize: Typography.sizes.base,
+    color: Colors.textPrimary,
+  },
+  budgetTextActive: {
+    color: 'white',
+    fontWeight: Typography.weights.semibold,
+  },
+  wineTypeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    justifyContent: 'space-between',
+  },
+  wineTypePill: {
+    backgroundColor: 'white',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    width: '48%',
+    alignItems: 'center',
+  },
+  wineTypePillActive: {
+    borderColor: 'transparent',
+  },
+  wineTypeText: {
+    fontSize: Typography.sizes.base,
+    color: Colors.textPrimary,
+  },
+  wineTypeTextActive: {
+    color: 'white',
+    fontWeight: Typography.weights.semibold,
+  },
+  ctaButton: {
+    backgroundColor: Colors.primary,
+    borderRadius: 26,
+    paddingVertical: 18,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  ctaText: {
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.semibold,
+    color: 'white',
+  },
+  resultsCard: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 5,
+  },
+  resultsTitle: {
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.bold,
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  viewButton: {
+    backgroundColor: Colors.primary,
+    borderRadius: 26,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    marginBottom: 16,
+    width: '100%',
+    alignItems: 'center',
+  },
+  viewButtonText: {
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.semibold,
+    color: 'white',
+  },
+  newScanButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  newScanText: {
+    fontSize: Typography.sizes.base,
+    color: Colors.primary,
+    marginLeft: 8,
+    fontWeight: Typography.weights.medium,
+  },
+});
