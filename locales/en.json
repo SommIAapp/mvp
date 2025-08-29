@@ -94,11 +94,34 @@
       "noWines": "No recommendations available",
       "describeDish": "Please describe your dish"
     }
+    "errors": {
+      "cameraPermission": "Camera access is required to take a photo of your dish.",
+      "galleryPermission": "Gallery access is required to choose a photo of the wine menu.",
+      "imageProcessing": "Unable to process the image. Please try again.",
+      "noWines": "No recommendations available",
+      "describeDish": "Please describe your dish"
+    }
   },
   "history": {
     "title": "History",
     "empty": "No recommendations",
     "emptyDescription": "Your recommendations will appear here after your first search",
+    "loadingHistory": "Loading history...",
+    "restaurant": "Restaurant"
+  },
+  "recommendations": {
+    "title": "My recommendations",
+    "forDish": "For {{dish}}",
+    "loading": "Recommendations in progress...",
+    "notFound": "No recommendations found",
+    "retry": "Retry",
+    "swipeHint": "← Swipe to see more →",
+    "region": "REGION",
+    "price": "PRICE",
+    "type": "TYPE",
+    "economical": "Economical",
+    "superior": "Superior",
+    "premium": "Premium"
     "loadingHistory": "Loading history...",
     "restaurant": "Restaurant"
   },
