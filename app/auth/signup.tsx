@@ -143,6 +143,13 @@ export default function SignUpScreen() {
             >
               Conditions d'Utilisation
             </Text>
+            {' '}et notre{' '}
+            <Text 
+              style={styles.termsLink}
+              onPress={() => router.push('/privacy-policy')}
+            >
+              Politique de Confidentialité
+            </Text>
           </Text>
         </View>
 
