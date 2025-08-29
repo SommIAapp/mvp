@@ -6,7 +6,7 @@ import {
   ScrollView, 
   TouchableOpacity,
   Alert,
-  Linking,
+  Linking
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { User, Crown, Calendar, ChartBar as BarChart3, LogOut, Wine, FileText, Shield, Mail } from 'lucide-react-native';
@@ -152,6 +152,16 @@ export default function ProfileScreen() {
             fill="#FAF6F0"
           />
         </Svg>
+
+        {/* Bouton pour gérer l'abonnement Apple */}
+        <TouchableOpacity 
+          style={styles.manageSubscriptionButton}
+          onPress={() => Linking.openURL('https://apps.apple.com/account/subscriptions')}
+        >
+          <Text style={styles.manageSubscriptionText}>
+            Gérer mon abonnement Apple
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.content}>
@@ -186,15 +196,18 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          {/* Bouton pour gérer l'abonnement Apple */}
-          <TouchableOpacity 
-            style={styles.manageSubscriptionButton}
-            onPress={() => Linking.openURL('https://apps.apple.com/account/subscriptions')}
-          >
-            <Text style={styles.manageSubscriptionText}>
-              Gérer mon abonnement Apple
-            </Text>
-          </TouchableOpacity>
+          {!isPremium() && (
+            <Button
+              title="Passer à Premium"
+              onPress={() => router.push({
+                pathname: '/subscription',
+                params: { reason: 'premium_upgrade' }
+              })}
+              variant="primary"
+              size="medium"
+              fullWidth
+            />
+          )}
         </View>
 
         {/* Stats Section */}
@@ -369,30 +382,6 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     marginLeft: 12,
   },
-
-  {!isPremium() && (
-    <Button
-      title="Passer à Premium"
-      onPress={() => router.push({
-        pathname: '/subscription',
-        params: { reason: 'premium_upgrade' }
-      })}
-      variant="primary"
-      size="medium"
-      fullWidth
-    />
-  )}
-
-  {/* Bouton pour gérer l'abonnement Apple */}
-  <TouchableOpacity 
-    style={styles.manageSubscriptionButton}
-    onPress={() => Linking.openURL('https://apps.apple.com/account/subscriptions')}
-  >
-    <Text style={styles.manageSubscriptionText}>
-      Gérer mon abonnement Apple
-    </Text>
-  </TouchableOpacity>
-</View>
   statsSection: {
     marginBottom: 32,
   },
@@ -444,18 +433,6 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.base,
     color: Colors.textPrimary,
     marginLeft: 16,
-  },
-  renewalInfo: {
-    backgroundColor: '#FFF8F0',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  renewalText: {
-    fontSize: Typography.sizes.xs,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: Typography.sizes.xs * Typography.lineHeights.relaxed,
   },
   manageSubscriptionButton: {
     marginTop: 12,
