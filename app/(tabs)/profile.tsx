@@ -6,9 +6,10 @@ import {
   ScrollView, 
   TouchableOpacity,
   Alert,
+  Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { User, Crown, Calendar, ChartBar as BarChart3, LogOut, Wine, FileText, Shield } from 'lucide-react-native';
+import { User, Crown, Calendar, ChartBar as BarChart3, LogOut, Wine, FileText, Shield, Mail } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
 import { Colors } from '@/constants/Colors';
@@ -238,6 +239,14 @@ export default function ProfileScreen() {
           >
             <Shield size={24} color={Colors.textSecondary} />
             <Text style={styles.menuText}>Politique de Confidentialité</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.menuItem}
+            onPress={() => Linking.openURL('mailto:sommiaapp@gmail.com?subject=Support SOMMIA')}
+          >
+            <Mail size={24} color={Colors.textSecondary} />
+            <Text style={styles.menuText}>Contacter le Support</Text>
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.menuItem} onPress={handleSignOut}>
