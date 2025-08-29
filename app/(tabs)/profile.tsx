@@ -186,18 +186,15 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          {!isPremium() && (
-            <Button
-              title="Passer à Premium"
-              onPress={() => router.push({
-                pathname: '/subscription',
-                params: { reason: 'premium_upgrade' }
-              })}
-              variant="primary"
-              size="medium"
-              fullWidth
-            />
-          )}
+          {/* Bouton pour gérer l'abonnement Apple */}
+          <TouchableOpacity 
+            style={styles.manageSubscriptionButton}
+            onPress={() => Linking.openURL('https://apps.apple.com/account/subscriptions')}
+          >
+            <Text style={styles.manageSubscriptionText}>
+              Gérer mon abonnement Apple
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Stats Section */}
@@ -423,5 +420,27 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.base,
     color: Colors.textPrimary,
     marginLeft: 16,
+  },
+  renewalInfo: {
+    backgroundColor: '#FFF8F0',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  renewalText: {
+    fontSize: Typography.sizes.xs,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: Typography.sizes.xs * Typography.lineHeights.relaxed,
+  },
+  manageSubscriptionButton: {
+    marginTop: 12,
+    paddingVertical: 8,
+  },
+  manageSubscriptionText: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.primary,
+    textAlign: 'center',
+    textDecorationLine: 'underline',
   },
 });
