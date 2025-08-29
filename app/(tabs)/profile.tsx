@@ -11,6 +11,7 @@ import {
 import { useRouter } from 'expo-router';
 import { User, Crown, Calendar, ChartBar as BarChart3, LogOut, Wine, FileText, Shield, Mail } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from '@/hooks/useTranslation';
 import Svg, { Path } from 'react-native-svg';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
@@ -22,6 +23,7 @@ import { supabase } from '@/lib/supabase';
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { user, profile, loading: authLoading, signOut, getTrialDaysRemaining } = useAuth();
   const { subscription, loading: subscriptionLoading, isPremium } = useSubscription();
   const [totalRecommendationsCount, setTotalRecommendationsCount] = useState(0);
@@ -69,12 +71,12 @@ export default function ProfileScreen() {
 
   const handleSignOut = async () => {
     Alert.alert(
-      'Déconnexion',
-      'Es-tu sûr de vouloir te déconnecter ?',
+      t('profile.signOut'),
+      t('profile.signOutConfirm'),
       [
-        { text: 'Annuler', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         { 
-          text: 'Déconnexion', 
+          text: t('profile.signOut'), 
           style: 'destructive',
           onPress: async () => {
             await signOut();
@@ -86,30 +88,30 @@ export default function ProfileScreen() {
   };
 
   const getSubscriptionStatus = () => {
-    if (subscriptionLoading) return { text: 'Chargement...', color: Colors.textSecondary };
+    if (subscriptionLoading) return { text: t('common.loading'), color: Colors.textSecondary };
     
     if (isPremium()) {
-      return { text: 'Premium', color: Colors.secondary };
+      return { text: t('profile.premium'), color: Colors.secondary };
     }
     
     if (profile?.subscription_plan === 'trial') {
-      return { text: 'Essai', color: Colors.primary };
+      return { text: t('profile.trial'), color: Colors.primary };
     }
     
-    return { text: 'Essai', color: Colors.primary };
+    return { text: t('profile.trial'), color: Colors.primary };
   };
 
   const getUsageDisplay = () => {
-    if (!profile) return 'Chargement...';
+    if (!profile) return t('common.loading');
     
     if (isPremium()) {
-      return 'Accès illimité ✨';
+      return t('profile.unlimitedAccess');
     }
     
     if (profile.subscription_plan === 'trial') {
       const daysRemaining = getTrialDaysRemaining();
       const dailyUsed = profile.daily_count || 0;
-      return `Essai : ${daysRemaining} jours restants • ${dailyUsed}/1 aujourd'hui`;
+      return t('profile.trialRemaining', { days: daysRemaining, used: dailyUsed, limit: 1 });
     }
     
     if (profile.subscription_plan === 'free') {
@@ -189,7 +191,7 @@ export default function ProfileScreen() {
 
           {!isPremium() && (
             <Button
-              title="Passer à Premium"
+              title={t('profile.upgradeToPremium')}
               onPress={() => router.push({
                 pathname: '/subscription',
                 params: { reason: 'premium_upgrade' }
@@ -206,13 +208,13 @@ export default function ProfileScreen() {
             onPress={() => Linking.openURL('https://apps.apple.com/account/subscriptions')}
           >
             <Text style={styles.manageSubscriptionText}>
-              Gérer mon abonnement Apple
+              {t('profile.manageAppleSubscription')}
             </Text>
           </TouchableOpacity>
 
         {/* Stats Section */}
         <View style={styles.statsSection}>
-          <Text style={styles.sectionTitle}>Statistiques</Text>
+          <Text style={styles.sectionTitle}>{t('profile.statistics')}</Text>
           
           <View style={styles.statsGrid}>
             <View style={styles.statCard}>
@@ -220,7 +222,7 @@ export default function ProfileScreen() {
               <Text style={styles.statValue}>
                 {profile?.daily_count || 0}
               </Text>
-              <Text style={styles.statLabel}>Aujourd'hui</Text>
+              <Text style={styles.statLabel}>{t('profile.today')}</Text>
             </View>
             
             <View style={styles.statCard}>
@@ -228,7 +230,7 @@ export default function ProfileScreen() {
               <Text style={styles.statValue}>
                 {totalRecommendationsCount}
               </Text>
-              <Text style={styles.statLabel}>Découvertes</Text>
+              <Text style={styles.statLabel}>{t('profile.discoveries')}</Text>
             </View>
           </View>
         </View>
@@ -240,7 +242,7 @@ export default function ProfileScreen() {
             onPress={() => router.push('/terms-of-service')}
           >
             <FileText size={24} color={Colors.textSecondary} />
-            <Text style={styles.menuText}>Conditions d'Utilisation</Text>
+            <Text style={styles.menuText}>{t('profile.termsOfService')}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -248,7 +250,7 @@ export default function ProfileScreen() {
             onPress={() => router.push('/privacy-policy')}
           >
             <Shield size={24} color={Colors.textSecondary} />
-            <Text style={styles.menuText}>Politique de Confidentialité</Text>
+            <Text style={styles.menuText}>{t('profile.privacyPolicy')}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -256,13 +258,13 @@ export default function ProfileScreen() {
             onPress={() => Linking.openURL('mailto:sommiaapp@gmail.com?subject=Support SOMMIA')}
           >
             <Mail size={24} color={Colors.textSecondary} />
-            <Text style={styles.menuText}>Contacter le Support</Text>
+            <Text style={styles.menuText}>{t('profile.contactSupport')}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.menuItem} onPress={handleSignOut}>
             <LogOut size={24} color={Colors.error} />
             <Text style={[styles.menuText, { color: Colors.error }]}>
-              Déconnexion
+              {t('profile.signOut')}
             </Text>
           </TouchableOpacity>
         </View>

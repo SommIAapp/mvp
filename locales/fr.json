@@ -1,0 +1,71 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "retry": "Réessayer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "healthWarning": "L'abus d'alcool est dangereux pour la santé, à consommer avec modération"
+  },
+  "welcome": {
+    "title": "Bienvenue sur",
+    "subtitle": "SOMMIA",
+    "description": "Découvre le vin parfait pour chaque plat",
+    "signIn": "J'ai déjà un compte",
+    "signUp": "Créer un compte"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Mot de passe",
+    "signIn": "Connexion",
+    "signUp": "Créer un compte",
+    "forgotPassword": "Mot de passe oublié ?",
+    "emailPlaceholder": "ton.email@example.com",
+    "passwordPlaceholder": "Ton mot de passe",
+    "alreadyHaveAccount": "Tu as déjà un compte ?",
+    "noAccount": "Pas encore de compte ?"
+  },
+  "home": {
+    "title": "SOMMIA",
+    "inputPlaceholder": "Décris ton plat...",
+    "example": "Ex: Boeuf bourguignon, Saumon grillé, Pizza margherita...",
+    "getRecommendations": "Obtenir des recommandations",
+    "selectBudget": "Sélectionner un budget",
+    "scanMenu": "Scanner une carte",
+    "takePhoto": "Prendre une photo"
+  },
+  "profile": {
+    "title": "SOMMIA",
+    "statistics": "Statistiques",
+    "today": "Aujourd'hui",
+    "discoveries": "Découvertes",
+    "trial": "Essai",
+    "premium": "Premium",
+    "trialRemaining": "Essai : {{days}} jours restants • {{used}}/{{limit}} aujourd'hui",
+    "unlimitedAccess": "Accès illimité ✨",
+    "upgradeToPremium": "Passer à Premium",
+    "manageAppleSubscription": "Gérer mon abonnement Apple",
+    "termsOfService": "Conditions d'Utilisation",
+    "privacyPolicy": "Politique de Confidentialité",
+    "contactSupport": "Contacter le Support",
+    "signOut": "Déconnexion",
+    "signOutConfirm": "Es-tu sûr de vouloir te déconnecter ?"
+  },
+  "subscription": {
+    "title": "SOMMIA Premium",
+    "subtitle": "Accès illimité à ton sommelier personnel",
+    "features": {
+      "unlimited": "Recommandations illimitées",
+      "history": "Historique complet",
+      "photoAnalysis": "Analyse photo avancée",
+      "restaurantMode": "Mode restaurant premium"
+    },
+    "pricing": {
+      "monthly": "{{price}}/mois",
+      "yearly": "{{price}}/an",
+      "trialDays": "{{days}} jours d'essai gratuit"
+    },
+    "startTrial": "Commencer l'essai gratuit",
+    "subscribe": "S'abonner"
+  }
+}

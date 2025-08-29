@@ -1,0 +1,71 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "healthWarning": "Drink responsibly"
+  },
+  "welcome": {
+    "title": "Welcome to",
+    "subtitle": "SOMMIA",
+    "description": "Find the perfect wine for every dish",
+    "signIn": "I already have an account",
+    "signUp": "Create an account"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "forgotPassword": "Forgot password?",
+    "emailPlaceholder": "your.email@example.com",
+    "passwordPlaceholder": "Your password",
+    "alreadyHaveAccount": "Already have an account?",
+    "noAccount": "Don't have an account?"
+  },
+  "home": {
+    "title": "SOMMIA",
+    "inputPlaceholder": "Describe your dish...",
+    "example": "Ex: Beef stew, Grilled salmon, Margherita pizza...",
+    "getRecommendations": "Get recommendations",
+    "selectBudget": "Select budget",
+    "scanMenu": "Scan menu",
+    "takePhoto": "Take a photo"
+  },
+  "profile": {
+    "title": "SOMMIA",
+    "statistics": "Statistics",
+    "today": "Today",
+    "discoveries": "Discoveries",
+    "trial": "Trial",
+    "premium": "Premium",
+    "trialRemaining": "Trial: {{days}} days left • {{used}}/{{limit}} today",
+    "unlimitedAccess": "Unlimited access ✨",
+    "upgradeToPremium": "Upgrade to Premium",
+    "manageAppleSubscription": "Manage my Apple subscription",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "contactSupport": "Contact Support",
+    "signOut": "Sign Out",
+    "signOutConfirm": "Are you sure you want to sign out?"
+  },
+  "subscription": {
+    "title": "SOMMIA Premium",
+    "subtitle": "Unlimited access to your personal sommelier",
+    "features": {
+      "unlimited": "Unlimited recommendations",
+      "history": "Complete history",
+      "photoAnalysis": "Advanced photo analysis",
+      "restaurantMode": "Premium restaurant mode"
+    },
+    "pricing": {
+      "monthly": "{{price}}/month",
+      "yearly": "{{price}}/year",
+      "trialDays": "{{days}} days free trial"
+    },
+    "startTrial": "Start free trial",
+    "subscribe": "Subscribe"
+  }
+}

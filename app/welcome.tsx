@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, Dimensions, Image } from 'react-nat
 import Svg, { Path } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Sparkles, Clock, Wine } from 'lucide-react-native';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
@@ -12,6 +13,7 @@ const { width, height } = Dimensions.get('window');
 
 export default function WelcomeScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <View style={styles.container}>
@@ -55,7 +57,7 @@ export default function WelcomeScreen() {
 
         <View style={styles.buttonSection}>
           <Button
-            title="Créer un compte"
+            title={t('welcome.signUp')}
             onPress={() => router.push('/auth/signup')}
             variant="primary"
             size="large"
@@ -63,7 +65,7 @@ export default function WelcomeScreen() {
           />
           
           <Button
-            title="Se connecter"
+            title={t('welcome.signIn')}
             onPress={() => router.push('/auth/signin')}
             variant="secondary"
             size="large"
@@ -73,7 +75,7 @@ export default function WelcomeScreen() {
       </View>
 
        <Text style={styles.healthWarning}>
-         L'abus d'alcool est dangereux pour la santé, à consommer avec modération
+         {t('common.healthWarning')}
        </Text>
     </View>
   );
