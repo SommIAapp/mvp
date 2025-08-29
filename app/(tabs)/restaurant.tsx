@@ -12,7 +12,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Camera, ImageIcon, Utensils, DollarSign, Wine } from 'lucide-react-native';
+import { Camera, Image as ImageIcon, Utensils, DollarSign, Wine } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
