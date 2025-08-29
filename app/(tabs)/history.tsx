@@ -13,7 +13,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
-import { useTranslation } from '@/hooks/useTranslation';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useRecommendations } from '@/hooks/useRecommendations';
@@ -41,7 +40,6 @@ type RestaurantRecommendation = {
 
 export default function HistoryScreen() {
   const router = useRouter();
-  const { t } = useTranslation();
   const { user } = useAuth();
   const { getRecommendationHistory } = useRecommendations();
   const { getRestaurantRecommendationHistory } = useRestaurantMode();
@@ -155,7 +153,7 @@ export default function HistoryScreen() {
             colors={['#6B2B3A', '#8B4B5A']}
             style={styles.headerGradient}
           >
-            <Text style={styles.headerTitle}>{t('home.title')}</Text>
+            <Text style={styles.headerTitle}>SOMMIA</Text>
           </LinearGradient>
           
           <Svg
@@ -173,7 +171,7 @@ export default function HistoryScreen() {
         </View>
         
         <View style={styles.loadingContent}>
-          <LoadingSpinner text={t('history.loadingHistory')} />
+          <LoadingSpinner text="Chargement de l'historique..." />
         </View>
       </View>
     );
@@ -187,7 +185,7 @@ export default function HistoryScreen() {
             colors={['#6B2B3A', '#8B4B5A']}
             style={styles.headerGradient}
           >
-            <Text style={styles.headerTitle}>{t('home.title')}</Text>
+            <Text style={styles.headerTitle}>SOMMIA</Text>
           </LinearGradient>
           
           <Svg
@@ -206,9 +204,9 @@ export default function HistoryScreen() {
         
         <View style={styles.emptyContent}>
           <Wine size={64} color="#6B2B3A" strokeWidth={1} />
-          <Text style={styles.emptyTitle}>{t('history.empty')}</Text>
+          <Text style={styles.emptyTitle}>Aucune recommandation</Text>
           <Text style={styles.emptySubtitle}>
-            {t('history.emptyDescription')}
+            Tes recommandations apparaîtront ici après ta première recherche
           </Text>
         </View>
       </View>
@@ -222,7 +220,7 @@ export default function HistoryScreen() {
           colors={['#6B2B3A', '#8B4B5A']}
           style={styles.headerGradient}
         >
-          <Text style={styles.headerTitle}>{t('home.title')}</Text>
+          <Text style={styles.headerTitle}>SOMMIA</Text>
         </LinearGradient>
         
         <Svg
@@ -259,7 +257,7 @@ export default function HistoryScreen() {
                   {item.type === 'restaurant' && (
                     <View style={styles.restaurantBadge}>
                       <Utensils size={12} color={Colors.accent} />
-                      <Text style={styles.restaurantBadgeText}>{t('history.restaurant')}</Text>
+                      <Text style={styles.restaurantBadgeText}>Restaurant</Text>
                     </View>
                   )}
                 </View>

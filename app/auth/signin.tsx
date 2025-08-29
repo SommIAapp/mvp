@@ -4,14 +4,12 @@ import { useRouter } from 'expo-router';
 import { ArrowLeft } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
-import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function SignInScreen() {
   const router = useRouter();
-  const { t } = useTranslation();
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -67,14 +65,13 @@ export default function SignInScreen() {
           size="small"
         />
         <Text style={styles.title}>Connexion</Text>
-        <Text style={styles.title}>{t('auth.signIn')}</Text>
       </View>
 
       <View style={styles.content}>
         <View style={styles.form}>
           <Input
-            label={t('auth.email')}
-            placeholder={t('auth.emailPlaceholder')}
+            label="Email"
+            placeholder="ton@email.com"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -82,8 +79,8 @@ export default function SignInScreen() {
           />
           
           <Input
-            label={t('auth.password')}
-            placeholder={t('auth.passwordPlaceholder')}
+            label="Mot de passe"
+            placeholder="Ton mot de passe"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -91,7 +88,7 @@ export default function SignInScreen() {
           />
           
           <Button
-            title={t('auth.signIn')}
+            title="Se connecter"
             onPress={handleSignIn}
             variant="primary"
             size="large"
@@ -102,12 +99,12 @@ export default function SignInScreen() {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            {t('auth.noAccount')}{' '}
+            Pas encore de compte ?{' '}
             <Text 
               style={styles.link}
               onPress={() => router.push('/auth/signup')}
             >
-              {t('auth.signUp')}
+              Créer un compte
             </Text>
           </Text>
         </View>
