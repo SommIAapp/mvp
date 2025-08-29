@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
+import { useTranslation } from '@/hooks/useTranslation';
 import { sanitizeForLogging } from '@/utils/secureLogging';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
@@ -34,6 +35,7 @@ const WINE_TYPES = [
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { user, profile, loading, canMakeRecommendation, updateUsageCount } = useAuth();
   const { getRecommendations, getRecommendationsFromPhoto } = useRecommendations();
   const [dishDescription, setDishDescription] = useState('');
@@ -71,7 +73,7 @@ export default function HomeScreen() {
     });
     
     if (!dishDescription.trim()) {
-      Alert.alert('Erreur', 'Peux-tu décrire ton plat plus précisément ?');
+      Alert.alert(t('common.error'), 'Peux-tu décrire ton plat plus précisément ?');
       return;
     }
 
@@ -220,7 +222,7 @@ export default function HomeScreen() {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       
       if (status !== 'granted') {
-        Alert.alert('Permission requise', 'L\'accès à la caméra est nécessaire pour prendre une photo de votre plat.');
+        Alert.alert('Permission requise', t('restaurant.errors.cameraPermission'));
         return;
       }
 
@@ -239,7 +241,7 @@ export default function HomeScreen() {
       }
 
       if (!result.assets[0].base64) {
-        Alert.alert('Erreur', 'Impossible de traiter l\'image. Veuillez réessayer.');
+        Alert.alert(t('common.error'), t('restaurant.errors.imageProcessing'));
         return;
       }
 
@@ -319,7 +321,7 @@ export default function HomeScreen() {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       
       if (status !== 'granted') {
-        Alert.alert('Permission requise', 'L\'accès à la galerie est nécessaire pour choisir une photo de votre plat.');
+        Alert.alert('Permission requise', t('restaurant.errors.galleryPermission'));
         return;
       }
 
@@ -338,7 +340,7 @@ export default function HomeScreen() {
       }
 
       if (!result.assets[0].base64) {
-        Alert.alert('Erreur', 'Impossible de traiter l\'image. Veuillez réessayer.');
+        Alert.alert(t('common.error'), t('restaurant.errors.imageProcessing'));
         return;
       }
 
@@ -397,7 +399,7 @@ export default function HomeScreen() {
           style={styles.headerGradient}
         >
           {/* Titre SOMMIA centré */}
-          <Text style={styles.headerTitle}>SOMMIA</Text>
+          <Text style={styles.headerTitle}>{t('home.title')}</Text>
           
           {/* Avatar à droite */}
           <TouchableOpacity 
@@ -428,7 +430,7 @@ export default function HomeScreen() {
         <View style={styles.inputCard}>
           <TextInput
             style={styles.input}
-            placeholder="Décris ton plat ou prends-le en photo"
+            placeholder={t('home.inputPlaceholder')}
             placeholderTextColor="#999"
             value={dishDescription}
             onChangeText={setDishDescription}
@@ -451,9 +453,9 @@ export default function HomeScreen() {
             onPress={() => setShowBudgetOptions(!showBudgetOptions)}
           >
             <View>
-              <Text style={styles.sectionTitle}>Budget par bouteille</Text>
+              <Text style={styles.sectionTitle}>{t('restaurant.budgetPerBottle')}</Text>
               <Text style={styles.sectionSubtitle}>
-                {selectedBudget || 'Optionnel'}
+                {selectedBudget || t('restaurant.optional')}
               </Text>
             </View>
             <View style={styles.chevronContainer}>
@@ -496,9 +498,9 @@ export default function HomeScreen() {
             onPress={() => setShowWineTypeOptions(!showWineTypeOptions)}
           >
             <View>
-              <Text style={styles.sectionTitle}>Type de vin préféré</Text>
+              <Text style={styles.sectionTitle}>{t('restaurant.wineTypePreferred')}</Text>
               <Text style={styles.sectionSubtitle}>
-                {selectedWineType ? WINE_TYPES.find(t => t.id === selectedWineType)?.label : 'Optionnel'}
+                {selectedWineType ? WINE_TYPES.find(type => type.id === selectedWineType)?.label : t('restaurant.optional')}
               </Text>
             </View>
             <View style={styles.chevronContainer}>
@@ -542,7 +544,7 @@ export default function HomeScreen() {
           disabled={recommendationLoading}
         >
           <Text style={styles.ctaText}>
-            {recommendationLoading ? "Recommandation en cours..." : "Obtenir des recommandations"}
+            {recommendationLoading ? t('recommendations.loading') : t('home.getRecommendations')}
           </Text>
         </TouchableOpacity>
       </ScrollView>

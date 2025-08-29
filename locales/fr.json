@@ -67,5 +67,53 @@
     },
     "startTrial": "Commencer l'essai gratuit",
     "subscribe": "S'abonner"
+  },
+  "restaurant": {
+    "title": "Mode Restaurant",
+    "scanMenu": "Scanner la carte des vins",
+    "scanInstruction": "Prends une photo de la carte des vins du restaurant pour obtenir des recommandations personnalisées",
+    "takePhoto": "Prendre une photo",
+    "chooseFromGallery": "Choisir depuis galerie",
+    "analyzing": "Analyse en cours...",
+    "extracting": "Extraction des vins...",
+    "whatAreYouEating": "Que manges-tu ?",
+    "describeDish": "Décris ton plat...",
+    "budgetPerBottle": "Budget par bouteille",
+    "wineTypePreferred": "Type de vin préféré",
+    "optional": "Optionnel",
+    "getMyRecommendations": "Obtenir mes recommandations",
+    "recommendations": "Recommandations",
+    "forDishAt": "Pour {{dish}} chez {{restaurant}}",
+    "viewRecommendations": "Voir les {{count}} recommandations",
+    "winesDetected": "{{count}} vins détectés",
+    "newScan": "Nouveau Scan",
+    "errors": {
+      "cameraPermission": "L'accès à la caméra est nécessaire pour prendre une photo de votre plat.",
+      "galleryPermission": "L'accès à la galerie est nécessaire pour choisir une photo de la carte des vins.",
+      "imageProcessing": "Impossible de traiter l'image. Veuillez réessayer.",
+      "noWines": "Aucune recommandation disponible",
+      "describeDish": "Veuillez décrire votre plat"
+    }
+  },
+  "history": {
+    "title": "Historique",
+    "empty": "Aucune recommandation",
+    "emptyDescription": "Tes recommandations apparaîtront ici après ta première recherche",
+    "loadingHistory": "Chargement de l'historique...",
+    "restaurant": "Restaurant"
+  },
+  "recommendations": {
+    "title": "Mes recommandations",
+    "forDish": "Pour {{dish}}",
+    "loading": "Recommandations en cours...",
+    "notFound": "Aucune recommandation trouvée",
+    "retry": "Réessayer",
+    "swipeHint": "← Swipe pour voir plus →",
+    "region": "RÉGION",
+    "price": "PRIX",
+    "type": "TYPE",
+    "economical": "Économique",
+    "superior": "Supérieur",
+    "premium": "Premium"
   }
 }

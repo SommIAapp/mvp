@@ -7,6 +7,7 @@ import Svg, { Path } from 'react-native-svg';
 import { Video } from 'expo-av';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/Button';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
@@ -20,6 +21,7 @@ type PaywallReason = 'trial_signup' | 'daily_limit' | 'trial_expired' | 'premium
 
 export default function SubscriptionScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { reason = 'trial_signup' } = useLocalSearchParams<{ reason?: PaywallReason }>();
   const { user, profile, loading: authLoading, isTrialExpired, startFreeTrial } = useAuth();
   const { createCheckoutSession, loading: subscriptionLoading, checkoutLoading, cancelCheckout } = useSubscription();
@@ -93,10 +95,10 @@ export default function SubscriptionScreen() {
     switch (reason) {
       case 'trial_signup':
         return {
-          title: 'Découvre l\'accord parfait',
-          subtitle: 'Essai gratuit de 7 jours, puis 2,99€/semaine, 4,99€/mois ou 30€/an',
+          title: t('subscription.title'),
+          subtitle: t('subscription.subtitle'),
           badge: '🎁 7 jours offerts',
-          buttonTitle: 'Commencer mon essai gratuit',
+          buttonTitle: t('subscription.startTrial'),
           onPress: handleStartTrialFlow,
           loading: false,
         };
@@ -104,7 +106,7 @@ export default function SubscriptionScreen() {
       case 'daily_limit':
         return {
           title: 'Limite quotidienne atteinte',
-          buttonTitle: 'Passer à Premium',
+          buttonTitle: t('profile.upgradeToPremium'),
           onPress: () => handleBuyPremium(premiumProduct?.priceId || ''),
           loading: false,
         };
@@ -113,25 +115,25 @@ export default function SubscriptionScreen() {
         return {
           title: 'Essai terminé !',
           subtitle: 'Continue avec Premium pour des recommandations illimitées',
-          buttonTitle: 'Passer à Premium',
+          buttonTitle: t('profile.upgradeToPremium'),
           onPress: () => handleBuyPremium(premiumProduct?.priceId || ''),
           loading: false,
         };
 
       case 'premium_upgrade':
         return {
-          title: 'Passe à Premium',
-          buttonTitle: 'Passer à Premium',
+          title: t('subscription.title'),
+          buttonTitle: t('profile.upgradeToPremium'),
           onPress: () => handleBuyPremium(premiumProduct?.priceId || ''),
           loading: false,
         };
 
       default:
         return {
-          title: 'Découvre l\'accord parfait',
-          subtitle: 'Essai gratuit de 7 jours, puis 4,99€/mois ou 30€/an',
+          title: t('subscription.title'),
+          subtitle: t('subscription.subtitle'),
           badge: '🎁 7 jours offerts',
-          buttonTitle: 'Commencer mon essai gratuit',
+          buttonTitle: t('subscription.startTrial'),
           onPress: handleStartTrialFlow,
           loading: false,
         };
@@ -254,7 +256,7 @@ export default function SubscriptionScreen() {
                 <ArrowLeft size={24} color="white" />
               </TouchableOpacity>
               
-              <Text style={styles.headerTitle}>SOMMIA</Text>
+              <Text style={styles.headerTitle}>{t('home.title')}</Text>
             </LinearGradient>
             
             <Svg
@@ -346,7 +348,7 @@ export default function SubscriptionScreen() {
             </View>
 
             <Button
-              title="Passer à Premium"
+              title={t('profile.upgradeToPremium')}
               onPress={() => {
                 const priceId = selectedPlan === 'weekly' ? weeklyProduct?.priceId :
                                selectedPlan === 'monthly' ? premiumProduct?.priceId :
@@ -360,7 +362,7 @@ export default function SubscriptionScreen() {
             />
 
             <Text style={styles.healthWarning}>
-              L'abus d'alcool est dangereux pour la santé, à consommer avec modération
+              {t('common.healthWarning')}
             </Text>
           </View>
         </>
@@ -384,7 +386,7 @@ export default function SubscriptionScreen() {
 
             <View style={styles.buttonSection}>
               <Button
-                title={(loading || contentConfig.loading) ? "Chargement..." : "Commencer"}
+                title={(loading || contentConfig.loading) ? t('common.loading') : "Commencer"}
                 onPress={contentConfig.onPress}
                 variant="primary"
                 size="large"

@@ -67,5 +67,53 @@
     },
     "startTrial": "Start free trial",
     "subscribe": "Subscribe"
+  },
+  "restaurant": {
+    "title": "Restaurant Mode",
+    "scanMenu": "Scan wine menu",
+    "scanInstruction": "Take a photo of the restaurant's wine menu to get personalized recommendations",
+    "takePhoto": "Take a photo",
+    "chooseFromGallery": "Choose from gallery",
+    "analyzing": "Analyzing...",
+    "extracting": "Extracting wines...",
+    "whatAreYouEating": "What are you eating?",
+    "describeDish": "Describe your dish...",
+    "budgetPerBottle": "Budget per bottle",
+    "wineTypePreferred": "Preferred wine type",
+    "optional": "Optional",
+    "getMyRecommendations": "Get my recommendations",
+    "recommendations": "Recommendations",
+    "forDishAt": "For {{dish}} at {{restaurant}}",
+    "viewRecommendations": "View {{count}} recommendations",
+    "winesDetected": "{{count}} wines detected",
+    "newScan": "New Scan",
+    "errors": {
+      "cameraPermission": "Camera access is required to take a photo of your dish.",
+      "galleryPermission": "Gallery access is required to choose a photo of the wine menu.",
+      "imageProcessing": "Unable to process the image. Please try again.",
+      "noWines": "No recommendations available",
+      "describeDish": "Please describe your dish"
+    }
+  },
+  "history": {
+    "title": "History",
+    "empty": "No recommendations",
+    "emptyDescription": "Your recommendations will appear here after your first search",
+    "loadingHistory": "Loading history...",
+    "restaurant": "Restaurant"
+  },
+  "recommendations": {
+    "title": "My recommendations",
+    "forDish": "For {{dish}}",
+    "loading": "Recommendations in progress...",
+    "notFound": "No recommendations found",
+    "retry": "Retry",
+    "swipeHint": "← Swipe to see more →",
+    "region": "REGION",
+    "price": "PRICE",
+    "type": "TYPE",
+    "economical": "Economical",
+    "superior": "Superior",
+    "premium": "Premium"
   }
 }

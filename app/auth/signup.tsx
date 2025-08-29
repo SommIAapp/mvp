@@ -4,12 +4,14 @@ import { useRouter } from 'expo-router';
 import { ArrowLeft } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function SignUpScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { signUp } = useAuth();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -96,6 +98,7 @@ export default function SignUpScreen() {
           size="small"
         />
         <Text style={styles.title}>Créer un compte</Text>
+        <Text style={styles.title}>{t('auth.signUp')}</Text>
       </View>
 
       <View style={styles.content}>
@@ -109,8 +112,8 @@ export default function SignUpScreen() {
           />
           
           <Input
-            label="Email"
-            placeholder="ton@email.com"
+            label={t('auth.email')}
+            placeholder={t('auth.emailPlaceholder')}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -118,7 +121,7 @@ export default function SignUpScreen() {
           />
           
           <Input
-            label="Mot de passe"
+            label={t('auth.password')}
             placeholder="Minimum 8 caractères"
             value={password}
             onChangeText={setPassword}
@@ -127,7 +130,7 @@ export default function SignUpScreen() {
           />
           
           <Button
-            title="Créer mon compte"
+            title={t('auth.signUp')}
             onPress={handleSignUp}
             variant="primary"
             size="large"
@@ -155,12 +158,12 @@ export default function SignUpScreen() {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            Déjà un compte ?{' '}
+            {t('auth.alreadyHaveAccount')}{' '}
             <Text 
               style={styles.link}
               onPress={() => router.push('/auth/signin')}
             >
-              Se connecter
+              {t('auth.signIn')}
             </Text>
           </Text>
         </View>
