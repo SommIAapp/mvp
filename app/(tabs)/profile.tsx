@@ -369,6 +369,30 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     marginLeft: 12,
   },
+
+  {!isPremium() && (
+    <Button
+      title="Passer à Premium"
+      onPress={() => router.push({
+        pathname: '/subscription',
+        params: { reason: 'premium_upgrade' }
+      })}
+      variant="primary"
+      size="medium"
+      fullWidth
+    />
+  )}
+
+  {/* Bouton pour gérer l'abonnement Apple */}
+  <TouchableOpacity 
+    style={styles.manageSubscriptionButton}
+    onPress={() => Linking.openURL('https://apps.apple.com/account/subscriptions')}
+  >
+    <Text style={styles.manageSubscriptionText}>
+      Gérer mon abonnement Apple
+    </Text>
+  </TouchableOpacity>
+</View>
   statsSection: {
     marginBottom: 32,
   },
