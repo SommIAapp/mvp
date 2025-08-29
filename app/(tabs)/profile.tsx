@@ -153,15 +153,6 @@ export default function ProfileScreen() {
           />
         </Svg>
 
-        {/* Bouton pour gérer l'abonnement Apple */}
-        <TouchableOpacity 
-          style={styles.manageSubscriptionButton}
-          onPress={() => Linking.openURL('https://apps.apple.com/account/subscriptions')}
-        >
-          <Text style={styles.manageSubscriptionText}>
-            Gérer mon abonnement Apple
-          </Text>
-        </TouchableOpacity>
       </View>
 
       <View style={styles.content}>
@@ -209,6 +200,15 @@ export default function ProfileScreen() {
             />
           )}
         </View>
+          {/* Bouton pour gérer l'abonnement Apple */}
+          <TouchableOpacity 
+            style={styles.manageSubscriptionButton}
+            onPress={() => Linking.openURL('https://apps.apple.com/account/subscriptions')}
+          >
+            <Text style={styles.manageSubscriptionText}>
+              Gérer mon abonnement Apple
+            </Text>
+          </TouchableOpacity>
 
         {/* Stats Section */}
         <View style={styles.statsSection}>
