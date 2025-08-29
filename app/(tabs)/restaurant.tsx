@@ -331,6 +331,26 @@ export default function RecommendationsScreen() {
           </View>
 
           {/* Bouteille centrale */}
+          <View style={styles.centerBottleContainer}>
+            {getPriceBadge(wine, recommendations) && (
+              <View style={[
+                styles.priceBadge,
+                styles.priceBadgeCenter,
+                { backgroundColor: getPriceBadge(wine, recommendations).color }
+              ]}>
+                <Text style={styles.priceBadgeText}>
+                  {getPriceBadge(wine, recommendations).text}
+                </Text>
+              </View>
+            )}
+            <Image
+              source={getWineImage(getWineColor(wine))}
+              style={styles.centerBottle}
+              resizeMode="contain"
+            />
+          </View>
+
+          {/* Bouteille droite */}
           <View style={styles.sideBottleContainer}>
             {getPriceBadge(nextWineData, recommendations) && (
               <View style={[
@@ -345,12 +365,11 @@ export default function RecommendationsScreen() {
             <Image
               source={getWineImage(getWineColor(nextWineData))}
               style={styles.sideBottle}
-          <View style={styles.centerBottleContainer}>
-            {getPriceBadge(wine, recommendations) && (
-              <View style={[
-                styles.priceBadge,
-                styles.priceBadgeCenter,
-                { backgroundColor: getPriceBadge(wine, recommendations).color }
-              ]}>
-                <Text style={styles.priceBadgeText}>
-                  {getPriceBadge(wine, recommendations).text}
+              resizeMode="contain"
+            />
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+}
