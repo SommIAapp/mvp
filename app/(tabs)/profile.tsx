@@ -8,7 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { User, Crown, Calendar, ChartBar as BarChart3, LogOut, Wine } from 'lucide-react-native';
+import { User, Crown, Calendar, ChartBar as BarChart3, LogOut, Wine, Settings } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
 import { Colors } from '@/constants/Colors';
@@ -224,6 +224,14 @@ export default function ProfileScreen() {
 
         {/* Menu Section */}
         <View style={styles.menuSection}>
+          <TouchableOpacity 
+            style={styles.menuItem}
+            onPress={() => router.push('/terms-of-service')}
+          >
+            <Settings size={24} color={Colors.textSecondary} />
+            <Text style={styles.menuText}>Conditions d'Utilisation</Text>
+          </TouchableOpacity>
+          
           <TouchableOpacity 
             style={styles.menuItem}
             onPress={() => router.push('/terms-of-service')}
