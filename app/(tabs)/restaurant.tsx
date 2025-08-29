@@ -625,9 +625,285 @@ export default function RestaurantScreen() {
             style={styles.headerGradient}
           >
             <Text style={styles.headerTitle}>
-              {t('restaurant.scanCard')}
+          <Text style={styles.headerTitle}>
+            {t('restaurant.title')}
+          </LinearGradient>
+        </View>
+        
+        <Svg
+          height={40}
+          width="100%"
+          viewBox="0 0 400 40"
+          style={styles.wave}
+          preserveAspectRatio="none"
+        >
+          <Path
+            d="M0,20 Q100,0 200,15 T400,20 L400,40 L0,40 Z"
+            fill="#FAF6F0"
+          />
+        </Svg>
+      </View>
+
+      <View style={styles.content}>
+        {isScanning ? (
+          <View style={styles.scanningContainer}>
+            <ProgressBar 
+              progress={scanProgress} 
+              message={scanMessage}
+              color={Colors.primary}
+            />
+          </View>
+        ) : (
+          <View style={styles.scanSection}>
+            <Text style={styles.instructionText}>
+              {t('restaurant.scanInstruction')}
+            </Text>
+            
+            <View style={styles.buttonContainer}>
+              <Button
+                title={t('restaurant.takePhoto')}
+                onPress={handleScanCard}
+                variant="primary"
+                size="large"
+                fullWidth
+              />
+              
+              <Button
+                title={t('restaurant.chooseFromGallery')}
+                onPress={handlePickFromGallery}
+                variant="outline"
+                size="large"
+                fullWidth
+              />
+            </View>
+          </View>
+
+  // Écran de description du plat
+  if (step === 'dish') {
+    return (
+      <View style={styles.container}>
+        <View style={styles.headerSection}>
+          <LinearGradient
+            colors={['#6B2B3A', '#8B4B5A']}
+            style={styles.headerGradient}
+          >
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => setStep('scan')}
+            >
+              <X size={24} color="white" />
+            </TouchableOpacity>
+            
+            <Text style={styles.headerTitle}>
+              {currentSession?.restaurant_name || t('restaurant.title')}
+            </Text>
+            
+            <Text style={styles.wineCount}>
+              {t('restaurant.winesDetected', { count: currentSession?.extracted_wines?.length || 0 })}
             </Text>
           </LinearGradient>
+          
+          <Svg
+            height={40}
+            width="100%"
+            viewBox="0 0 400 40"
+            style={styles.wave}
+            preserveAspectRatio="none"
+          >
+            <Path
+              d="M0,20 Q100,0 200,15 T400,20 L400,40 L0,40 Z"
+              fill="#FAF6F0"
+            />
+          </Svg>
+        </View>
+
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          {isGettingRecommendations ? (
+            <View style={styles.loadingContainer}>
+              <ProgressBar 
+                progress={recoProgress} 
+                message={recoMessage}
+                color={Colors.primary}
+              />
+            </View>
+          ) : (
+            <>
+              <Text style={styles.questionTitle}>
+                {t('restaurant.whatAreYouEating')}
+              </Text>
+              
+              <Input
+                placeholder={t('restaurant.describeDish')}
+                value={dishDescription}
+                onChangeText={setDishDescription}
+                multiline
+                numberOfLines={3}
+                maxLength={200}
+              />
+
+              {/* Section budget */}
+              <View style={styles.optionSection}>
+                <TouchableOpacity 
+                  style={styles.sectionHeader}
+                  onPress={() => setShowBudgetOptions(!showBudgetOptions)}
+                >
+                  <View>
+                    <Text style={styles.sectionTitle}>{t('restaurant.budgetPerBottle')}</Text>
+                    <Text style={styles.sectionSubtitle}>
+                      {selectedBudget || t('restaurant.optional')}
+                    </Text>
+                  </View>
+                  <View style={styles.chevronContainer}>
+                    <Text style={styles.chevron}>
+                      {showBudgetOptions ? '−' : '+'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+                
+                {showBudgetOptions && (
+                  <View style={styles.optionsGrid}>
+                    {BUDGET_OPTIONS.map(budget => (
+                      <TouchableOpacity
+                        key={budget}
+                        style={[
+                          styles.optionPill,
+                          selectedBudget === budget && styles.optionPillActive
+                        ]}
+                        onPress={() => {
+                          setSelectedBudget(selectedBudget === budget ? null : budget);
+                          setShowBudgetOptions(false);
+                        }}
+                      >
+                        <Text style={[
+                          styles.optionText,
+                          selectedBudget === budget && styles.optionTextActive
+                        ]}>
+                          {budget}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+        )}
+              {/* Section type de vin */}
+              <View style={styles.optionSection}>
+                <TouchableOpacity 
+                  style={styles.sectionHeader}
+                  onPress={() => setShowWineTypeOptions(!showWineTypeOptions)}
+                >
+                  <View>
+                    <Text style={styles.sectionTitle}>{t('restaurant.wineTypePreferred')}</Text>
+                    <Text style={styles.sectionSubtitle}>
+                      {selectedWineType ? WINE_TYPES.find(type => type.id === selectedWineType)?.label : t('restaurant.optional')}
+                    </Text>
+                  </View>
+                  <View style={styles.chevronContainer}>
+                    <Text style={styles.chevron}>
+                      {showWineTypeOptions ? '−' : '+'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+                
+                {showWineTypeOptions && (
+                  <View style={styles.optionsGrid}>
+                    {WINE_TYPES.map(type => (
+                      <TouchableOpacity
+                        key={type.id}
+                        style={[
+                          styles.optionPill,
+                          selectedWineType === type.id && styles.optionPillActive,
+                          selectedWineType === type.id && { backgroundColor: type.color }
+                        ]}
+                        onPress={() => {
+                          setSelectedWineType(selectedWineType === type.id ? null : type.id);
+                          setShowWineTypeOptions(false);
+                        }}
+                      >
+                        <Text style={[
+                          styles.optionText,
+                          selectedWineType === type.id && styles.optionTextActive
+                        ]}>
+                          {type.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+      </View>
+              <Button
+                title={t('restaurant.getMyRecommendations')}
+                onPress={handleGetRecommendations}
+                variant="primary"
+                size="large"
+                fullWidth
+              />
+            </>
+          )}
+        </ScrollView>
+      </View>
+    );
+  }
+    );
+  // Écran de résultats
+  if (step === 'results') {
+    return (
+      <View style={styles.container}>
+        <View style={styles.headerSection}>
+          <LinearGradient
+            colors={['#6B2B3A', '#8B4B5A']}
+            style={styles.headerGradient}
+          >
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => setStep('dish')}
+            >
+              <X size={24} color="white" />
+            </TouchableOpacity>
+            
+            <Text style={styles.headerTitle}>
+              {t('restaurant.recommendations')}
+            </Text>
+            
+            <Text style={styles.subtitle}>
+              {t('restaurant.forDishAt', { 
+                dish: dishDescription, 
+                restaurant: currentSession?.restaurant_name || 'Restaurant'
+              })}
+            </Text>
+          </LinearGradient>
+          
+          <Svg
+            height={40}
+            width="100%"
+            viewBox="0 0 400 40"
+            style={styles.wave}
+            preserveAspectRatio="none"
+          >
+            <Path
+              d="M0,20 Q100,0 200,15 T400,20 L400,40 L0,40 Z"
+              fill="#FAF6F0"
+            />
+          </Svg>
+        </View>
+  }
+        <View style={styles.content}>
+          <Button
+            title={t('restaurant.viewRecommendations', { count: recommendations.length })}
+            onPress={handleViewResults}
+            variant="primary"
+            size="large"
+            fullWidth
+          />
+          
+          <Button
+            title={t('restaurant.newScan')}
+            onPress={handleNewScan}
+            variant="outline"
+            size="medium"
+            fullWidth
+          />
         </View>
       </View>
     );
@@ -639,19 +915,160 @@ export default function RestaurantScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FAF6F0',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FAF6F0',
   },
   headerSection: {
-    height: 200,
+    position: 'relative',
   },
   headerGradient: {
-    flex: 1,
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    paddingBottom: 50,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontSize: 36,
+    fontWeight: '700',
+    color: 'white',
+    textAlign: 'center',
+    letterSpacing: 1.5,
+    marginTop: 50,
+  },
+  wineCount: {
+    fontSize: Typography.sizes.base,
+    color: 'rgba(255,255,255,0.8)',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  subtitle: {
+    fontSize: Typography.sizes.base,
+    color: 'rgba(255,255,255,0.8)',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  wave: {
+    position: 'absolute',
+    bottom: -1,
+    left: 0,
+    right: 0,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 20,
+  },
+  scanningContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scanSection: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  instructionText: {
+    fontSize: Typography.sizes.lg,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 40,
+    lineHeight: Typography.sizes.lg * Typography.lineHeights.relaxed,
+  },
+  buttonContainer: {
+    width: '100%',
+    gap: 16,
+  },
+  questionTitle: {
+    fontSize: Typography.sizes.xl,
+    fontWeight: Typography.weights.bold,
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  optionSection: {
+    marginVertical: 16,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  sectionTitle: {
+    fontSize: Typography.sizes.base,
+    fontWeight: Typography.weights.semibold,
+    color: Colors.textPrimary,
+  },
+  sectionSubtitle: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.textSecondary,
+    marginTop: 2,
+  },
+  chevronContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.softGray,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  chevron: {
+    fontSize: 20,
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+  optionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  optionPill: {
+    backgroundColor: 'white',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    minWidth: '45%',
+    alignItems: 'center',
+  },
+  optionPillActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  optionText: {
+    fontSize: Typography.sizes.base,
+    color: Colors.textPrimary,
+    fontWeight: Typography.weights.medium,
+  },
+  optionTextActive: {
+    color: Colors.accent,
+    fontWeight: Typography.weights.semibold,
   },
 });
