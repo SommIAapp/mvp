@@ -240,7 +240,6 @@ const styles = StyleSheet.create({
   nextButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: 'white',
     paddingVertical: 18,
     paddingHorizontal: 32,
@@ -252,6 +251,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#6B2B3A',
+    flex: 1,
+    textAlign: 'center',
   },
   healthWarning: {
     position: 'absolute',
