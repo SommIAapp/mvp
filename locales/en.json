@@ -12,7 +12,12 @@
     "subtitle": "SOMMIA",
     "description": "Find the perfect wine for every dish",
     "signIn": "I already have an account",
-    "signUp": "Create an account"
+    "signUp": "Create an account",
+    "features": {
+      "ai": "Personalized AI recommendations",
+      "instant": "Instant results",
+      "personalized": "Tailored pairings"
+    }
   },
   "auth": {
     "email": "Email",
