@@ -111,5 +111,36 @@
     "errorStartingTrial": "Impossible de démarrer l'essai. Réessaie plus tard.",
     "productNotFound": "Produit non trouvé",
     "errorCreatingSession": "Impossible de créer la session de paiement. Réessaie plus tard."
+  },
+  "legal": {
+    "termsOfService": "Conditions d'Utilisation",
+    "privacyPolicy": "Politique de Confidentialité",
+    "lastUpdated": "Dernière mise à jour : {{date}}",
+    "contactEmail": "support@sommia.app",
+    "terms": {
+      "section1Title": "1. Acceptation des Conditions",
+      "section1Text": "En téléchargeant ou en utilisant l'application SOMMIA, vous acceptez d'être lié par ces conditions d'utilisation. Si vous n'acceptez pas ces conditions, n'utilisez pas l'application.",
+      "section2Title": "2. Description du Service",
+      "section2Text": "SOMMIA est une application mobile qui fournit des recommandations de vins personnalisées basées sur vos plats et préférences. Le service utilise l'intelligence artificielle pour suggérer des accords mets-vins.",
+      "section3Title": "3. Inscription et Compte",
+      "section3Text": "Pour utiliser SOMMIA, vous devez créer un compte avec une adresse email valide. Vous êtes responsable de maintenir la confidentialité de votre compte et de toutes les activités qui se produisent sous votre compte.",
+      "section4Title": "4. Abonnement et Paiement",
+      "section4Text": "SOMMIA propose un essai gratuit de 7 jours, après quoi un abonnement payant est requis pour continuer à utiliser le service. Les prix sont affichés dans l'application et peuvent varier selon votre région.",
+      "section4Text2": "Les paiements sont traités via l'App Store d'Apple. L'abonnement se renouvelle automatiquement sauf annulation au moins 24 heures avant la fin de la période en cours.",
+      "section5Title": "5. Politique d'Annulation",
+      "section5Text": "Vous pouvez annuler votre abonnement à tout moment dans les paramètres de votre compte Apple. L'annulation prendra effet à la fin de la période de facturation en cours.",
+      "section6Title": "6. Utilisation Responsable",
+      "section6Text": "SOMMIA est destiné aux personnes de 18 ans et plus. L'application fournit des suggestions de boissons alcoolisées et doit être utilisée de manière responsable et conforme aux lois locales.",
+      "section7Title": "7. Propriété Intellectuelle",
+      "section7Text": "Tout le contenu de SOMMIA, incluant textes, graphiques, logos, et logiciels, est la propriété de SOMMIA ou de ses fournisseurs de contenu et est protégé par les lois sur la propriété intellectuelle.",
+      "section8Title": "8. Collecte de Données",
+      "section8Text": "Nous collectons et utilisons vos données conformément à notre Politique de Confidentialité. En utilisant SOMMIA, vous consentez à la collecte et l'utilisation de vos informations comme décrit.",
+      "section9Title": "9. Limitation de Responsabilité",
+      "section9Text": "Les recommandations de SOMMIA sont fournies à titre informatif uniquement. Nous ne garantissons pas l'exactitude ou la pertinence des suggestions. L'utilisation des recommandations se fait à vos propres risques.",
+      "section10Title": "10. Modifications des Conditions",
+      "section10Text": "Nous nous réservons le droit de modifier ces conditions à tout moment. Les modifications entrent en vigueur dès leur publication dans l'application.",
+      "section11Title": "11. Contact",
+      "section11Text": "Pour toute question concernant ces conditions d'utilisation, contactez-nous à :"
+    }
   }
 }

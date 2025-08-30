@@ -111,5 +111,36 @@
     "errorStartingTrial": "Unable to start trial. Please try again later.",
     "productNotFound": "Product not found",
     "errorCreatingSession": "Unable to create payment session. Please try again later."
+  },
+  "legal": {
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "lastUpdated": "Last updated: {{date}}",
+    "contactEmail": "support@sommia.app",
+    "terms": {
+      "section1Title": "1. Acceptance of Terms",
+      "section1Text": "By downloading or using the SOMMIA application, you agree to be bound by these terms of use. If you do not accept these terms, do not use the application.",
+      "section2Title": "2. Service Description",
+      "section2Text": "SOMMIA is a mobile application that provides personalized wine recommendations based on your dishes and preferences. The service uses artificial intelligence to suggest food and wine pairings.",
+      "section3Title": "3. Registration and Account",
+      "section3Text": "To use SOMMIA, you must create an account with a valid email address. You are responsible for maintaining the confidentiality of your account and all activities that occur under your account.",
+      "section4Title": "4. Subscription and Payment",
+      "section4Text": "SOMMIA offers a 7-day free trial, after which a paid subscription is required to continue using the service. Prices are displayed in the application and may vary by region.",
+      "section4Text2": "Payments are processed through Apple's App Store. The subscription renews automatically unless cancelled at least 24 hours before the end of the current period.",
+      "section5Title": "5. Cancellation Policy",
+      "section5Text": "You can cancel your subscription at any time in your Apple account settings. Cancellation will take effect at the end of the current billing period.",
+      "section6Title": "6. Responsible Use",
+      "section6Text": "SOMMIA is intended for people 18 years and older. The application provides alcoholic beverage suggestions and must be used responsibly and in compliance with local laws.",
+      "section7Title": "7. Intellectual Property",
+      "section7Text": "All SOMMIA content, including text, graphics, logos, and software, is the property of SOMMIA or its content suppliers and is protected by intellectual property laws.",
+      "section8Title": "8. Data Collection",
+      "section8Text": "We collect and use your data in accordance with our Privacy Policy. By using SOMMIA, you consent to the collection and use of your information as described.",
+      "section9Title": "9. Limitation of Liability",
+      "section9Text": "SOMMIA recommendations are provided for informational purposes only. We do not guarantee the accuracy or relevance of suggestions. Use of recommendations is at your own risk.",
+      "section10Title": "10. Terms Modifications",
+      "section10Text": "We reserve the right to modify these terms at any time. Changes take effect upon publication in the application.",
+      "section11Title": "11. Contact",
+      "section11Text": "For any questions regarding these terms of use, contact us at:"
+    }
   }
 }
