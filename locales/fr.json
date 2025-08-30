@@ -188,6 +188,5 @@
     },
     "privacyEmail": "Email : privacy@sommia.app",
     "dpoEmail": "Délégué à la Protection des Données : dpo@sommia.app"
-    }
-  }
-}
+  }  // Cette accolade ferme "legal"
+}    // Cette accolade ferme le fichier JSON
