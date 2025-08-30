@@ -245,14 +245,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     borderRadius: 28,
     gap: 8,
-    minWidth: 200,
   },
   nextButtonText: {
     fontSize: 18,
     fontWeight: '600',
     color: '#6B2B3A',
-    flex: 1,
-    textAlign: 'center',
   },
   healthWarning: {
     position: 'absolute',
