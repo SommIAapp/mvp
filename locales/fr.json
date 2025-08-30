@@ -23,7 +23,28 @@
     "emailPlaceholder": "ton.email@example.com",
     "passwordPlaceholder": "Ton mot de passe",
     "alreadyHaveAccount": "Tu as déjà un compte ?",
-    "noAccount": "Pas encore de compte ?"
+    "noAccount": "Pas encore de compte ?",
+    "onboarding": {
+      "ageVerification": {
+        "title": "Vérification d'âge",
+        "subtitle": "SOMMIA est réservé aux adultes",
+        "description": "Pour continuer, confirmez que vous avez 18 ans ou plus",
+        "confirmAdult": "J'ai 18 ans ou plus",
+        "confirmMinor": "J'ai moins de 18 ans"
+      },
+      "welcome": {
+        "title": "Bienvenue sur SOMMIA",
+        "subtitle": "Votre sommelier personnel",
+        "description": "Découvrez le vin parfait pour chaque plat grâce à SOMMIA"
+      },
+      "trial": {
+        "title": "7 jours gratuits",
+        "subtitle": "Essayez sans engagement",
+        "description": "Profitez de toutes les fonctionnalités premium pendant 7 jours"
+      },
+      "continue": "Continuer",
+      "startTrial": "Commencer l'essai gratuit"
+    }
   },
   "home": {
     "title": "SOMMIA",
