@@ -1,9 +1,10 @@
 import React from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { View, Text, StyleSheet, ScrollView, Dimensions, Image } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Sparkles, Clock, Wine } from 'lucide-react-native';
-import { useTranslation } from '@/hooks/useTranslation';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
@@ -13,7 +14,12 @@ const { width, height } = Dimensions.get('window');
 
 export default function WelcomeScreen() {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, locale, changeLanguage } = useTranslation();
+
+  const handleLanguageChange = async (lang: string) => {
+    changeLanguage(lang);
+    await AsyncStorage.setItem('user_language', lang);
+  };
 
   return (
     <View style={styles.container}>
