@@ -11,7 +11,7 @@ import {
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
-import { ChevronRight, Wine, Calendar, Sparkles } from 'lucide-react-native';
+import { ChevronRight } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { useAuth } from '@/hooks/useAuth';
@@ -24,21 +24,18 @@ const ONBOARDING_STEPS = [
     title: 'Vérification d\'âge',
     subtitle: 'SOMMIA est réservé aux adultes',
     description: 'Pour continuer, confirmez que vous avez 18 ans ou plus',
-    icon: Calendar,
   },
   {
     id: 'welcome',
     title: 'Bienvenue sur SOMMIA',
     subtitle: 'Votre sommelier personnel',
-    description: 'Découvrez le vin parfait pour chaque plat grâce à notre IA experte',
-    icon: Wine,
+    description: 'Découvrez le vin parfait pour chaque plat grâce à SOMMIA',
   },
   {
     id: 'trial',
     title: '7 jours gratuits',
     subtitle: 'Essayez sans engagement',
     description: 'Profitez de toutes les fonctionnalités premium pendant 7 jours',
-    icon: Sparkles,
   },
 ];
 
@@ -80,7 +77,6 @@ export default function OnboardingScreen() {
   };
 
   const currentStepData = ONBOARDING_STEPS[currentStep];
-  const Icon = currentStepData.icon;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -106,11 +102,6 @@ export default function OnboardingScreen() {
           exiting={FadeOut}
           style={styles.content}
         >
-          {/* Icon */}
-          <View style={styles.iconContainer}>
-            <Icon size={80} color="white" />
-          </View>
-
           {/* Title */}
           <Text style={styles.title}>{currentStepData.title}</Text>
           <Text style={styles.subtitle}>{currentStepData.subtitle}</Text>
@@ -194,15 +185,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  iconContainer: {
-    marginBottom: 40,
-  },
   title: {
     fontSize: 32,
     fontWeight: '700',
     color: 'white',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: 40,
   },
   subtitle: {
     fontSize: 20,
