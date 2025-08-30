@@ -240,11 +240,13 @@ const styles = StyleSheet.create({
   nextButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: 'white',
     paddingVertical: 18,
     paddingHorizontal: 32,
     borderRadius: 28,
     gap: 8,
+    minWidth: 200,
   },
   nextButtonText: {
     fontSize: 18,
