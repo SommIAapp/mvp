@@ -133,12 +133,14 @@ export default function OnboardingScreen() {
               onPress={handleNext}
               disabled={loading}
             >
-              <Text style={styles.nextButtonText}>
+              <Text style={currentStep === ONBOARDING_STEPS.length - 1 ? styles.nextButtonTextCenter : styles.nextButtonText}>
                 {currentStep === ONBOARDING_STEPS.length - 1
                   ? t('auth.onboarding.startTrial')
                   : t('auth.onboarding.continue')}
               </Text>
-              <ChevronRight size={24} color="white" />
+              {currentStep < ONBOARDING_STEPS.length - 1 && (
+                <ChevronRight size={24} color="#6B2B3A" />
+              )}
             </TouchableOpacity>
           )}
 
@@ -234,16 +236,23 @@ const styles = StyleSheet.create({
   nextButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: 'white',
     paddingVertical: 18,
     paddingHorizontal: 32,
     borderRadius: 28,
-    gap: 8,
+    minWidth: 280,
   },
   nextButtonText: {
     fontSize: 18,
     fontWeight: '600',
     color: '#6B2B3A',
+  },
+  nextButtonTextCenter: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#6B2B3A',
+    textAlign: 'center',
   },
   healthWarning: {
     position: 'absolute',
