@@ -22,21 +22,21 @@ const { width, height } = Dimensions.get('window');
 const ONBOARDING_STEPS = [
   {
     id: 'age',
-    title: 'Vérification d\'âge',
-    subtitle: 'SOMMIA est réservé aux adultes',
-    description: 'Pour continuer, confirmez que vous avez 18 ans ou plus',
+    title: t('auth.onboarding.ageVerification.title'),
+    subtitle: t('auth.onboarding.ageVerification.subtitle'),
+    description: t('auth.onboarding.ageVerification.description'),
   },
   {
     id: 'welcome',
-    title: 'Bienvenue sur SOMMIA',
-    subtitle: 'Votre sommelier personnel',
-    description: 'Découvrez le vin parfait pour chaque plat grâce à SOMMIA',
+    title: t('auth.onboarding.welcome.title'),
+    subtitle: t('auth.onboarding.welcome.subtitle'),
+    description: t('auth.onboarding.welcome.description'),
   },
   {
     id: 'trial',
-    title: '7 jours gratuits',
-    subtitle: 'Essayez sans engagement',
-    description: 'Profitez de toutes les fonctionnalités premium pendant 7 jours',
+    title: t('auth.onboarding.trial.title'),
+    subtitle: t('auth.onboarding.trial.subtitle'),
+    description: t('auth.onboarding.trial.description'),
   },
 ];
 
