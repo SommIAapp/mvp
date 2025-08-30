@@ -444,6 +444,30 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     marginLeft: 16,
   },
+  languageSelector: {
+    flexDirection: 'row',
+    gap: 8,
+    marginLeft: 'auto',
+  },
+  languageButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Colors.softGray,
+  },
+  languageButtonActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  languageButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.textSecondary,
+  },
+  languageButtonTextActive: {
+    color: 'white',
+  },
   manageSubscriptionButton: {
     marginTop: 12,
     paddingVertical: 8,
