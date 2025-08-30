@@ -28,6 +28,26 @@ export default function WelcomeScreen() {
           colors={[Colors.primary, '#8B4A52']}
           style={styles.gradientBackground}
         >
+          <View style={styles.languageSelector}>
+            <TouchableOpacity
+              style={[styles.languageButton, locale === 'fr' && styles.languageButtonActive]}
+              onPress={() => handleLanguageChange('fr')}
+            >
+              <Text style={[styles.languageButtonText, locale === 'fr' && styles.languageButtonTextActive]}>
+                FR
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.languageButton, locale === 'en' && styles.languageButtonActive]}
+              onPress={() => handleLanguageChange('en')}
+            >
+              <Text style={[styles.languageButtonText, locale === 'en' && styles.languageButtonTextActive]}>
+                EN
+              </Text>
+            </TouchableOpacity>
+          </View>
+          
           <View style={styles.heroContent}>
             <Image
               source={require('../assets/images/appstorelogo.png')}
