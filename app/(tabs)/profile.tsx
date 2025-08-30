@@ -145,7 +145,7 @@ export default function ProfileScreen() {
           colors={['#6B2B3A', '#8B4B5A']}
           style={styles.headerGradient}
         >
-          <Text style={styles.headerTitle}>SOMMIA</Text>
+          <Text style={styles.headerTitle}>{t('profile.title')}</Text>
         </LinearGradient>
         
         <Svg
@@ -208,7 +208,8 @@ export default function ProfileScreen() {
             />
           )}
         </View>
-          {/* Bouton pour gérer l'abonnement Apple */}
+        {/* Bouton pour gérer l'abonnement Apple */}
+        {isPremium() && (
           <TouchableOpacity 
             style={styles.manageSubscriptionButton}
             onPress={() => Linking.openURL('https://apps.apple.com/account/subscriptions')}
@@ -217,6 +218,7 @@ export default function ProfileScreen() {
               {t('profile.manageAppleSubscription')}
             </Text>
           </TouchableOpacity>
+        )}
 
         {/* Stats Section */}
         <View style={styles.statsSection}>
