@@ -84,6 +84,29 @@
       "trialDays": "{{days}} days free trial"
     },
     "startTrial": "Start free trial",
-    "subscribe": "Subscribe"
+    "subscribe": "Subscribe",
+    "discoverPerfectMatch": "Discover the perfect match",
+    "trialThenPrice": "7 days free trial, then €2.99/week, €4.99/month or €30/year",
+    "sevenDaysFree": "🎁 7 days free",
+    "dailyLimitReached": "Daily limit reached",
+    "upgradeToPremium": "Upgrade to Premium",
+    "trialEnded": "Trial ended!",
+    "continueWithPremium": "Continue with Premium for unlimited recommendations",
+    "finalizePayment": "Finalize your payment",
+    "newTabOpened": "A new tab has opened to finalize your Premium subscription.",
+    "comeBackAfterPayment": "Come back here once payment is complete!",
+    "cancelPayment": "Cancel payment",
+    "choosePlan": "Choose your plan",
+    "annual": "Annual",
+    "save50": "SAVE 50%",
+    "perYear": "per year",
+    "only": "Only",
+    "perMonth": "/month",
+    "monthly": "Monthly",
+    "weekly": "Weekly",
+    "perWeek": "per week",
+    "freeTrialSevenDays": "7 days free trial",
+    "start": "Start",
+    "cancelAnytime": "Cancel anytime • Restore Purchases"
   }
 }

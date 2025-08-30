@@ -84,6 +84,29 @@
       "trialDays": "{{days}} jours d'essai gratuit"
     },
     "startTrial": "Commencer l'essai gratuit",
-    "subscribe": "S'abonner"
+    "subscribe": "S'abonner",
+    "discoverPerfectMatch": "Découvre l'accord parfait",
+    "trialThenPrice": "Essai gratuit de 7 jours, puis 2,99€/semaine, 4,99€/mois ou 30€/an",
+    "sevenDaysFree": "🎁 7 jours offerts",
+    "dailyLimitReached": "Limite quotidienne atteinte",
+    "upgradeToPremium": "Passer à Premium",
+    "trialEnded": "Essai terminé !",
+    "continueWithPremium": "Continue avec Premium pour des recommandations illimitées",
+    "finalizePayment": "Finalise ton paiement",
+    "newTabOpened": "Un nouvel onglet s'est ouvert pour finaliser ton abonnement Premium.",
+    "comeBackAfterPayment": "Reviens ici une fois le paiement terminé !",
+    "cancelPayment": "Annuler le paiement",
+    "choosePlan": "Choisis ton plan",
+    "annual": "Annuel",
+    "save50": "ÉCONOMISE 50%",
+    "perYear": "par an",
+    "only": "Seulement",
+    "perMonth": "/mois",
+    "monthly": "Mensuel",
+    "weekly": "Hebdomadaire",
+    "perWeek": "par semaine",
+    "freeTrialSevenDays": "Essai gratuit 7 jours",
+    "start": "Commencer",
+    "cancelAnytime": "Annule quand tu veux • Restore Purchases"
   }
 }

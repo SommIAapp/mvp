@@ -7,6 +7,7 @@ import Svg, { Path } from 'react-native-svg';
 import { Video } from 'expo-av';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/Button';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
@@ -20,6 +21,7 @@ type PaywallReason = 'trial_signup' | 'daily_limit' | 'trial_expired' | 'premium
 
 export default function SubscriptionScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { reason = 'trial_signup' } = useLocalSearchParams<{ reason?: PaywallReason }>();
   const { user, profile, loading: authLoading, isTrialExpired, startFreeTrial } = useAuth();
   const { createCheckoutSession, loading: subscriptionLoading, checkoutLoading, cancelCheckout } = useSubscription();
@@ -81,10 +83,10 @@ export default function SubscriptionScreen() {
     // Show loading state while data is being fetched
     if (authLoading || subscriptionLoading) {
       return {
-        title: 'Découvre l\'accord parfait',
-        subtitle: 'Essai gratuit de 7 jours, puis 4,99€/mois',
-        badge: '🎁 7 jours offerts',
-        buttonTitle: 'Chargement...',
+        title: t('subscription.discoverPerfectMatch'),
+        subtitle: t('subscription.trialThenPrice'),
+        badge: t('subscription.sevenDaysFree'),
+        buttonTitle: t('common.loading'),
         onPress: () => {},
         loading: true,
       };
@@ -93,45 +95,45 @@ export default function SubscriptionScreen() {
     switch (reason) {
       case 'trial_signup':
         return {
-          title: 'Découvre l\'accord parfait',
-          subtitle: 'Essai gratuit de 7 jours, puis 2,99€/semaine, 4,99€/mois ou 30€/an',
-          badge: '🎁 7 jours offerts',
-          buttonTitle: 'Commencer mon essai gratuit',
+          title: t('subscription.discoverPerfectMatch'),
+          subtitle: t('subscription.trialThenPrice'),
+          badge: t('subscription.sevenDaysFree'),
+          buttonTitle: t('subscription.startTrial'),
           onPress: handleStartTrialFlow,
           loading: false,
         };
 
       case 'daily_limit':
         return {
-          title: 'Limite quotidienne atteinte',
-          buttonTitle: 'Passer à Premium',
+          title: t('subscription.dailyLimitReached'),
+          buttonTitle: t('subscription.upgradeToPremium'),
           onPress: () => handleBuyPremium(premiumProduct?.priceId || ''),
           loading: false,
         };
 
       case 'trial_expired':
         return {
-          title: 'Essai terminé !',
-          subtitle: 'Continue avec Premium pour des recommandations illimitées',
-          buttonTitle: 'Passer à Premium',
+          title: t('subscription.trialEnded'),
+          subtitle: t('subscription.continueWithPremium'),
+          buttonTitle: t('subscription.upgradeToPremium'),
           onPress: () => handleBuyPremium(premiumProduct?.priceId || ''),
           loading: false,
         };
 
       case 'premium_upgrade':
         return {
-          title: 'Passe à Premium',
-          buttonTitle: 'Passer à Premium',
+          title: t('subscription.upgradeToPremium'),
+          buttonTitle: t('subscription.upgradeToPremium'),
           onPress: () => handleBuyPremium(premiumProduct?.priceId || ''),
           loading: false,
         };
 
       default:
         return {
-          title: 'Découvre l\'accord parfait',
-          subtitle: 'Essai gratuit de 7 jours, puis 4,99€/mois ou 30€/an',
-          badge: '🎁 7 jours offerts',
-          buttonTitle: 'Commencer mon essai gratuit',
+          title: t('subscription.discoverPerfectMatch'),
+          subtitle: t('subscription.trialThenPrice'),
+          badge: t('subscription.sevenDaysFree'),
+          buttonTitle: t('subscription.startTrial'),
           onPress: handleStartTrialFlow,
           loading: false,
         };
@@ -155,20 +157,20 @@ export default function SubscriptionScreen() {
           </View>
           
           <Text style={styles.checkoutTitle}>
-            Finalise ton paiement
+            {t('subscription.finalizePayment')}
           </Text>
           
           <Text style={styles.checkoutMessage}>
-            Un nouvel onglet s'est ouvert pour finaliser ton abonnement Premium.
+            {t('subscription.newTabOpened')}
           </Text>
           
           <Text style={styles.checkoutInstructions}>
-            Reviens ici une fois le paiement terminé !
+            {t('subscription.comeBackAfterPayment')}
           </Text>
           
           <View style={styles.checkoutActions}>
             <Button
-              title="Annuler le paiement"
+              title={t('subscription.cancelPayment')}
               onPress={cancelCheckout}
               variant="outline"
               size="medium"
@@ -207,20 +209,20 @@ export default function SubscriptionScreen() {
             </View>
             
             <Text style={styles.checkoutTitle}>
-              Finalise ton paiement
+              {t('subscription.finalizePayment')}
             </Text>
             
             <Text style={styles.checkoutMessage}>
-              Un nouvel onglet s'est ouvert pour finaliser ton abonnement Premium.
+              {t('subscription.newTabOpened')}
             </Text>
             
             <Text style={styles.checkoutInstructions}>
-              Reviens ici une fois le paiement terminé !
+              {t('subscription.comeBackAfterPayment')}
             </Text>
             
             <View style={styles.checkoutActions}>
               <Button
-                title="Annuler le paiement"
+                title={t('subscription.cancelPayment')}
                 onPress={cancelCheckout}
                 variant="outline"
                 size="medium"
@@ -279,7 +281,7 @@ export default function SubscriptionScreen() {
           </View>
 
           <View style={styles.content}>
-            <Text style={styles.pricingSectionTitle}>Choisis ton plan</Text>
+            <Text style={styles.pricingSectionTitle}>{t('subscription.choosePlan')}</Text>
             
             <View style={styles.plansListContainer}>
               {/* Plan Annuel - En premier et mis en avant */}
@@ -293,13 +295,13 @@ export default function SubscriptionScreen() {
               >
                 <View style={styles.planContent}>
                   <View style={styles.planHeader}>
-                    <Text style={styles.planTitle}>Annuel</Text>
+                    <Text style={styles.planTitle}>{t('subscription.annual')}</Text>
                     <View style={styles.saveBadge}>
-                      <Text style={styles.saveText}>ÉCONOMISE 50%</Text>
+                      <Text style={styles.saveText}>{t('subscription.save50')}</Text>
                     </View>
                   </View>
-                  <Text style={styles.planPrice}>30€ par an</Text>
-                  <Text style={styles.planEquivalent}>Seulement 2,50€/mois</Text>
+                  <Text style={styles.planPrice}>30€ {t('subscription.perYear')}</Text>
+                  <Text style={styles.planEquivalent}>{t('subscription.only')} 2,50€{t('subscription.perMonth')}</Text>
                 </View>
                 <View style={styles.radioButton}>
                   {selectedPlan === 'annual' && <View style={styles.radioButtonInner} />}
@@ -316,9 +318,9 @@ export default function SubscriptionScreen() {
               >
                 <View style={styles.planContent}>
                   <View style={styles.planHeader}>
-                    <Text style={styles.planTitle}>Mensuel</Text>
+                    <Text style={styles.planTitle}>{t('subscription.monthly')}</Text>
                   </View>
-                  <Text style={styles.planPrice}>4,99€ par mois</Text>
+                  <Text style={styles.planPrice}>4,99€ {t('subscription.perMonth')}</Text>
                 </View>
                 <View style={styles.radioButton}>
                   {selectedPlan === 'monthly' && <View style={styles.radioButtonInner} />}
@@ -335,9 +337,9 @@ export default function SubscriptionScreen() {
               >
                 <View style={styles.planContent}>
                   <View style={styles.planHeader}>
-                    <Text style={styles.planTitle}>Hebdomadaire</Text>
+                    <Text style={styles.planTitle}>{t('subscription.weekly')}</Text>
                   </View>
-                  <Text style={styles.planPrice}>2,99€ par semaine</Text>
+                  <Text style={styles.planPrice}>2,99€ {t('subscription.perWeek')}</Text>
                 </View>
                 <View style={styles.radioButton}>
                   {selectedPlan === 'weekly' && <View style={styles.radioButtonInner} />}
@@ -346,7 +348,7 @@ export default function SubscriptionScreen() {
             </View>
 
             <Button
-              title="Passer à Premium"
+              title={t('subscription.upgradeToPremium')}
               onPress={() => {
                 const priceId = selectedPlan === 'weekly' ? weeklyProduct?.priceId :
                                selectedPlan === 'monthly' ? premiumProduct?.priceId :
@@ -360,7 +362,7 @@ export default function SubscriptionScreen() {
             />
 
             <Text style={styles.healthWarning}>
-              L'abus d'alcool est dangereux pour la santé, à consommer avec modération
+              {t('common.healthWarning')}
             </Text>
           </View>
         </>
@@ -379,12 +381,12 @@ export default function SubscriptionScreen() {
             />
 
             <Text style={styles.trialText}>
-              Essai gratuit 7 jours
+              {t('subscription.freeTrialSevenDays')}
             </Text>
 
             <View style={styles.buttonSection}>
               <Button
-                title={(loading || contentConfig.loading) ? "Chargement..." : "Commencer"}
+                title={(loading || contentConfig.loading) ? t('common.loading') : t('subscription.start')}
                 onPress={contentConfig.onPress}
                 variant="primary"
                 size="large"
@@ -395,7 +397,7 @@ export default function SubscriptionScreen() {
 
             <View style={styles.footer}>
               <Text style={styles.footerText}>
-                Annule quand tu veux • Restore Purchases
+                {t('subscription.cancelAnytime')}
               </Text>
             </View>
           </View>
