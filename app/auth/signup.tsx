@@ -75,7 +75,7 @@ export default function SignUpScreen() {
       // Navigation vers l'app principale
       setTimeout(() => {
         console.log('✅ handleSignUp - Navigating to app');
-        router.replace('/(tabs)');
+        router.replace('/auth/onboarding');
       }, 1500);
 
     } catch (error) {

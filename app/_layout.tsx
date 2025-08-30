@@ -29,6 +29,7 @@ export default function RootLayout() {
             <Stack.Screen name="welcome" />
             <Stack.Screen name="auth/signin" />
             <Stack.Screen name="auth/signup" />
+            <Stack.Screen name="auth/onboarding" />
             <Stack.Screen name="subscription" options={{ presentation: 'modal' }} />
             <Stack.Screen name="subscription-success" options={{ presentation: 'modal' }} />
             <Stack.Screen name="recommendations" options={{ presentation: 'modal' }} />
