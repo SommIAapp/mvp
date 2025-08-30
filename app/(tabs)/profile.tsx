@@ -12,6 +12,7 @@ import { useRouter } from 'expo-router';
 import { User, Crown, Calendar, ChartBar as BarChart3, LogOut, Wine, FileText, Shield, Mail } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from '@/hooks/useTranslation';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Svg, { Path } from 'react-native-svg';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
@@ -23,11 +24,16 @@ import { supabase } from '@/lib/supabase';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, locale, changeLanguage } = useTranslation();
   const { user, profile, loading: authLoading, signOut, getTrialDaysRemaining } = useAuth();
   const { subscription, loading: subscriptionLoading, isPremium } = useSubscription();
   const [totalRecommendationsCount, setTotalRecommendationsCount] = useState(0);
   const [loadingStats, setLoadingStats] = useState(true);
+
+  const handleLanguageChange = async (lang: string) => {
+    changeLanguage(lang);
+    await AsyncStorage.setItem('user_language', lang);
+  };
 
   useEffect(() => {
     console.log('👤 Profile: Component mounted');
