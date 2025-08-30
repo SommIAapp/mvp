@@ -35,12 +35,6 @@ export default function OnboardingScreen() {
       description: t('auth.onboarding.ageVerification.description'),
     },
     {
-      id: 'welcome',
-      title: t('auth.onboarding.welcome.title'),
-      subtitle: t('auth.onboarding.welcome.subtitle'),
-      description: t('auth.onboarding.welcome.description'),
-    },
-    {
       id: 'trial',
       title: t('auth.onboarding.trial.title'),
       subtitle: t('auth.onboarding.trial.subtitle'),

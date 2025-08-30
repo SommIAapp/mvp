@@ -32,11 +32,6 @@
         "confirmAdult": "I am 18 or older",
         "confirmMinor": "I am under 18"
       },
-      "welcome": {
-        "title": "Welcome to SOMMIA",
-        "subtitle": "Your personal sommelier",
-        "description": "Discover the perfect wine for every dish with SOMMIA"
-      },
       "trial": {
         "title": "7 days free",
         "subtitle": "Try without commitment",
