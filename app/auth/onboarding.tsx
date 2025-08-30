@@ -22,21 +22,21 @@ const { width, height } = Dimensions.get('window');
 const ONBOARDING_STEPS = [
   {
     id: 'age',
-    title: t('auth.onboarding.ageVerification.title'),
-    subtitle: t('auth.onboarding.ageVerification.subtitle'),
-    description: t('auth.onboarding.ageVerification.description'),
+    title: 'Vérification d\'âge',
+    subtitle: 'SOMMIA est réservé aux adultes',
+    description: 'Pour continuer, confirmez que vous avez 18 ans ou plus',
   },
   {
     id: 'welcome',
-    title: t('auth.onboarding.welcome.title'),
-    subtitle: t('auth.onboarding.welcome.subtitle'),
-    description: t('auth.onboarding.welcome.description'),
+    title: 'Bienvenue sur SOMMIA',
+    subtitle: 'Votre sommelier personnel',
+    description: 'Découvrez le vin parfait pour chaque plat grâce à SOMMIA',
   },
   {
     id: 'trial',
-    title: t('auth.onboarding.trial.title'),
-    subtitle: t('auth.onboarding.trial.subtitle'),
-    description: t('auth.onboarding.trial.description'),
+    title: '7 jours gratuits',
+    subtitle: 'Essayez sans engagement',
+    description: 'Profitez de toutes les fonctionnalités premium pendant 7 jours',
   },
 ];
 
@@ -117,7 +117,7 @@ export default function OnboardingScreen() {
                 onPress={() => handleAgeConfirmation(true)}
               >
                 <Text style={styles.ageButtonTextPrimary}>
-                  {t('auth.onboarding.ageVerification.confirmAdult')}
+                  J'ai 18 ans ou plus
                 </Text>
               </TouchableOpacity>
               
@@ -126,7 +126,7 @@ export default function OnboardingScreen() {
                 onPress={() => handleAgeConfirmation(false)}
               >
                 <Text style={styles.ageButtonTextSecondary}>
-                  {t('auth.onboarding.ageVerification.confirmMinor')}
+                  J'ai moins de 18 ans
                 </Text>
               </TouchableOpacity>
             </View>
@@ -139,8 +139,8 @@ export default function OnboardingScreen() {
             >
               <Text style={styles.nextButtonText}>
                 {currentStep === ONBOARDING_STEPS.length - 1
-                  ? t('auth.onboarding.startTrial')
-                  : t('auth.onboarding.continue')}
+                  ? 'Commencer l\'essai gratuit'
+                  : 'Continuer'}
               </Text>
               <ChevronRight size={24} color="white" />
             </TouchableOpacity>
@@ -148,7 +148,7 @@ export default function OnboardingScreen() {
 
           {/* Message sanitaire */}
           <Text style={styles.healthWarning}>
-            {t('common.healthWarning')}
+            L'abus d'alcool est dangereux pour la santé, à consommer avec modération
           </Text>
         </Animated.View>
       </LinearGradient>
