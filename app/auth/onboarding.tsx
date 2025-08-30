@@ -117,7 +117,7 @@ export default function OnboardingScreen() {
                 onPress={() => handleAgeConfirmation(true)}
               >
                 <Text style={styles.ageButtonTextPrimary}>
-                  J'ai 18 ans ou plus
+                  {t('auth.onboarding.ageVerification.confirmAdult')}
                 </Text>
               </TouchableOpacity>
               
@@ -126,7 +126,7 @@ export default function OnboardingScreen() {
                 onPress={() => handleAgeConfirmation(false)}
               >
                 <Text style={styles.ageButtonTextSecondary}>
-                  J'ai moins de 18 ans
+                  {t('auth.onboarding.ageVerification.confirmMinor')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -139,8 +139,8 @@ export default function OnboardingScreen() {
             >
               <Text style={styles.nextButtonText}>
                 {currentStep === ONBOARDING_STEPS.length - 1
-                  ? 'Commencer l\'essai gratuit'
-                  : 'Continuer'}
+                  ? t('auth.onboarding.startTrial')
+                  : t('auth.onboarding.continue')}
               </Text>
               <ChevronRight size={24} color="white" />
             </TouchableOpacity>
@@ -148,7 +148,7 @@ export default function OnboardingScreen() {
 
           {/* Message sanitaire */}
           <Text style={styles.healthWarning}>
-            L'abus d'alcool est dangereux pour la santé, à consommer avec modération
+            {t('common.healthWarning')}
           </Text>
         </Animated.View>
       </LinearGradient>
