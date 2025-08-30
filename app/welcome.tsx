@@ -75,11 +75,6 @@ export default function WelcomeScreen() {
       </View>
 
       <View style={styles.bottomSection}>
-        <View style={styles.descriptionSection}>
-          <Text style={styles.welcomeTitle}>{t('welcome.title')}</Text>
-          <Text style={styles.description}>{t('welcome.description')}</Text>
-        </View>
-
         <View style={styles.featuresSection}>
         </View>
 
