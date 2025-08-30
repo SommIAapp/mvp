@@ -175,6 +175,27 @@ export default function ProfileScreen() {
             </Text>
             <Text style={styles.userEmail}>{user?.email}</Text>
           </View>
+        
+        {/* Sélecteur de langue */}
+        <View style={styles.languageSelector}>
+          <TouchableOpacity
+            style={[styles.languageButton, locale === 'fr' && styles.languageButtonActive]}
+            onPress={() => handleLanguageChange('fr')}
+          >
+            <Text style={[styles.languageButtonText, locale === 'fr' && styles.languageButtonTextActive]}>
+              FR
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[styles.languageButton, locale === 'en' && styles.languageButtonActive]}
+            onPress={() => handleLanguageChange('en')}
+          >
+            <Text style={[styles.languageButtonText, locale === 'en' && styles.languageButtonTextActive]}>
+              EN
+            </Text>
+          </TouchableOpacity>
+        </View>
         </View>
 
         {/* Subscription Status */}
