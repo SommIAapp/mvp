@@ -26,6 +26,7 @@ export default function OnboardingScreen() {
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
 
+  // Déplace ONBOARDING_STEPS ici pour qu'il soit recalculé à chaque render
   const ONBOARDING_STEPS = [
     {
       id: 'age',
