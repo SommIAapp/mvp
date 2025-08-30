@@ -121,10 +121,10 @@ export default function ProfileScreen() {
     }
     
     if (profile.subscription_plan === 'free') {
-      return 'Commence ton essai gratuit pour débloquer les recommandations';
+      return t('profile.startTrialToUnlock');
     }
     
-    return 'Statut inconnu';
+    return t('profile.unknownStatus');
   };
 
   const subscriptionStatus = getSubscriptionStatus();
