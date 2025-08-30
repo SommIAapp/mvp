@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { View, Text, StyleSheet, ScrollView, Dimensions, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Dimensions, Image, TouchableOpacity } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Sparkles, Clock, Wine } from 'lucide-react-native';
@@ -54,7 +54,7 @@ export default function WelcomeScreen() {
               style={styles.logoImage}
               resizeMode="contain"
             />
-            <Text style={styles.title}>SOMMIA</Text>
+            <Text style={styles.title}>{t('welcome.subtitle')}</Text>
           </View>
         </LinearGradient>
         
@@ -76,6 +76,8 @@ export default function WelcomeScreen() {
 
       <View style={styles.bottomSection}>
         <View style={styles.descriptionSection}>
+          <Text style={styles.welcomeTitle}>{t('welcome.title')}</Text>
+          <Text style={styles.description}>{t('welcome.description')}</Text>
         </View>
 
         <View style={styles.featuresSection}>
@@ -162,6 +164,13 @@ const styles = StyleSheet.create({
     fontWeight: Typography.weights.semibold,
     color: Colors.accent,
     textAlign: 'center',
+  },
+  welcomeTitle: {
+    fontSize: Typography.sizes.xxl,
+    fontWeight: Typography.weights.bold,
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: 16,
   },
   descriptionSection: {
     marginBottom: 40,
