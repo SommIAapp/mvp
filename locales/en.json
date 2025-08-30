@@ -186,8 +186,8 @@
       "section11Title": "11. Contact",
       "section11Text": "To exercise your rights or for any questions about your data:"
     },
-    "privacyEmail": "Email: privacy@sommia.app",
-    "dpoEmail": "Data Protection Officer: dpo@sommia.app"
-    }
-  }
-}
+    "privacyEmail": "Email : privacy@sommia.app",
+    "dpoEmail": "Data Protection Officer : dpo@sommia.app"
+  }     // Cette accolade ferme "privacy"
+  }     // Cette accolade ferme "legal"
+}       // Cette accolade ferme le fichier JSON principal
