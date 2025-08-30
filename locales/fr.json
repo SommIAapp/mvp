@@ -12,12 +12,7 @@
     "subtitle": "SOMMIA",
     "description": "Découvre le vin parfait pour chaque plat",
     "signIn": "J'ai déjà un compte",
-    "signUp": "Créer un compte",
-    "features": {
-      "ai": "Recommandations IA personnalisées",
-      "instant": "Résultats instantanés",
-      "personalized": "Accords sur mesure"
-    }
+    "signUp": "Créer un compte"
   },
   "auth": {
     "email": "Email",

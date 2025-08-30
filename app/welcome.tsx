@@ -1,12 +1,8 @@
 import React from 'react';
-import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions, Image } from 'react-native';
-import { TouchableOpacity } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Sparkles, Clock, Wine } from 'lucide-react-native';
-import { useTranslation } from '@/hooks/useTranslation';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
@@ -17,55 +13,10 @@ const { width, height } = Dimensions.get('window');
 
 export default function WelcomeScreen() {
   const router = useRouter();
-  const { t, locale, changeLanguage } = useTranslation();
-  const [showLanguageSelector, setShowLanguageSelector] = useState(false);
-
-  const handleLanguageChange = async (newLocale: string) => {
-    try {
-      await AsyncStorage.setItem('user_language', newLocale);
-      changeLanguage(newLocale);
-      setShowLanguageSelector(false);
-    } catch (error) {
-      console.error('Error saving language preference:', error);
-    }
-  };
   const { t } = useTranslation();
 
   return (
     <View style={styles.container}>
-      {/* Language Selector */}
-      <View style={styles.languageSelector}>
-        <TouchableOpacity
-          style={styles.languageButton}
-          onPress={() => setShowLanguageSelector(!showLanguageSelector)}
-        >
-          <Text style={styles.languageButtonText}>
-            {locale === 'fr' ? '🇫🇷 FR' : '🇬🇧 EN'}
-          </Text>
-        </TouchableOpacity>
-        
-        {showLanguageSelector && (
-          <View style={styles.languageDropdown}>
-            <TouchableOpacity
-              style={[styles.languageOption, locale === 'fr' && styles.languageOptionActive]}
-              onPress={() => handleLanguageChange('fr')}
-            >
-              <Text style={[styles.languageOptionText, locale === 'fr' && styles.languageOptionTextActive]}>
-                🇫🇷 Français
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.languageOption, locale === 'en' && styles.languageOptionActive]}
-              onPress={() => handleLanguageChange('en')}
-            >
-              <Text style={[styles.languageOptionText, locale === 'en' && styles.languageOptionTextActive]}>
-                🇬🇧 English
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-
       <View style={styles.topSection}>
         <LinearGradient
           colors={[Colors.primary, '#8B4A52']}
@@ -99,32 +50,9 @@ export default function WelcomeScreen() {
 
       <View style={styles.bottomSection}>
         <View style={styles.descriptionSection}>
-          <Text style={styles.description}>
-            {t('welcome.description')}
-          </Text>
         </View>
 
         <View style={styles.featuresSection}>
-          <View style={styles.feature}>
-            <Sparkles size={24} color={Colors.primary} />
-            <Text style={styles.featureText}>
-              {t('welcome.features.ai')}
-            </Text>
-          </View>
-          
-          <View style={styles.feature}>
-            <Clock size={24} color={Colors.primary} />
-            <Text style={styles.featureText}>
-              {t('welcome.features.instant')}
-            </Text>
-          </View>
-          
-          <View style={styles.feature}>
-            <Wine size={24} color={Colors.primary} />
-            <Text style={styles.featureText}>
-              {t('welcome.features.personalized')}
-            </Text>
-          </View>
         </View>
 
         <View style={styles.buttonSection}>
@@ -209,63 +137,8 @@ const styles = StyleSheet.create({
     color: Colors.accent,
     textAlign: 'center',
   },
-  languageSelector: {
-    position: 'absolute',
-    top: 60,
-    right: 24,
-    zIndex: 10,
-  },
-  languageButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-  },
-  languageButtonText: {
-    color: Colors.accent,
-    fontSize: Typography.sizes.sm,
-    fontWeight: Typography.weights.semibold,
-  },
-  languageDropdown: {
-    position: 'absolute',
-    top: 40,
-    right: 0,
-    backgroundColor: Colors.accent,
-    borderRadius: 12,
-    shadowColor: Colors.darkGray,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 8,
-    minWidth: 120,
-  },
-  languageOption: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.softGray,
-  },
-  languageOptionActive: {
-    backgroundColor: Colors.softGray,
-  },
-  languageOptionText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.textPrimary,
-  },
-  languageOptionTextActive: {
-    fontWeight: Typography.weights.semibold,
-    color: Colors.primary,
-  },
   descriptionSection: {
     marginBottom: 40,
-  },
-  description: {
-    fontSize: Typography.sizes.lg,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: Typography.sizes.lg * Typography.lineHeights.relaxed,
   },
   description: {
     fontSize: Typography.sizes.lg,
