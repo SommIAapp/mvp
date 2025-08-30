@@ -107,6 +107,9 @@
     "perWeek": "par semaine",
     "freeTrialSevenDays": "Essai gratuit 7 jours",
     "start": "Commencer",
-    "cancelAnytime": "Annule quand tu veux • Restore Purchases"
+    "cancelAnytime": "Annule quand tu veux • Restore Purchases",
+    "errorStartingTrial": "Impossible de démarrer l'essai. Réessaie plus tard.",
+    "productNotFound": "Produit non trouvé",
+    "errorCreatingSession": "Impossible de créer la session de paiement. Réessaie plus tard."
   }
 }

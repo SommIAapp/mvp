@@ -55,7 +55,7 @@ export default function SubscriptionScreen() {
       router.replace('/(tabs)');
     } catch (error) {
       console.error('💥 handleStartTrialFlow - Unexpected error:', error);
-      Alert.alert('Erreur', 'Impossible de démarrer l\'essai. Réessaie plus tard.');
+      Alert.alert(t('common.error'), t('subscription.errorStartingTrial'));
     } finally {
       setLoading(false);
     }
@@ -63,7 +63,7 @@ export default function SubscriptionScreen() {
 
   const handleBuyPremium = async (priceId: string) => {
     if (!priceId) {
-      Alert.alert('Erreur', 'Produit non trouvé');
+      Alert.alert(t('common.error'), t('subscription.productNotFound'));
       return;
     }
 
@@ -73,7 +73,7 @@ export default function SubscriptionScreen() {
       await createCheckoutSession(priceId, 'subscription');
     } catch (error) {
       console.error('Checkout error:', error);
-      Alert.alert('Erreur', 'Impossible de créer la session de paiement. Réessaie plus tard.');
+      Alert.alert(t('common.error'), t('subscription.errorCreatingSession'));
     } finally {
       setLoading(false);
     }
@@ -233,7 +233,7 @@ export default function SubscriptionScreen() {
         </View>
       ) : authLoading || subscriptionLoading ? (
         <View style={styles.loadingContainer}>
-          <LoadingSpinner text="Chargement..." />
+          <LoadingSpinner text={t('common.loading')} />
         </View>
       ) : reason !== 'trial_signup' ? (
         <>

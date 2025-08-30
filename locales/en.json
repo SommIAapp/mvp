@@ -107,6 +107,9 @@
     "perWeek": "per week",
     "freeTrialSevenDays": "7 days free trial",
     "start": "Start",
-    "cancelAnytime": "Cancel anytime • Restore Purchases"
+    "cancelAnytime": "Cancel anytime • Restore Purchases",
+    "errorStartingTrial": "Unable to start trial. Please try again later.",
+    "productNotFound": "Product not found",
+    "errorCreatingSession": "Unable to create payment session. Please try again later."
   }
 }
