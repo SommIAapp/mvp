@@ -1,172 +1,107 @@
-import { useState, useEffect } from 'react';
-import { AppState, Alert } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
+import { useState, useEffect, useCallback } from 'react';
+import { Alert } from 'react-native';
+import Purchases, { 
+  CustomerInfo, 
+  PurchasesPackage,
+  LOG_LEVEL 
+} from 'react-native-purchases';
+import { useAuth } from './useAuth';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/hooks/useAuth';
 
-interface SubscriptionData {
-  customer_id: string | null;
-  subscription_id: string | null;
-  subscription_status: string | null;
-  price_id: string | null;
-  current_period_start: number | null;
-  current_period_end: number | null;
-  cancel_at_period_end: boolean | null;
-  payment_method_brand: string | null;
-  payment_method_last4: string | null;
-}
+const API_KEY = 'appl_wTyEDGymBMkhfAztsEoeVrdWOmm';
 
 export function useSubscription() {
   const { user } = useAuth();
-  const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
+  const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
+  const [packages, setPackages] = useState<PurchasesPackage[]>([]);
   const [loading, setLoading] = useState(true);
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user) {
-      fetchSubscription();
-    } else {
-      setSubscription(null);
-      setLoading(false);
-    }
+    initializeRevenueCat();
   }, [user]);
 
-  // AppState listener to detect when user returns to app
-  useEffect(() => {
-    if (!checkoutLoading) return;
-
-    const handleAppStateChange = (nextAppState: string) => {
-      if (nextAppState === 'active' && checkoutLoading) {
-        // User returned to app, check if payment succeeded after a short delay
-        setTimeout(async () => {
-          await fetchSubscription();
-          
-          // If still not premium after checking, consider payment cancelled
-          if (!isPremium()) {
-            setCheckoutLoading(false);
-            Alert.alert(
-              'Paiement annulé',
-              'Pas de souci ! Tu peux réessayer quand tu veux.',
-              [{ text: 'OK' }]
-            );
-          } else {
-            setCheckoutLoading(false);
-          }
-        }, 5000); // Wait 5 seconds for subscription to sync
-      }
-    };
-
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
-    return () => subscription?.remove();
-  }, [checkoutLoading]);
-
-  const fetchSubscription = async () => {
+  const initializeRevenueCat = async () => {
+    if (!user) return;
+    
     try {
-      setLoading(true);
-      setError(null);
-
-      const { data, error: fetchError } = await supabase
-        .from('stripe_user_subscriptions')
-        .select('*')
-        .maybeSingle();
-
-      if (fetchError) {
-        throw fetchError;
+      Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+      await Purchases.configure({ apiKey: API_KEY });
+      
+      // Identifier l'utilisateur avec Supabase ID
+      await Purchases.logIn(user.id);
+      
+      // Récupérer les offres
+      const offerings = await Purchases.getOfferings();
+      if (offerings.current) {
+        setPackages(offerings.current.availablePackages);
       }
-
-      setSubscription(data);
-    } catch (err) {
-      console.error('Error fetching subscription:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch subscription');
+      
+      // Récupérer les infos client
+      const info = await Purchases.getCustomerInfo();
+      setCustomerInfo(info);
+      
+      // Listener pour les mises à jour
+      Purchases.addCustomerInfoUpdateListener(setCustomerInfo);
+    } catch (error) {
+      console.error('RevenueCat init error:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const createCheckoutSession = async (priceId: string, mode: 'subscription' | 'payment' = 'subscription') => {
-    setCheckoutLoading(true);
+  const purchasePackage = async (packageType: 'weekly' | 'monthly' | 'annual') => {
+    const packageMap = {
+      weekly: packages.find(p => p.identifier === '$rc_weekly'),
+      monthly: packages.find(p => p.identifier === '$rc_monthly'),
+      annual: packages.find(p => p.identifier === '$rc_annual')
+    };
     
-    // Automatic timeout after 2 minutes
-    const timeoutId = setTimeout(() => {
-      setCheckoutLoading(false);
-      Alert.alert(
-        'Paiement annulé',
-        'Le délai de paiement a expiré. Tu peux réessayer quand tu veux !',
-        [{ text: 'OK' }]
-      );
-    }, 120000); // 2 minutes
-    
+    const selectedPackage = packageMap[packageType];
+    if (!selectedPackage) {
+      Alert.alert('Erreur', 'Produit non trouvé');
+      return;
+    }
+
     try {
-      if (!user) {
-        throw new Error('User must be authenticated');
-      }
-
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        throw new Error('No valid session found');
-      }
-
-      const response = await fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/stripe-checkout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          price_id: priceId,
-          mode,
-          success_url: `${window.location.origin}/subscription-success`,
-          cancel_url: `${window.location.origin}/subscription`,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create checkout session');
-      }
-
-      const { url } = await response.json();
+      const { customerInfo } = await Purchases.purchasePackage(selectedPackage);
+      setCustomerInfo(customerInfo);
       
-      if (url) {
-        await WebBrowser.openBrowserAsync(url);
-      } else {
-        throw new Error('No checkout URL received');
+      // Mettre à jour le profil Supabase
+      await supabase.from('profiles').update({
+        subscription_plan: 'premium',
+        subscription_updated_at: new Date().toISOString()
+      }).eq('id', user?.id);
+      
+      return { success: true };
+    } catch (error: any) {
+      if (error.userCancelled) {
+        return { success: false, cancelled: true };
       }
-    } catch (err) {
-      console.error('Error creating checkout session:', err);
-      clearTimeout(timeoutId);
-      setCheckoutLoading(false);
-      throw err;
+      console.error('Purchase error:', error);
+      return { success: false, error };
     }
   };
 
-  const cancelCheckout = () => {
-    setCheckoutLoading(false);
-    Alert.alert(
-      'Paiement annulé',
-      'Pas de problème ! Tu peux reprendre ton abonnement quand tu veux.',
-      [{ text: 'OK' }]
-    );
-  };
-
-  const isActive = () => {
-    return subscription?.subscription_status === 'active' || subscription?.subscription_status === 'trialing';
+  const restorePurchases = async () => {
+    try {
+      const customerInfo = await Purchases.restorePurchases();
+      setCustomerInfo(customerInfo);
+      Alert.alert('Succès', 'Achats restaurés');
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible de restaurer les achats');
+    }
   };
 
   const isPremium = () => {
-    return isActive() && subscription?.price_id === 'price_1Rixo1EafAFTMvbGEUY381Z2';
+    return customerInfo?.entitlements.active['premium'] !== undefined;
   };
 
   return {
-    subscription,
+    customerInfo,
+    packages,
     loading,
-    checkoutLoading,
-    error,
-    createCheckoutSession,
-    cancelCheckout,
-    fetchSubscription,
-    isActive,
     isPremium,
+    purchasePackage,
+    restorePurchases,
   };
 }
