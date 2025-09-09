@@ -340,10 +340,8 @@ export default function SubscriptionScreen() {
             <Button
               title={t('subscription.upgradeToPremium')}
               onPress={() => {
-                const priceId = selectedPlan === 'weekly' ? weeklyProduct?.priceId :
-                               selectedPlan === 'monthly' ? premiumProduct?.priceId :
-                               annualProduct?.priceId;
-                handleBuyPremium(priceId || '');
+                const planType = selectedPlan === 'weekly' ? 'weekly' : 'annual';
+                handleBuyPremium(planType);
               }}
               variant="primary"
               size="large"
