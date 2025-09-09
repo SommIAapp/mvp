@@ -97,7 +97,7 @@ export default function SubscriptionScreen() {
         return {
           title: t('subscription.dailyLimitReached'),
           buttonTitle: t('subscription.upgradeToPremium'),
-          onPress: () => handleBuyPremium(premiumProduct?.priceId || ''),
+          onPress: () => handleBuyPremium('annual'),
           loading: false,
         };
 
@@ -106,7 +106,7 @@ export default function SubscriptionScreen() {
           title: t('subscription.trialEnded'),
           subtitle: t('subscription.continueWithPremium'),
           buttonTitle: t('subscription.upgradeToPremium'),
-          onPress: () => handleBuyPremium(premiumProduct?.priceId || ''),
+          onPress: () => handleBuyPremium('annual'),
           loading: false,
         };
 
@@ -114,7 +114,7 @@ export default function SubscriptionScreen() {
         return {
           title: t('subscription.upgradeToPremium'),
           buttonTitle: t('subscription.upgradeToPremium'),
-          onPress: () => handleBuyPremium(premiumProduct?.priceId || ''),
+          onPress: () => handleBuyPremium('annual'),
           loading: false,
         };
 
