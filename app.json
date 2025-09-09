@@ -24,7 +24,7 @@
         "apiKey": "appl_wTyEDGymBMkhfAztsEoeVrdWOmm",
         "usesStoreKit2IfAvailable": false
       }]
-    ],  // <-- Il manquait cette virgule
+    ],
     "experiments": {
       "typedRoutes": true
     }
