@@ -56,16 +56,11 @@ export default function SubscriptionScreen() {
     }
   };
 
-  const handleBuyPremium = async (priceId: string) => {
-    if (!priceId) {
-      Alert.alert(t('common.error'), t('subscription.productNotFound'));
-      return;
-    }
-
+  const handleBuyPremium = async (planType: string) => {
     setLoading(true);
     
     try {
-      await createCheckoutSession(priceId, 'subscription');
+      await createCheckoutSession(planType);
     } catch (error) {
       console.error('Checkout error:', error);
       Alert.alert(t('common.error'), t('subscription.errorCreatingSession'));
