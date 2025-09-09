@@ -12,8 +12,6 @@ import { Button } from '@/components/Button';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
-import { supabase } from '@/lib/supabase';
-import { stripeProducts } from '@/src/stripe-config';
 
 const { width, height } = Dimensions.get('window');
 
@@ -24,12 +22,9 @@ export default function SubscriptionScreen() {
   const { t } = useTranslation();
   const { reason = 'trial_signup' } = useLocalSearchParams<{ reason?: PaywallReason }>();
   const { user, profile, loading: authLoading, isTrialExpired, startFreeTrial } = useAuth();
-  const { createCheckoutSession, loading: subscriptionLoading, checkoutLoading, cancelCheckout } = useSubscription();
+  const { customerInfo, packages, loading: subscriptionLoading, isPremium, purchasePackage, restorePurchases } = useSubscription();
   const [loading, setLoading] = useState(false);
 
-  const premiumProduct = stripeProducts.find(p => p.name === 'SommIA Premium');
-  const weeklyProduct = stripeProducts.find(p => p.name === 'SommIA Premium (Hebdomadaire)');
-  const annualProduct = stripeProducts.find(p => p.name === 'SommIA Premium (Annuel)');
   const [selectedPlan, setSelectedPlan] = useState('annual'); // Pre-select annual plan
 
   const handleStartTrialFlow = async () => {
@@ -62,15 +57,20 @@ export default function SubscriptionScreen() {
   };
 
   const handleBuyPremium = async (priceId: string) => {
-    if (!priceId) {
-      Alert.alert(t('common.error'), t('subscription.productNotFound'));
-      return;
-    }
 
     setLoading(true);
     
     try {
-      await createCheckoutSession(priceId, 'subscription');
+      const result = await purchasePackage(packageType);
+      
+      if (result?.success) {
+        // Navigate to success screen or main app
+        router.replace('/(tabs)');
+      } else if (result?.cancelled) {
+        // User cancelled, do nothing
+      } else {
+        Alert.alert(t('common.error'), t('subscription.errorCreatingSession'));
+      }
     } catch (error) {
       console.error('Checkout error:', error);
       Alert.alert(t('common.error'), t('subscription.errorCreatingSession'));
@@ -87,7 +87,7 @@ export default function SubscriptionScreen() {
         subtitle: t('subscription.trialThenPrice'),
         badge: t('subscription.sevenDaysFree'),
         buttonTitle: t('common.loading'),
-        onPress: () => {},
+        onPress: () => handleBuyPremium('monthly'),
         loading: true,
       };
     }
@@ -141,46 +141,6 @@ export default function SubscriptionScreen() {
   };
 
   // Show checkout loading state
-  if (checkoutLoading) {
-    return (
-      <View style={styles.checkoutLoadingContainer}>
-        <View style={styles.checkoutLoadingContent}>
-          <TouchableOpacity 
-            style={styles.closeButton}
-            onPress={cancelCheckout}
-          >
-            <X size={24} color={Colors.textSecondary} />
-          </TouchableOpacity>
-          
-          <View style={styles.loadingIconContainer}>
-            <Wine size={48} color={Colors.primary} />
-          </View>
-          
-          <Text style={styles.checkoutTitle}>
-            {t('subscription.finalizePayment')}
-          </Text>
-          
-          <Text style={styles.checkoutMessage}>
-            {t('subscription.newTabOpened')}
-          </Text>
-          
-          <Text style={styles.checkoutInstructions}>
-            {t('subscription.comeBackAfterPayment')}
-          </Text>
-          
-          <View style={styles.checkoutActions}>
-            <Button
-              title={t('subscription.cancelPayment')}
-              onPress={cancelCheckout}
-              variant="outline"
-              size="medium"
-              fullWidth
-            />
-          </View>
-        </View>
-      </View>
-    );
-  }
 
   if (authLoading || subscriptionLoading) {
     return (
@@ -194,44 +154,7 @@ export default function SubscriptionScreen() {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {checkoutLoading ? (
-        <View style={styles.checkoutLoadingContainer}>
-          <View style={styles.checkoutLoadingContent}>
-            <TouchableOpacity 
-              style={styles.closeButton}
-              onPress={cancelCheckout}
-            >
-              <X size={24} color={Colors.textSecondary} />
-            </TouchableOpacity>
-            
-            <View style={styles.loadingIconContainer}>
-              <Wine size={48} color={Colors.primary} />
-            </View>
-            
-            <Text style={styles.checkoutTitle}>
-              {t('subscription.finalizePayment')}
-            </Text>
-            
-            <Text style={styles.checkoutMessage}>
-              {t('subscription.newTabOpened')}
-            </Text>
-            
-            <Text style={styles.checkoutInstructions}>
-              {t('subscription.comeBackAfterPayment')}
-            </Text>
-            
-            <View style={styles.checkoutActions}>
-              <Button
-                title={t('subscription.cancelPayment')}
-                onPress={cancelCheckout}
-                variant="outline"
-                size="medium"
-                fullWidth
-              />
-            </View>
-          </View>
-        </View>
-      ) : authLoading || subscriptionLoading ? (
+      {authLoading || subscriptionLoading ? (
         <View style={styles.loadingContainer}>
           <LoadingSpinner text={t('common.loading')} />
         </View>
@@ -350,10 +273,10 @@ export default function SubscriptionScreen() {
             <Button
               title={t('subscription.upgradeToPremium')}
               onPress={() => {
-                const priceId = selectedPlan === 'weekly' ? weeklyProduct?.priceId :
-                               selectedPlan === 'monthly' ? premiumProduct?.priceId :
-                               annualProduct?.priceId;
-                handleBuyPremium(priceId || '');
+                const packageType = selectedPlan === 'weekly' ? 'weekly' :
+                                 selectedPlan === 'monthly' ? 'monthly' :
+                                 'annual';
+                handleBuyPremium(packageType);
               }}
               variant="primary"
               size="large"
@@ -361,6 +284,13 @@ export default function SubscriptionScreen() {
               loading={loading}
             />
 
+            <Button
+              title="Restaurer les achats"
+              onPress={restorePurchases}
+              variant="outline"
+              size="medium"
+              fullWidth
+            />
             <Text style={styles.healthWarning}>
               {t('common.healthWarning')}
             </Text>
@@ -697,13 +627,5 @@ const styles = StyleSheet.create({
   },
   checkoutActions: {
     width: '100%',
-  },
-  healthWarning: {
-    fontSize: Typography.sizes.xs,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    marginTop: 24,
-    paddingHorizontal: 40,
-    fontStyle: 'italic',
   },
 });
