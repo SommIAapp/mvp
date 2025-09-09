@@ -24,31 +24,24 @@ export function useSubscription() {
   const initializeRevenueCat = async () => {
     if (!user) return;
     
-    // RevenueCat ne fonctionne que sur iOS et Android, pas sur web
-    if (Platform.OS === 'web') {
-      console.log('RevenueCat n\'est pas supporté sur web');
-      setLoading(false);
-      return;
-    }
-    
     try {
+      // RevenueCat détectera automatiquement Expo Go et activera le Preview Mode
       Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+      
+      // Configure avec la clé API - RevenueCat gère automatiquement le Preview Mode
       await Purchases.configure({ apiKey: API_KEY });
       
-      // Identifier l'utilisateur avec Supabase ID
+      // Le reste du code reste identique...
       await Purchases.logIn(user.id);
       
-      // Récupérer les offres
       const offerings = await Purchases.getOfferings();
       if (offerings.current) {
         setPackages(offerings.current.availablePackages);
       }
       
-      // Récupérer les infos client
       const info = await Purchases.getCustomerInfo();
       setCustomerInfo(info);
       
-      // Listener pour les mises à jour
       Purchases.addCustomerInfoUpdateListener(setCustomerInfo);
     } catch (error) {
       console.error('RevenueCat init error:', error);
@@ -126,7 +119,6 @@ export function useSubscription() {
   } : null;
 
   const isPremium = () => {
-    if (Platform.OS === 'web') return false;
     return customerInfo?.entitlements.active['premium'] !== undefined;
   };
 
