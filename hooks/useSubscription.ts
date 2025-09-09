@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import Purchases, { 
   CustomerInfo, 
   PurchasesPackage,
@@ -23,6 +23,13 @@ export function useSubscription() {
 
   const initializeRevenueCat = async () => {
     if (!user) return;
+    
+    // RevenueCat ne fonctionne que sur iOS et Android, pas sur web
+    if (Platform.OS === 'web') {
+      console.log('RevenueCat n\'est pas supporté sur web');
+      setLoading(false);
+      return;
+    }
     
     try {
       Purchases.setLogLevel(LOG_LEVEL.DEBUG);
@@ -119,6 +126,7 @@ export function useSubscription() {
   } : null;
 
   const isPremium = () => {
+    if (Platform.OS === 'web') return false;
     return customerInfo?.entitlements.active['premium'] !== undefined;
   };
 
