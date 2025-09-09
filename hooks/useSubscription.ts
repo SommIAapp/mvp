@@ -51,9 +51,9 @@ export function useSubscription() {
   };
 
   const purchasePackage = async (packageType: 'weekly' | 'monthly' | 'annual') => {
+  const purchasePackage = async (packageType: 'weekly' | 'annual') => {
     const packageMap = {
       weekly: packages.find(p => p.identifier === '$rc_weekly'),
-      monthly: packages.find(p => p.identifier === '$rc_monthly'),
       annual: packages.find(p => p.identifier === '$rc_annual')
     };
     
@@ -97,6 +97,7 @@ export function useSubscription() {
     setCheckoutLoading(true);
     
     try {
+      // Si monthly est sélectionné, utilise annual (puisqu'on n'a que weekly et annual)
       const packageType = planType === 'weekly' ? 'weekly' : 'annual';
       const result = await purchasePackage(packageType as 'weekly' | 'annual');
       
