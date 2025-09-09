@@ -13,7 +13,6 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/lib/supabase';
-import { stripeProducts } from '@/src/stripe-config';
 
 const { width, height } = Dimensions.get('window');
 
@@ -26,10 +25,6 @@ export default function SubscriptionScreen() {
   const { user, profile, loading: authLoading, isTrialExpired, startFreeTrial } = useAuth();
   const { createCheckoutSession, loading: subscriptionLoading, checkoutLoading, cancelCheckout } = useSubscription();
   const [loading, setLoading] = useState(false);
-
-  const premiumProduct = stripeProducts.find(p => p.name === 'SommIA Premium');
-  const weeklyProduct = stripeProducts.find(p => p.name === 'SommIA Premium (Hebdomadaire)');
-  const annualProduct = stripeProducts.find(p => p.name === 'SommIA Premium (Annuel)');
   const [selectedPlan, setSelectedPlan] = useState('annual'); // Pre-select annual plan
 
   const handleStartTrialFlow = async () => {
