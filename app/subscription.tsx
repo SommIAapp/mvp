@@ -23,7 +23,7 @@ export default function SubscriptionScreen() {
   const { t } = useTranslation();
   const { reason = 'trial_signup' } = useLocalSearchParams<{ reason?: PaywallReason }>();
   const { user, profile, loading: authLoading, isTrialExpired, startFreeTrial } = useAuth();
-  const { createCheckoutSession, loading: subscriptionLoading, checkoutLoading, cancelCheckout } = useSubscription();
+  const { packages, createCheckoutSession, loading: subscriptionLoading, checkoutLoading, cancelCheckout } = useSubscription();
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState('annual'); // Pre-select annual plan
 
@@ -273,69 +273,53 @@ export default function SubscriptionScreen() {
           <View style={styles.content}>
             <Text style={styles.pricingSectionTitle}>{t('subscription.choosePlan')}</Text>
             
-            <View style={styles.plansListContainer}>
-              {/* Plan Annuel - En premier et mis en avant */}
-              <TouchableOpacity 
-                style={[
-                  styles.planOption, 
-                  styles.recommendedPlan,
-                  selectedPlan === 'annual' && styles.selectedPlanOption
-                ]}
-                onPress={() => setSelectedPlan('annual')}
-              >
-                <View style={styles.planContent}>
-                  <View style={styles.planHeader}>
-                    <Text style={styles.planTitle}>{t('subscription.annual')}</Text>
-                    <View style={styles.saveBadge}>
-                      <Text style={styles.saveText}>{t('subscription.save50')}</Text>
-                    </View>
-                  </View>
-                  <Text style={styles.planPrice}>30€ {t('subscription.perYear')}</Text>
-                  <Text style={styles.planEquivalent}>{t('subscription.only')} 2,50€{t('subscription.perMonth')}</Text>
-                </View>
-                <View style={styles.radioButton}>
-                  {selectedPlan === 'annual' && <View style={styles.radioButtonInner} />}
-                </View>
-              </TouchableOpacity>
-
-              {/* Plan Mensuel */}
-              <TouchableOpacity 
-                style={[
-                  styles.planOption,
-                  selectedPlan === 'monthly' && styles.selectedPlanOption
-                ]}
-                onPress={() => setSelectedPlan('monthly')}
-              >
-                <View style={styles.planContent}>
-                  <View style={styles.planHeader}>
-                    <Text style={styles.planTitle}>{t('subscription.monthly')}</Text>
-                  </View>
-                  <Text style={styles.planPrice}>4,99€ {t('subscription.perMonth')}</Text>
-                </View>
-                <View style={styles.radioButton}>
-                  {selectedPlan === 'monthly' && <View style={styles.radioButtonInner} />}
-                </View>
-              </TouchableOpacity>
-
-              {/* Plan Hebdomadaire */}
-              <TouchableOpacity 
-                style={[
-                  styles.planOption,
-                  selectedPlan === 'weekly' && styles.selectedPlanOption
-                ]}
-                onPress={() => setSelectedPlan('weekly')}
-              >
-                <View style={styles.planContent}>
-                  <View style={styles.planHeader}>
-                    <Text style={styles.planTitle}>{t('subscription.weekly')}</Text>
-                  </View>
-                  <Text style={styles.planPrice}>2,99€ {t('subscription.perWeek')}</Text>
-                </View>
-                <View style={styles.radioButton}>
-                  {selectedPlan === 'weekly' && <View style={styles.radioButtonInner} />}
-                </View>
-              </TouchableOpacity>
-            </View>
+            {packages.length === 0 ? (
+              <Text style={styles.loadingText}>{t('common.loading')}</Text>
+            ) : (
+              <View style={styles.plansListContainer}>
+                {packages.map((pkg, index) => {
+                  const isWeekly = pkg.identifier === '$rc_weekly';
+                  const isAnnual = pkg.identifier === '$rc_annual';
+                  const planType = isWeekly ? 'weekly' : 'annual';
+                  const isSelected = selectedPlan === planType;
+                  const isRecommended = isAnnual;
+                  
+                  return (
+                    <TouchableOpacity 
+                      key={pkg.identifier}
+                      style={[
+                        styles.planOption,
+                        isRecommended && styles.recommendedPlan,
+                        isSelected && styles.selectedPlanOption
+                      ]}
+                      onPress={() => setSelectedPlan(planType)}
+                    >
+                      <View style={styles.planContent}>
+                        <View style={styles.planHeader}>
+                          <Text style={styles.planTitle}>
+                            {isWeekly ? t('subscription.weekly') : t('subscription.annual')}
+                          </Text>
+                          {isAnnual && (
+                            <View style={styles.saveBadge}>
+                              <Text style={styles.saveText}>{t('subscription.save50')}</Text>
+                            </View>
+                          )}
+                        </View>
+                        <Text style={styles.planPrice}>{pkg.product.priceString}</Text>
+                        {isAnnual && (
+                          <Text style={styles.planEquivalent}>
+                            {t('subscription.only')} {(pkg.product.price / 12).toFixed(2)}€{t('subscription.perMonth')}
+                          </Text>
+                        )}
+                      </View>
+                      <View style={styles.radioButton}>
+                        {isSelected && <View style={styles.radioButtonInner} />}
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
 
             <Button
               title={t('subscription.upgradeToPremium')}
@@ -693,5 +677,11 @@ const styles = StyleSheet.create({
     marginTop: 24,
     paddingHorizontal: 40,
     fontStyle: 'italic',
+  },
+  loadingText: {
+    fontSize: Typography.sizes.base,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginVertical: 20,
   },
 });
