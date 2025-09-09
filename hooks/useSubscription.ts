@@ -15,6 +15,7 @@ export function useSubscription() {
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   useEffect(() => {
     initializeRevenueCat();
@@ -92,6 +93,31 @@ export function useSubscription() {
     }
   };
 
+  const createCheckoutSession = async (planType: string) => {
+    setCheckoutLoading(true);
+    
+    try {
+      const packageType = planType === 'weekly' ? 'weekly' : 'annual';
+      const result = await purchasePackage(packageType as 'weekly' | 'annual');
+      
+      if (result?.success) {
+        // Navigation gérée par subscription.tsx
+      }
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
+
+  const cancelCheckout = () => {
+    setCheckoutLoading(false);
+  };
+
+  const subscription = customerInfo ? {
+    id: 'revenucat_sub',
+    status: isPremium() ? 'active' : 'canceled',
+    current_period_end: customerInfo.latestExpirationDate || null,
+  } : null;
+
   const isPremium = () => {
     return customerInfo?.entitlements.active['premium'] !== undefined;
   };
@@ -100,8 +126,12 @@ export function useSubscription() {
     customerInfo,
     packages,
     loading,
+    checkoutLoading,
     isPremium,
     purchasePackage,
     restorePurchases,
+    createCheckoutSession,
+    cancelCheckout,
+    subscription,
   };
 }
