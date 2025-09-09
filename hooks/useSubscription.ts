@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Alert, Platform } from 'react-native';
+import Constants from 'expo-constants';
 import Purchases, { 
   CustomerInfo, 
   PurchasesPackage,
@@ -24,14 +25,36 @@ export function useSubscription() {
   const initializeRevenueCat = async () => {
     if (!user) return;
     
+    // Détecte si on est dans Expo Go
+    const isExpoGo = Constants.appOwnership === 'expo';
+    
+    if (Platform.OS === 'web' || isExpoGo) {
+      console.log('RevenueCat non disponible dans cet environnement - utilisation de données mock');
+      
+      // Créer des packages mock pour le développement
+      const mockPackages = [
+        {
+          identifier: '$rc_weekly',
+          product: { priceString: '2,99€ / semaine', price: 2.99 }
+        },
+        {
+          identifier: '$rc_annual',
+          product: { priceString: '30€ / an', price: 30 }
+        }
+      ];
+      
+      setPackages(mockPackages);
+      setLoading(false);
+      return;
+    }
+    
     try {
-      // RevenueCat détectera automatiquement Expo Go et activera le Preview Mode
+      // Le reste du code RevenueCat pour les builds natifs...
       Purchases.setLogLevel(LOG_LEVEL.DEBUG);
       
-      // Configure avec la clé API - RevenueCat gère automatiquement le Preview Mode
+      // Configure avec la clé API
       await Purchases.configure({ apiKey: API_KEY });
       
-      // Le reste du code reste identique...
       await Purchases.logIn(user.id);
       
       const offerings = await Purchases.getOfferings();
@@ -119,6 +142,7 @@ export function useSubscription() {
   } : null;
 
   const isPremium = () => {
+    if (Platform.OS === 'web' || Constants.appOwnership === 'expo') return false;
     return customerInfo?.entitlements.active['premium'] !== undefined;
   };
 
