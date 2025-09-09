@@ -51,6 +51,7 @@ export function useSubscription() {
   };
 
   const purchasePackage = async (packageType: 'weekly' | 'monthly' | 'annual') => {
+  }
   const purchasePackage = async (packageType: 'weekly' | 'annual') => {
     const packageMap = {
       weekly: packages.find(p => p.identifier === '$rc_weekly'),
