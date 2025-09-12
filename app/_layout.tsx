@@ -6,14 +6,20 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { AuthProvider } from '@/context/AuthContext';
+import { initializePurchases } from '@/lib/purchases';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 
 export default function RootLayout() {
-  console.log('📱 Layout: RootLayout rendering');
+  console.log('🔱 Layout: RootLayout rendering');
   
   useFrameworkReady();
   const { isConnected } = useNetworkStatus();
+
+  // Initialiser RevenueCat au démarrage de l'app
+  useEffect(() => {
+    initializePurchases();
+  }, []);
 
   return (
     <AuthProvider>
