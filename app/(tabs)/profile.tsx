@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { 
   View, 
   Text, 
@@ -25,7 +26,7 @@ import { supabase } from '@/lib/supabase';
 export default function ProfileScreen() {
   const router = useRouter();
   const { t, locale, changeLanguage } = useTranslation();
-  const { user, profile, loading: authLoading, signOut, getTrialDaysRemaining } = useAuth();
+  const { user, profile, loading: authLoading, signOut, getTrialDaysRemaining, fetchProfile } = useAuth();
   const { subscription, loading: subscriptionLoading, isPremium } = useSubscription();
   const [totalRecommendationsCount, setTotalRecommendationsCount] = useState(0);
   const [loadingStats, setLoadingStats] = useState(true);
@@ -47,6 +48,15 @@ export default function ProfileScreen() {
       fetchTotalRecommendations();
     }
   }, [user, profile]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('📱 Profile: Screen focused, refreshing profile...');
+      if (user?.id) {
+        fetchProfile(user.id);
+      }
+    }, [user?.id])
+  );
 
   const fetchTotalRecommendations = async () => {
     if (!user) return;
@@ -94,6 +104,12 @@ export default function ProfileScreen() {
   };
 
   const getSubscriptionStatus = () => {
+    console.log('🔍 Profile Status Debug:');
+    console.log('- Loading:', subscriptionLoading);
+    console.log('- isPremium:', isPremium());
+    console.log('- Profile plan:', profile?.subscription_plan);
+    console.log('- Profile daily_count:', profile?.daily_count);
+    
     if (subscriptionLoading) return { text: t('common.loading'), color: Colors.textSecondary };
     
     if (isPremium()) {
