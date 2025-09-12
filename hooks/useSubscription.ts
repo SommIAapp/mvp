@@ -1,15 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Alert, Platform } from 'react-native';
-import Constants from 'expo-constants';
-import Purchases, { 
-  CustomerInfo, 
-  PurchasesPackage,
-  LOG_LEVEL 
-} from 'react-native-purchases';
+import Purchases, { CustomerInfo, PurchasesPackage } from 'react-native-purchases';
 import { useAuth } from './useAuth';
 import { supabase } from '@/lib/supabase';
-
-const API_KEY = 'appl_wTyEDGymBMkhfAztsEoeVrdWOmm';
 
 export function useSubscription() {
   const { user } = useAuth();
@@ -19,61 +12,60 @@ export function useSubscription() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   useEffect(() => {
-    initializeRevenueCat();
+    if (user) {
+      initializeRevenueCat();
+    } else {
+      setLoading(false);
+    }
   }, [user]);
 
   const initializeRevenueCat = async () => {
-    if (!user) return;
-    
-    // Détecte si on est dans Expo Go
-    const isExpoGo = Constants.appOwnership === 'expo';
-    
-    if (Platform.OS === 'web' || isExpoGo) {
-      console.log('RevenueCat non disponible dans cet environnement - utilisation de données mock');
-      
-      // Créer des packages mock pour le développement
-      const mockPackages = [
-        {
-          identifier: '$rc_weekly',
-          product: { priceString: '2,99€ / semaine', price: 2.99 }
-        },
-        {
-          identifier: '$rc_annual',
-          product: { priceString: '30€ / an', price: 30 }
-        }
-      ];
-      
-      setPackages(mockPackages);
+    if (!user) {
       setLoading(false);
       return;
     }
     
     try {
-      // Le reste du code RevenueCat pour les builds natifs...
-      Purchases.setLogLevel(LOG_LEVEL.DEBUG);
-      
-      // Configure avec la clé API
-      await Purchases.configure({ apiKey: API_KEY });
-      
+      // RevenueCat est déjà configuré dans _layout.tsx
+      // On se connecte juste avec l'utilisateur
       await Purchases.logIn(user.id);
       
+      // Récupérer les offerings
       const offerings = await Purchases.getOfferings();
-      if (offerings.current) {
+      if (offerings.current && offerings.current.availablePackages) {
         setPackages(offerings.current.availablePackages);
       }
       
+      // Récupérer les infos client
       const info = await Purchases.getCustomerInfo();
       setCustomerInfo(info);
       
-      Purchases.addCustomerInfoUpdateListener(setCustomerInfo);
+      // Écouter les changements
+      const listener = (info: CustomerInfo) => {
+        setCustomerInfo(info);
+      };
+      Purchases.addCustomerInfoUpdateListener(listener);
+      
+      // Cleanup listener
+      return () => {
+        Purchases.removeCustomerInfoUpdateListener(listener);
+      };
     } catch (error) {
-      console.error('RevenueCat init error:', error);
+      console.error('RevenueCat error:', error);
+      // Ne pas faire crasher l'app
+      setPackages([]);
+      setCustomerInfo(null);
     } finally {
       setLoading(false);
     }
   };
 
   const purchasePackage = async (packageType: 'weekly' | 'annual') => {
+    if (!user) {
+      Alert.alert('Erreur', 'Vous devez être connecté pour souscrire');
+      return { success: false };
+    }
+
     const packageMap = {
       weekly: packages.find(p => p.identifier === '$rc_weekly'),
       annual: packages.find(p => p.identifier === '$rc_annual')
@@ -82,7 +74,7 @@ export function useSubscription() {
     const selectedPackage = packageMap[packageType];
     if (!selectedPackage) {
       Alert.alert('Erreur', 'Produit non trouvé');
-      return;
+      return { success: false };
     }
 
     try {
@@ -93,7 +85,7 @@ export function useSubscription() {
       await supabase.from('profiles').update({
         subscription_plan: 'premium',
         subscription_updated_at: new Date().toISOString()
-      }).eq('id', user?.id);
+      }).eq('id', user.id);
       
       return { success: true };
     } catch (error: any) {
@@ -110,8 +102,11 @@ export function useSubscription() {
       const customerInfo = await Purchases.restorePurchases();
       setCustomerInfo(customerInfo);
       Alert.alert('Succès', 'Achats restaurés');
+      return true;
     } catch (error) {
+      console.error('Restore error:', error);
       Alert.alert('Erreur', 'Impossible de restaurer les achats');
+      return false;
     }
   };
 
@@ -119,7 +114,6 @@ export function useSubscription() {
     setCheckoutLoading(true);
     
     try {
-      // Si monthly est sélectionné, utilise annual (puisqu'on n'a que weekly et annual)
       const packageType = planType === 'weekly' ? 'weekly' : 'annual';
       const result = await purchasePackage(packageType as 'weekly' | 'annual');
       
@@ -135,16 +129,16 @@ export function useSubscription() {
     setCheckoutLoading(false);
   };
 
+  const isPremium = useCallback(() => {
+    if (!customerInfo) return false;
+    return customerInfo.entitlements.active['premium'] !== undefined;
+  }, [customerInfo]);
+
   const subscription = customerInfo ? {
     id: 'revenucat_sub',
     status: isPremium() ? 'active' : 'canceled',
     current_period_end: customerInfo.latestExpirationDate || null,
   } : null;
-
-  const isPremium = () => {
-    if (Platform.OS === 'web' || Constants.appOwnership === 'expo') return false;
-    return customerInfo?.entitlements.active['premium'] !== undefined;
-  };
 
   return {
     customerInfo,
