@@ -5,6 +5,22 @@ import { useAuth } from './useAuth';
 import { supabase } from '@/lib/supabase';
 
 export function useSubscription() {
+  // Protection pour environnement web
+  if (Platform.OS === 'web') {
+    return {
+      customerInfo: null,
+      packages: [],
+      loading: false,
+      checkoutLoading: false,
+      isPremium: () => false,
+      purchasePackage: async () => ({ success: false }),
+      restorePurchases: async () => false,
+      createCheckoutSession: async () => {},
+      cancelCheckout: () => {},
+      subscription: null,
+    };
+  }
+
   const { user } = useAuth();
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
