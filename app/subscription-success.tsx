@@ -7,20 +7,23 @@ import Svg, { Path } from 'react-native-svg';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
-import { useSubscription } from '@/hooks/useSubscription';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function SubscriptionSuccessScreen() {
   const router = useRouter();
-  const { fetchSubscription } = useSubscription();
+  const { fetchProfile, user } = useAuth();
 
   useEffect(() => {
-    // Refresh subscription data after successful payment
+    // Rafraîchir le profil après le paiement réussi
     const timer = setTimeout(() => {
-      fetchSubscription();
+      if (user?.id) {
+        console.log('✅ Refreshing profile after successful payment...');
+        fetchProfile(user.id);
+      }
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [user]);
 
   const handleContinue = () => {
     router.replace('/(tabs)');
