@@ -6,6 +6,12 @@ const REVENUECAT_API_KEY = Platform.OS === 'ios'
   : 'goog_XXXXXXXXXXXXX'; // Ajoutez votre clé Android quand vous l'aurez
 
 export const initializePurchases = async () => {
+  // Protection pour environnement web
+  if (Platform.OS === 'web') {
+    console.log('⚠️ RevenueCat skipped on web platform');
+    return;
+  }
+  
   try {
     console.log('🚀 Initializing RevenueCat...');
     
