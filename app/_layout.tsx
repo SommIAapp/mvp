@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { View, Text, StyleSheet } from 'react-native';
@@ -6,7 +5,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { AuthProvider } from '@/context/AuthContext';
-import { initializePurchases } from '@/lib/purchases';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 
@@ -15,11 +13,6 @@ export default function RootLayout() {
   
   useFrameworkReady();
   const { isConnected } = useNetworkStatus();
-
-  // Initialiser RevenueCat au démarrage de l'app
-  useEffect(() => {
-    initializePurchases();
-  }, []);
 
   return (
     <AuthProvider>
@@ -34,7 +27,6 @@ export default function RootLayout() {
             <Stack.Screen name="splash" />
             <Stack.Screen name="welcome" />
             <Stack.Screen name="auth/signin" />
-            <Stack.Screen name="auth/signup" />
             <Stack.Screen name="auth/onboarding" />
             <Stack.Screen name="subscription" options={{ presentation: 'modal' }} />
             <Stack.Screen name="subscription-success" options={{ presentation: 'modal' }} />
@@ -59,7 +51,7 @@ const styles = StyleSheet.create({
     right: 0,
     backgroundColor: Colors.error,
     paddingVertical: 8,
-    paddingTop: 50, // Account for status bar
+    paddingTop: 50,
     alignItems: 'center',
     zIndex: 9999,
     shadowColor: '#000',
