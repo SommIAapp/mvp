@@ -112,12 +112,6 @@ export default function ProfileScreen() {
     
     if (subscriptionLoading) return { text: t('common.loading'), color: Colors.textSecondary };
     
-    // Vérifier d'abord le profil Supabase
-    if (profile?.subscription_plan === 'premium') {
-      return { text: t('profile.premium'), color: Colors.secondary };
-    }
-    
-    // Ensuite vérifier RevenueCat
     if (isPremium()) {
       return { text: t('profile.premium'), color: Colors.secondary };
     }
@@ -132,12 +126,6 @@ export default function ProfileScreen() {
   const getUsageDisplay = () => {
     if (!profile) return t('common.loading');
     
-    // Vérifier d'abord le profil Supabase
-    if (profile?.subscription_plan === 'premium') {
-      return t('profile.unlimitedAccess');
-    }
-    
-    // Ensuite vérifier RevenueCat
     if (isPremium()) {
       return t('profile.unlimitedAccess');
     }
@@ -244,7 +232,7 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          {(profile?.subscription_plan !== 'premium' && !isPremium()) && (
+          {!isPremium() && (
             <Button
               title={t('profile.upgradeToPremium')}
               onPress={() => router.push({
@@ -258,7 +246,7 @@ export default function ProfileScreen() {
           )}
         </View>
         {/* Bouton pour gérer l'abonnement Apple */}
-        {(profile?.subscription_plan === 'premium' || isPremium()) && (
+        {isPremium() && (
           <TouchableOpacity 
             style={styles.manageSubscriptionButton}
             onPress={() => Linking.openURL('https://apps.apple.com/account/subscriptions')}

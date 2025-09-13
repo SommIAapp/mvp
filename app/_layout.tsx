@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { View, Text, StyleSheet } from 'react-native';
@@ -5,6 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { AuthProvider } from '@/context/AuthContext';
+import { initializePurchases } from '@/lib/purchases';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 
@@ -13,6 +15,11 @@ export default function RootLayout() {
   
   useFrameworkReady();
   const { isConnected } = useNetworkStatus();
+
+  // Initialiser RevenueCat au démarrage de l'app
+  useEffect(() => {
+    initializePurchases();
+  }, []);
 
   return (
     <AuthProvider>

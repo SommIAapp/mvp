@@ -4,10 +4,6 @@ import Purchases, { CustomerInfo, PurchasesPackage } from 'react-native-purchase
 import { useAuth } from './useAuth';
 import { supabase } from '@/lib/supabase';
 
-const REVENUECAT_API_KEY = Platform.OS === 'ios' 
-  ? 'appl_wTyEDGymBMkhfAztsEoeVrdWOmm'
-  : 'goog_XXXXXXXXXXXXX'; // Ajoutez votre clé Android quand vous l'aurez
-
 export function useSubscription() {
   // Protection pour environnement web
   if (Platform.OS === 'web') {
@@ -46,15 +42,9 @@ export function useSubscription() {
     }
     
     try {
-      // Configure RevenueCat avec l'ID utilisateur Supabase
-      console.log('🚀 Configuring RevenueCat with user ID:', user.id);
-      
-      await Purchases.configure({
-        apiKey: REVENUECAT_API_KEY,
-        appUserID: user.id, // Utiliser l'ID Supabase directement
-        observerMode: false,
-        useAmazon: false,
-      });
+      // RevenueCat est déjà configuré dans _layout.tsx
+      // On se connecte juste avec l'utilisateur
+      await Purchases.logIn(user.id);
       
       // Récupérer les offerings
       const offerings = await Purchases.getOfferings();
@@ -108,7 +98,7 @@ export function useSubscription() {
       setCustomerInfo(customerInfo);
       
       // Mettre à jour le profil Supabase
-      await supabase.from('user_profiles').update({
+      await supabase.from('profiles').update({
         subscription_plan: 'premium',
         subscription_updated_at: new Date().toISOString()
       }).eq('id', user.id);
