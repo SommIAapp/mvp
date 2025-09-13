@@ -1,68 +1,22 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ArrowLeft } from 'lucide-react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
-import { Input } from '@/components/Input';
-import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export default function SignInScreen() {
   const router = useRouter();
-  const { signIn } = useAuth();
   const { t } = useTranslation();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [appleLoading, setAppleLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
-
-  const validateForm = () => {
-    const newErrors: { email?: string; password?: string } = {};
-    
-    if (!email) {
-      newErrors.email = 'Email requis';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Email invalide';
-    }
-    
-    if (!password) {
-      newErrors.password = 'Mot de passe requis';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSignIn = async () => {
-    if (!validateForm()) return;
-    
-    setLoading(true);
-    const { error } = await signIn(email, password);
-    
-    if (error) {
-      if (error.message?.includes('Email not confirmed')) {
-        Alert.alert(
-          'Email non confirmé', 
-          'Veuillez vérifier votre boîte email et cliquer sur le lien de confirmation avant de vous connecter.'
-        );
-      } else {
-        Alert.alert('Erreur', 'Email ou mot de passe incorrect');
-      }
-    } else {
-      router.replace('/(tabs)');
-    }
-    
-    setLoading(false);
-  };
 
   const handleAppleSignIn = async () => {
     try {
-      setAppleLoading(true);
+      setLoading(true);
       
       const credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
@@ -80,7 +34,7 @@ export default function SignInScreen() {
         if (error) throw error;
         
         // Si c'est un nouvel utilisateur, créer le profil avec essai gratuit
-        if (data.user && !error) {
+        if (data.user) {
           const { data: profile } = await supabase
             .from('user_profiles')
             .select('*')
@@ -96,10 +50,14 @@ export default function SignInScreen() {
               subscription_plan: 'trial',
               trial_start_date: new Date().toISOString(),
             });
+            
+            // Nouvel utilisateur -> onboarding
+            router.replace('/auth/onboarding');
+          } else {
+            // Utilisateur existant -> app
+            router.replace('/(tabs)');
           }
         }
-        
-        router.replace('/(tabs)');
       }
     } catch (error: any) {
       if (error.code === 'ERR_CANCELED') {
@@ -108,12 +66,12 @@ export default function SignInScreen() {
         Alert.alert('Erreur', 'Connexion Apple échouée');
       }
     } finally {
-      setAppleLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <View style={styles.container}>
       <View style={styles.header}>
         <Button
           title=""
@@ -125,66 +83,23 @@ export default function SignInScreen() {
       </View>
 
       <View style={styles.content}>
-        <View style={styles.form}>
-          <Input
-            label="Email"
-            placeholder="ton@email.com"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            error={errors.email}
-          />
-          
-          <Input
-            label="Mot de passe"
-            placeholder="Ton mot de passe"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            error={errors.password}
-          />
-          
-          <Button
-            title="Se connecter"
-            onPress={handleSignIn}
-            variant="primary"
-            size="large"
-            fullWidth
-            loading={loading}
-          />
+        <Text style={styles.subtitle}>
+          Connectez-vous avec votre compte Apple pour accéder à SOMMIA
+        </Text>
 
-          {Platform.OS === 'ios' && (
-            <>
-              <View style={styles.divider}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>ou</Text>
-                <View style={styles.dividerLine} />
-              </View>
+        <AppleAuthentication.AppleAuthenticationButton
+          buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+          buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+          cornerRadius={12}
+          style={styles.appleButton}
+          onPress={handleAppleSignIn}
+        />
 
-              <AppleAuthentication.AppleAuthenticationButton
-                buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-                buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-                cornerRadius={8}
-                style={{ width: '100%', height: 52 }}
-                onPress={handleAppleSignIn}
-              />
-            </>
-          )}
-        </View>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            Pas encore de compte ?{' '}
-            <Text 
-              style={styles.link}
-              onPress={() => router.push('/auth/signup')}
-            >
-              Créer un compte
-            </Text>
-          </Text>
-        </View>
+        <Text style={styles.securityText}>
+          Votre confidentialité est garantie. SOMMIA ne partage jamais vos données.
+        </Text>
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
@@ -209,35 +124,24 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
-  },
-  form: {
-    marginBottom: 32,
-  },
-  footer: {
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 24,
   },
-  footerText: {
-    fontSize: Typography.sizes.base,
+  subtitle: {
+    fontSize: Typography.sizes.lg,
     color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 48,
   },
-  link: {
-    color: Colors.primary,
-    fontWeight: Typography.weights.semibold,
+  appleButton: {
+    width: '100%',
+    height: 56,
   },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 20,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: Colors.border,
-  },
-  dividerText: {
-    marginHorizontal: 10,
-    color: Colors.textSecondary,
+  securityText: {
     fontSize: Typography.sizes.sm,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 24,
+    paddingHorizontal: 20,
   },
 });
