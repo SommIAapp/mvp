@@ -1,24 +1,81 @@
 import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { View, Text, StyleSheet, ScrollView, Dimensions, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Alert } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Sparkles, Clock, Wine } from 'lucide-react-native';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
-import { Button } from '@/components/Button';
+import { supabase } from '@/lib/supabase';
 
 const { width, height } = Dimensions.get('window');
 
 export default function WelcomeScreen() {
   const router = useRouter();
   const { t, locale, changeLanguage } = useTranslation();
+  const [loading, setLoading] = React.useState(false);
 
   const handleLanguageChange = async (lang: string) => {
     changeLanguage(lang);
     await AsyncStorage.setItem('user_language', lang);
+  };
+
+  const handleAppleSignIn = async () => {
+    try {
+      setLoading(true);
+      
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+        ],
+      });
+
+      if (credential.identityToken) {
+        const { data, error } = await supabase.auth.signInWithIdToken({
+          provider: 'apple',
+          token: credential.identityToken,
+        });
+
+        if (error) throw error;
+        
+        if (data.user) {
+          const { data: profile } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('id', data.user.id)
+            .single();
+
+          if (!profile) {
+            // Nouvel utilisateur - créer profil avec essai gratuit
+            await supabase.from('user_profiles').insert({
+              id: data.user.id,
+              email: data.user.email || credential.email,
+              full_name: credential.fullName ? 
+                `${credential.fullName.givenName || ''} ${credential.fullName.familyName || ''}`.trim() : null,
+              subscription_plan: 'trial',
+              trial_start_date: new Date().toISOString(),
+              daily_count: 0,
+              monthly_count: 0,
+            });
+            
+            // Aller à l'onboarding pour nouveau utilisateur
+            router.replace('/auth/onboarding');
+          } else {
+            // Utilisateur existant - aller directement à l'app
+            router.replace('/(tabs)');
+          }
+        }
+      }
+    } catch (error: any) {
+      if (error.code !== 'ERR_CANCELED') {
+        Alert.alert('Erreur', 'Connexion Apple échouée');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -58,7 +115,6 @@ export default function WelcomeScreen() {
           </View>
         </LinearGradient>
         
-        {/* Wave Transition */}
         <View style={styles.waveContainer}>
           <Svg
             height="40"
@@ -75,31 +131,30 @@ export default function WelcomeScreen() {
       </View>
 
       <View style={styles.bottomSection}>
-        <View style={styles.featuresSection}>
+        <View style={styles.contentSection}>
+          <Text style={styles.description}>
+            {t('welcome.description')}
+          </Text>
         </View>
 
         <View style={styles.buttonSection}>
-          <Button
-            title={t('welcome.signUp')}
-            onPress={() => router.push('/auth/signup')}
-            variant="primary"
-            size="large"
-            fullWidth
+          <AppleAuthentication.AppleAuthenticationButton
+            buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
+            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+            cornerRadius={28}
+            style={styles.appleButton}
+            onPress={handleAppleSignIn}
           />
           
-          <Button
-            title={t('welcome.signIn')}
-            onPress={() => router.push('/auth/signin')}
-            variant="secondary"
-            size="large"
-            fullWidth
-          />
+          <Text style={styles.securityText}>
+            {t('welcome.privacy')}
+          </Text>
         </View>
       </View>
 
-       <Text style={styles.healthWarning}>
-         {t('common.healthWarning')}
-       </Text>
+      <Text style={styles.healthWarning}>
+        {t('common.healthWarning')}
+      </Text>
     </View>
   );
 }
@@ -110,7 +165,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.accent,
   },
   topSection: {
-    height: height * 0.6,
+    height: height * 0.5,
     position: 'relative',
   },
   gradientBackground: {
@@ -136,8 +191,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.accent,
     paddingHorizontal: 24,
-    borderRadius: 26,
     paddingBottom: 40,
+    justifyContent: 'space-between',
   },
   heroContent: {
     alignItems: 'center',
@@ -153,22 +208,10 @@ const styles = StyleSheet.create({
     color: Colors.accent,
     marginBottom: 8,
     letterSpacing: 1,
-  },
-  subtitle: {
-    fontSize: Typography.sizes.xl,
-    fontWeight: Typography.weights.semibold,
-    color: Colors.accent,
     textAlign: 'center',
   },
-  welcomeTitle: {
-    fontSize: Typography.sizes.xxl,
-    fontWeight: Typography.weights.bold,
-    color: Colors.textPrimary,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  descriptionSection: {
-    marginBottom: 40,
+  contentSection: {
+    marginTop: 40,
   },
   description: {
     fontSize: Typography.sizes.lg,
@@ -176,23 +219,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: Typography.sizes.lg * Typography.lineHeights.relaxed,
   },
-  featuresSection: {
-    marginBottom: 48,
-  },
-  feature: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-    paddingHorizontal: 8,
-  },
-  featureText: {
-    fontSize: Typography.sizes.base,
-    color: Colors.textPrimary,
-    marginLeft: 16,
-    flex: 1,
-  },
   buttonSection: {
     gap: 16,
+    alignItems: 'center',
+  },
+  appleButton: {
+    width: '100%',
+    height: 56,
+  },
+  securityText: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.textTertiary,
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
   healthWarning: {
     fontSize: Typography.sizes.xs,
