@@ -11,8 +11,7 @@
     "title": "Welcome to",
     "subtitle": "SOMMIA",
     "description": "Find the perfect wine for every dish",
-    "signIn": "I already have an account",
-    "signUp": "Create an account"
+    "privacy": "Secure sign-in. Your data stays private."
   },
   "auth": {
     "email": "Email",
