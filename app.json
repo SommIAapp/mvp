@@ -8,10 +8,14 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "cli": {
+      "appVersionSource": "remote"
+    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "fr.sommia.app",
-      "buildNumber": "6",
+      "buildNumber": "11",
+      "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "SOMMIA utilise votre appareil photo pour prendre des photos de vos plats afin de vous recommander les meilleurs accords mets et vins.",
