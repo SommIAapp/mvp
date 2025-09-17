@@ -8,6 +8,7 @@ type UserProfile = Database['public']['Tables']['user_profiles']['Row'] & {
   trial_start_date: string | null;
   trial_end_date: string | null;
   last_daily_reset: string | null;
+  apple_user_id: string | null;
 };
 
 interface AuthContextType {

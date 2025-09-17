@@ -35,6 +35,24 @@ export default function SignInScreen() {
         
         // Si c'est un nouvel utilisateur, créer le profil avec essai gratuit
         if (data.user) {
+          // Chercher d'abord par apple_user_id pour éviter les doublons
+          const { data: existingProfile } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('apple_user_id', credential.user)
+            .single();
+
+          if (existingProfile) {
+            // Profil existant trouvé par apple_user_id
+            if (existingProfile.subscription_plan === 'free' && !existingProfile.trial_start_date) {
+              router.replace('/auth/onboarding');
+            } else {
+              router.replace('/(tabs)');
+            }
+            return;
+          }
+
+          // Si pas trouvé par apple_user_id, chercher par Supabase user ID
           const { data: profile } = await supabase
             .from('user_profiles')
             .select('*')
@@ -42,19 +60,27 @@ export default function SignInScreen() {
             .single();
 
           if (!profile) {
+            const fullName = credential.fullName ? 
+              `${credential.fullName.givenName || ''} ${credential.fullName.familyName || ''}`.trim() : null;
+            
             await supabase.from('user_profiles').insert({
               id: data.user.id,
               email: data.user.email || credential.email,
-              full_name: credential.fullName ? 
-                `${credential.fullName.givenName || ''} ${credential.fullName.familyName || ''}`.trim() : null,
-              subscription_plan: 'trial',
-              trial_start_date: new Date().toISOString(),
+              full_name: fullName,
+              apple_user_id: credential.user,
+              subscription_plan: 'free',
+              daily_count: 0,
+              monthly_count: 0,
             });
             
-            // Nouvel utilisateur -> onboarding
             router.replace('/auth/onboarding');
           } else {
-            // Utilisateur existant -> app
+            // Mettre à jour apple_user_id si manquant
+            if (!profile.apple_user_id) {
+              await supabase.from('user_profiles')
+                .update({ apple_user_id: credential.user })
+                .eq('id', data.user.id);
+            }
             router.replace('/(tabs)');
           }
         }

@@ -53,6 +53,29 @@ export default function WelcomeScreen() {
         console.log('5. Success! User:', data.user?.id);
         
         if (data.user) {
+          // Étape 1: Chercher d'abord par apple_user_id pour éviter les doublons
+          console.log('6. Checking for existing profile with apple_user_id:', credential.user);
+          const { data: existingProfile } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('apple_user_id', credential.user)
+            .single();
+
+          if (existingProfile) {
+            console.log('7. Found existing profile with apple_user_id, using existing profile');
+            // Profil existant trouvé par apple_user_id - naviguer selon le statut
+            if (existingProfile.subscription_plan === 'free' && !existingProfile.trial_start_date) {
+              // Utilisateur existant qui n'a pas encore fait son onboarding
+              router.replace('/auth/onboarding');
+            } else {
+              // Utilisateur existant avec essai déjà fait ou premium
+              router.replace('/(tabs)');
+            }
+            return;
+          }
+
+          // Étape 2: Si pas trouvé par apple_user_id, chercher par Supabase user ID (logique existante)
+          console.log('8. No profile found with apple_user_id, checking by Supabase user ID');
           const { data: profile } = await supabase
             .from('user_profiles')
             .select('*')
@@ -60,22 +83,31 @@ export default function WelcomeScreen() {
             .single();
 
           if (!profile) {
-            // Nouvel utilisateur - créer profil avec essai gratuit
+            // Nouvel utilisateur - créer profil avec apple_user_id
+            console.log('9. Creating new profile with apple_user_id:', credential.user);
+            const fullName = credential.fullName ? 
+              `${credential.fullName.givenName || ''} ${credential.fullName.familyName || ''}`.trim() : null;
+            
             await supabase.from('user_profiles').insert({
               id: data.user.id,
               email: data.user.email || credential.email,
-              full_name: credential.fullName ?
-                `${credential.fullName.givenName || ''} ${credential.fullName.familyName || ''}`.trim() : null,
-              subscription_plan: 'trial',
-              trial_start_date: new Date().toISOString(),
+              full_name: fullName,
+              apple_user_id: credential.user,
+              subscription_plan: 'free',
               daily_count: 0,
               monthly_count: 0,
             });
             
-            // Aller à l'onboarding pour nouveau utilisateur
+            console.log('10. New profile created, going to onboarding');
             router.replace('/auth/onboarding');
           } else {
-            // Utilisateur existant - aller directement à l'app
+            // Profil existant trouvé par Supabase ID - mettre à jour avec apple_user_id si manquant
+            console.log('11. Found existing profile by Supabase ID, updating apple_user_id if missing');
+            if (!profile.apple_user_id) {
+              await supabase.from('user_profiles')
+                .update({ apple_user_id: credential.user })
+                .eq('id', data.user.id);
+            }
             router.replace('/(tabs)');
           }
         }
