@@ -114,6 +114,15 @@ export default function OnboardingScreen() {
           <Text style={styles.subtitle}>{currentStepData.subtitle}</Text>
           <Text style={styles.description}>{currentStepData.description}</Text>
 
+          {/* GIF pour l'écran trial */}
+          {currentStep === 1 && (
+            <Image
+              source={require('@/assets/images/giftrial.gif')}
+              style={styles.trialGif}
+              resizeMode="contain"
+            />
+          )}
+
           {/* Actions selon l'étape */}
           {currentStep === 0 ? (
             // Age Gate
@@ -272,5 +281,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontStyle: 'italic',
     paddingHorizontal: 40,
+  },
+  trialGif: {
+    width: width - 80,
+    height: (width - 80) * 0.6, // Ratio proportionnel
+    borderRadius: 20,
+    marginVertical: 24,
+    alignSelf: 'center',
   },
 });
