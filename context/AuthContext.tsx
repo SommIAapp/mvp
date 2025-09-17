@@ -6,6 +6,7 @@ import { secureLog, secureError, sanitizeForLogging, logMinimal } from '@/utils/
 
 type UserProfile = Database['public']['Tables']['user_profiles']['Row'] & {
   trial_start_date: string | null;
+  trial_end_date: string | null;
   last_daily_reset: string | null;
 };
 
@@ -157,6 +158,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           daily_count: 0, // Explicitly set to 0 for new users
           monthly_count: 0,
           trial_start_date: null, // No trial started yet
+          trial_end_date: null, // No trial started yet
           last_daily_reset: null,
           created_at: now,
         };
@@ -307,6 +309,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       try {
         const now = new Date().toISOString();
+        const trialEnd = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 1 day from now
         
         const { data: updatedProfile, error: trialError } = await supabase
           .from('user_profiles')
@@ -315,6 +318,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             email: data.user.email || '',
             subscription_plan: 'trial',
             trial_start_date: now,
+            trial_end_date: trialEnd,
             daily_count: 0,
             monthly_count: 0,
             last_daily_reset: now,
@@ -435,6 +439,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     try {
       const now = new Date().toISOString();
+      const trialEnd = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 1 day from now
       
       const { data: updatedProfile, error } = await supabase
         .from('user_profiles')
@@ -443,6 +448,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           email: user.email || '',
           subscription_plan: 'trial',
           trial_start_date: now,
+          trial_end_date: trialEnd,
           daily_count: 0,
           last_daily_reset: now,
         }, {
@@ -469,18 +475,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
   
   const getTrialDaysRemaining = () => {
-    if (!profile || profile.subscription_plan !== 'trial' || !profile.trial_start_date) return 0;
+    if (!profile || profile.subscription_plan !== 'trial' || !profile.trial_end_date) return 0;
     
-    const trialStart = new Date(profile.trial_start_date);
+    const trialEnd = new Date(profile.trial_end_date);
     const now = new Date();
-    const daysSinceStart = Math.floor((now.getTime() - trialStart.getTime()) / (1000 * 60 * 60 * 24));
+    const hoursRemaining = Math.floor((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60));
     
-    return Math.max(0, 7 - daysSinceStart);
+    return Math.max(0, Math.ceil(hoursRemaining / 24));
   };
   
   const isTrialExpired = () => {
-    if (!profile || profile.subscription_plan !== 'trial') return false;
-    return getTrialDaysRemaining() === 0;
+    if (!profile || profile.subscription_plan !== 'trial' || !profile.trial_end_date) return false;
+    
+    const trialEnd = new Date(profile.trial_end_date);
+    const now = new Date();
+    
+    return now.getTime() > trialEnd.getTime();
   };
 
   // Log current state on every render for debugging (secure)

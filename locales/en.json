@@ -32,9 +32,9 @@
         "confirmMinor": "I am under 18"
       },
       "trial": {
-        "title": "7 days free",
+        "title": "1 day free",
         "subtitle": "Try without commitment",
-        "description": "Enjoy all premium features for 7 days"
+        "description": "Enjoy all premium features for 1 day"
       },
       "continue": "Continue",
       "startTrial": "Start free trial"
@@ -86,7 +86,7 @@
     "subscribe": "Subscribe",
     "discoverPerfectMatch": "Discover the perfect match",
     "trialThenPrice": "7 days free trial, then €2.99/week, €4.99/month or €30/year",
-    "sevenDaysFree": "🎁 7 days free",
+    "sevenDaysFree": "🎁 1 day free",
     "dailyLimitReached": "Daily limit reached",
     "upgradeToPremium": "Upgrade to Premium",
     "trialEnded": "Trial ended!",

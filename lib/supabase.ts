@@ -23,6 +23,7 @@ export type Database = {
           daily_count: number | null;
           monthly_count: number | null;
           trial_start_date: string | null;
+          trial_end_date: string | null;
           last_daily_reset: string | null;
           created_at: string | null;
         };
@@ -33,6 +34,7 @@ export type Database = {
           daily_count?: number | null;
           monthly_count?: number | null;
           trial_start_date?: string | null;
+          trial_end_date?: string | null;
           last_daily_reset?: string | null;
           created_at?: string | null;
         };
@@ -43,6 +45,7 @@ export type Database = {
           daily_count?: number | null;
           monthly_count?: number | null;
           trial_start_date?: string | null;
+          trial_end_date?: string | null;
           last_daily_reset?: string | null;
           created_at?: string | null;
         };

@@ -353,12 +353,12 @@ export default function SubscriptionScreen() {
             />
 
             <Text style={styles.trialText}>
-              {t('subscription.freeTrialSevenDays')}
+              Essai gratuit 1 jour
             </Text>
 
             <View style={styles.buttonSection}>
               <Button
-                title={(loading || contentConfig.loading) ? t('common.loading') : t('subscription.start')}
+                title={(loading || contentConfig.loading) ? t('common.loading') : 'Commencer l\'essai d\'1 jour'}
                 onPress={contentConfig.onPress}
                 variant="primary"
                 size="large"

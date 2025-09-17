@@ -32,9 +32,9 @@
         "confirmMinor": "J'ai moins de 18 ans"
       },
       "trial": {
-        "title": "7 jours gratuits",
+        "title": "1 jour gratuit",
         "subtitle": "Essayez sans engagement",
-        "description": "Profitez de toutes les fonctionnalités premium pendant 7 jours"
+        "description": "Profitez de toutes les fonctionnalités premium pendant 1 jour"
       },
       "continue": "Continuer",
       "startTrial": "Commencer l'essai gratuit"
@@ -86,7 +86,7 @@
     "subscribe": "S'abonner",
     "discoverPerfectMatch": "Découvre l'accord parfait",
     "trialThenPrice": "Essai gratuit de 7 jours, puis 2,99€/semaine, 4,99€/mois ou 30€/an",
-    "sevenDaysFree": "🎁 7 jours offerts",
+    "sevenDaysFree": "🎁 1 jour offert",
     "dailyLimitReached": "Limite quotidienne atteinte",
     "upgradeToPremium": "Passer à Premium",
     "trialEnded": "Essai terminé !",

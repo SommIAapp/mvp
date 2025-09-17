@@ -33,7 +33,7 @@ export default function QuotaExceededScreen() {
 
           <Text style={styles.title}>
             {trialExpired 
-              ? 'Essai terminé !' 
+              ? 'Essai d\'1 jour terminé !' 
               : profile?.subscription_plan === 'trial' 
                 ? 'Limite quotidienne atteinte'
                 : 'Abonnement requis'
@@ -42,10 +42,10 @@ export default function QuotaExceededScreen() {
 
           <Text style={styles.message}>
             {trialExpired 
-              ? 'Ton essai de 7 jours est terminé. Continue avec Premium pour des recommandations illimitées !'
+              ? 'Ton essai d\'1 jour est terminé. Continue avec Premium pour des recommandations illimitées !'
               : profile?.subscription_plan === 'trial'
-                ? `Reviens demain pour une nouvelle recommandation (${daysRemaining} jours d'essai restants) ou passe à Premium`
-                : 'Commence ton essai gratuit de 7 jours ou passe directement à Premium'
+                ? `Reviens demain pour une nouvelle recommandation (${daysRemaining > 0 ? '1 jour d\'essai restant' : 'essai terminé'}) ou passe à Premium`
+                : 'Commence ton essai gratuit d\'1 jour ou passe directement à Premium'
             }
           </Text>
 
