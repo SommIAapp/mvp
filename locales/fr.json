@@ -29,6 +29,12 @@
       "securityText": "Votre confidentialité est garantie. SOMMIA ne partage jamais vos données.",
       "error": "Connexion Apple échouée"
     },
+    "signIn": {
+      "title": "Connexion",
+      "subtitle": "Connectez-vous avec votre compte Apple pour accéder à SOMMIA",
+      "securityText": "Votre confidentialité est garantie. SOMMIA ne partage jamais vos données.",
+      "error": "Connexion Apple échouée"
+    },
     "onboarding": {
       "ageVerification": {
         "title": "Vérification d'âge",
@@ -45,6 +51,17 @@
       "continue": "Continuer",
       "startTrial": "Commencer l'essai gratuit"
     }
+  },
+  "subscriptionSuccess": {
+    "title": "SOMMIA",
+    "welcomePremium": "Bienvenue dans Premium !",
+    "message": "Ton abonnement SOMMIA Premium est maintenant actif. Profite de recommandations illimitées et d'explications détaillées !",
+    "benefits": {
+      "unlimited": "🍷 Recommandations illimitées",
+      "detailed": "📱 Explications sommelier détaillées",
+      "history": "🔄 Historique complet de tes découvertes"
+    },
+    "startExploring": "Commencer à explorer"
   },
   "home": {
     "loading": "Chargement...",
@@ -214,6 +231,54 @@
     "budget": "Budget",
     "yesterday": "Hier",
     "daysAgo": "Il y a {{days}} jours"
+  },
+  "restaurant": {
+    "title": "SOMMIA",
+    "scanWineCard": "Scanner la carte des vins",
+    "scanInstructions": "Prends une photo de la carte des vins du restaurant pour obtenir des recommandations personnalisées",
+    "takePhoto": "Prendre une photo",
+    "chooseFromGallery": "Choisir depuis galerie",
+    "initialization": "Initialisation...",
+    "cacheCheck": "Vérification du cache...",
+    "foundInCache": "Carte trouvée dans le cache!",
+    "loadingData": "Chargement des données...",
+    "prepareAnalysis": "Préparation de l'analyse...",
+    "sendingOCR": "Envoi vers l'analyse OCR...",
+    "analyzingCard": "Analyse de la carte en cours, cela peut prendre quelques instants...",
+    "analysisComplete": "Analyse terminée!",
+    "cardRecognized": "✨ Carte reconnue!",
+    "winesAvailable": "{{count}} vins disponibles",
+    "loadedFromCache": "(Chargé depuis le cache)",
+    "perfect": "Parfait!",
+    "finalizingAnalysis": "Finalisation de l'analyse de la carte...",
+    "mayTake30s": "Cela peut prendre jusqu'à 30 secondes",
+    "winesDetected": "{{count}} vins détectés",
+    "whatAreYouEating": "Que manges-tu ?",
+    "describeDish": "Décris ton plat...",
+    "budgetPerBottle": "Budget par bouteille",
+    "optional": "Optionnel",
+    "preferredWineType": "Type de vin préféré",
+    "getRecommendations": "Obtenir mes recommandations",
+    "analyzingDish": "Analyse de votre plat...",
+    "recommendationsReady": "Recommandations prêtes!",
+    "recommendations": "Recommandations",
+    "forDishAt": "Pour {{dish}} chez {{restaurant}}",
+    "viewRecommendations": "Voir les {{count}} recommandations",
+    "error": "Erreur",
+    "permissionDenied": "Permission refusée",
+    "cameraPermissionNeeded": "L'accès à la caméra est nécessaire pour scanner la carte des vins.",
+    "galleryPermissionNeeded": "L'accès à la galerie est nécessaire pour choisir une photo de la carte des vins.",
+    "photoError": "Erreur lors de la prise de photo. Veuillez réessayer.",
+    "galleryError": "Erreur lors de la sélection de photo. Veuillez réessayer.",
+    "takingPhotoError": "Impossible de prendre la photo. Veuillez réessayer.",
+    "selectingPhotoError": "Impossible de sélectionner la photo. Veuillez réessayer.",
+    "processPhotoError": "Impossible de traiter la photo: {{message}}",
+    "userNotConnected": "Utilisateur non connecté",
+    "cardAnalyzing": "Carte en cours d'analyse",
+    "cardAnalyzingMessage": "La carte des vins est encore en cours d'analyse. Veuillez patienter quelques instants.",
+    "describeDishError": "Veuillez décrire votre plat",
+    "recommendationError": "Impossible de générer les recommandations: {{message}}",
+    "noRecommendationError": "Aucune recommandation disponible"
   },
   "legal": {
     "termsOfService": "Conditions d'Utilisation",

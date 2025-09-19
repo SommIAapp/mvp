@@ -29,6 +29,12 @@
       "securityText": "Your privacy is guaranteed. SOMMIA never shares your data.",
       "error": "Apple sign-in failed"
     },
+    "signIn": {
+      "title": "Sign In",
+      "subtitle": "Sign in with your Apple account to access SOMMIA",
+      "securityText": "Your privacy is guaranteed. SOMMIA never shares your data.",
+      "error": "Apple sign-in failed"
+    },
     "onboarding": {
       "ageVerification": {
         "title": "Age Verification",
@@ -45,6 +51,17 @@
       "continue": "Continue",
       "startTrial": "Start free trial"
     }
+  },
+  "subscriptionSuccess": {
+    "title": "SOMMIA",
+    "welcomePremium": "Welcome to Premium!",
+    "message": "Your SOMMIA Premium subscription is now active. Enjoy unlimited recommendations and detailed explanations!",
+    "benefits": {
+      "unlimited": "🍷 Unlimited recommendations",
+      "detailed": "📱 Detailed sommelier explanations",
+      "history": "🔄 Complete history of your discoveries"
+    },
+    "startExploring": "Start exploring"
   },
   "home": {
     "loading": "Loading...",
@@ -214,6 +231,54 @@
     "budget": "Budget",
     "yesterday": "Yesterday",
     "daysAgo": "{{days}} days ago"
+  },
+  "restaurant": {
+    "title": "SOMMIA",
+    "scanWineCard": "Scan wine list",
+    "scanInstructions": "Take a photo of the restaurant's wine list to get personalized recommendations",
+    "takePhoto": "Take a photo",
+    "chooseFromGallery": "Choose from gallery",
+    "initialization": "Initializing...",
+    "cacheCheck": "Checking cache...",
+    "foundInCache": "Card found in cache!",
+    "loadingData": "Loading data...",
+    "prepareAnalysis": "Preparing analysis...",
+    "sendingOCR": "Sending to OCR analysis...",
+    "analyzingCard": "Analyzing the wine list, this may take a few moments...",
+    "analysisComplete": "Analysis complete!",
+    "cardRecognized": "✨ Card recognized!",
+    "winesAvailable": "{{count}} wines available",
+    "loadedFromCache": "(Loaded from cache)",
+    "perfect": "Perfect!",
+    "finalizingAnalysis": "Finalizing wine list analysis...",
+    "mayTake30s": "This may take up to 30 seconds",
+    "winesDetected": "{{count}} wines detected",
+    "whatAreYouEating": "What are you eating?",
+    "describeDish": "Describe your dish...",
+    "budgetPerBottle": "Budget per bottle",
+    "optional": "Optional",
+    "preferredWineType": "Preferred wine type",
+    "getRecommendations": "Get my recommendations",
+    "analyzingDish": "Analyzing your dish...",
+    "recommendationsReady": "Recommendations ready!",
+    "recommendations": "Recommendations",
+    "forDishAt": "For {{dish}} at {{restaurant}}",
+    "viewRecommendations": "View {{count}} recommendations",
+    "error": "Error",
+    "permissionDenied": "Permission denied",
+    "cameraPermissionNeeded": "Camera access is required to scan the wine list.",
+    "galleryPermissionNeeded": "Gallery access is required to choose a photo of the wine list.",
+    "photoError": "Error taking photo. Please try again.",
+    "galleryError": "Error selecting photo. Please try again.",
+    "takingPhotoError": "Unable to take photo. Please try again.",
+    "selectingPhotoError": "Unable to select photo. Please try again.",
+    "processPhotoError": "Unable to process photo: {{message}}",
+    "userNotConnected": "User not connected",
+    "cardAnalyzing": "Card being analyzed",
+    "cardAnalyzingMessage": "The wine list is still being analyzed. Please wait a few moments.",
+    "describeDishError": "Please describe your dish",
+    "recommendationError": "Unable to generate recommendations: {{message}}",
+    "noRecommendationError": "No recommendations available"
   },
   "legal": {
     "termsOfService": "Terms of Service",
