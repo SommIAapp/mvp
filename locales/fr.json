@@ -41,13 +41,28 @@
     }
   },
   "home": {
-    "title": "SOMMIA",
-    "inputPlaceholder": "Décris ton plat...",
-    "example": "Ex: Boeuf bourguignon, Saumon grillé, Pizza margherita...",
+    "loading": "Chargement...",
+    "dishPlaceholder": "Décris ton plat ou prends-le en photo",
+    "budgetSection": "Budget par bouteille",
+    "budgetOptional": "Optionnel",
+    "wineTypeSection": "Type de vin préféré",
+    "wineTypeOptional": "Optionnel",
     "getRecommendations": "Obtenir des recommandations",
-    "selectBudget": "Sélectionner un budget",
-    "scanMenu": "Scanner une carte",
-    "takePhoto": "Prendre une photo"
+    "gettingRecommendations": "Recommandation en cours...",
+    "photoMode": "Mode Photo",
+    "photoModeDescription": "Comment souhaitez-vous ajouter votre photo ?",
+    "takePhoto": "📸 Prendre une photo",
+    "chooseFromGallery": "🖼️ Choisir depuis galerie",
+    "cancel": "Annuler",
+    "error": "Erreur",
+    "describeDishError": "Peux-tu décrire ton plat plus précisément ?",
+    "permissionRequired": "Permission requise",
+    "cameraPermission": "L'accès à la caméra est nécessaire pour prendre une photo de votre plat.",
+    "galleryPermission": "L'accès à la galerie est nécessaire pour choisir une photo de votre plat.",
+    "imageProcessError": "Impossible de traiter l'image. Veuillez réessayer.",
+    "recommendationError": "Impossible de générer les recommandations",
+    "usageUpdateError": "Impossible de mettre à jour le compteur d'utilisation",
+    "dishLabel": "Photo de plat"
   },
   "profile": {
     "title": "SOMMIA",
@@ -110,6 +125,27 @@
     "errorStartingTrial": "Impossible de démarrer l'essai. Réessaie plus tard.",
     "productNotFound": "Produit non trouvé",
     "errorCreatingSession": "Impossible de créer la session de paiement. Réessaie plus tard."
+  },
+  "quotaExceeded": {
+    "trialExpiredTitle": "Essai d'1 jour terminé !",
+    "dailyLimitTitle": "Limite quotidienne atteinte",
+    "subscriptionRequiredTitle": "Abonnement requis",
+    "trialExpiredMessage": "Ton essai d'1 jour est terminé. Continue avec Premium pour des recommandations illimitées !",
+    "dailyLimitMessage": "Reviens demain pour une nouvelle recommandation ({{days}} jour d'essai restant) ou passe à Premium",
+    "trialExpiredLimitMessage": "Reviens demain pour une nouvelle recommandation (essai terminé) ou passe à Premium",
+    "subscriptionRequiredMessage": "Commence ton essai gratuit d'1 jour ou passe directement à Premium",
+    "withPremium": "Avec Premium",
+    "benefits": {
+      "personalized": "🍷 Accords personnalisés",
+      "detailed": "📱 Explications détaillées",
+      "history": "🔄 Historique complet"
+    },
+    "priceText": "Seulement €4,99/mois",
+    "startFreeTrial": "Commencer l'essai gratuit",
+    "upgradeToPremium": "Passer à Premium",
+    "okUnderstood": "Ok, compris",
+    "okSeeTomorrow": "Ok, à demain !",
+    "later": "Plus tard"
   },
   "recommendations": {
     "loading": "Recommandations en cours...",

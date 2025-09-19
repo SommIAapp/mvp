@@ -41,13 +41,28 @@
     }
   },
   "home": {
-    "title": "SOMMIA",
-    "inputPlaceholder": "Describe your dish...",
-    "example": "Ex: Beef stew, Grilled salmon, Margherita pizza...",
+    "loading": "Loading...",
+    "dishPlaceholder": "Describe your dish or take a photo",
+    "budgetSection": "Budget per bottle",
+    "budgetOptional": "Optional",
+    "wineTypeSection": "Preferred wine type",
+    "wineTypeOptional": "Optional",
     "getRecommendations": "Get recommendations",
-    "selectBudget": "Select budget",
-    "scanMenu": "Scan menu",
-    "takePhoto": "Take a photo"
+    "gettingRecommendations": "Getting recommendations...",
+    "photoMode": "Photo Mode",
+    "photoModeDescription": "How would you like to add your photo?",
+    "takePhoto": "📸 Take a photo",
+    "chooseFromGallery": "🖼️ Choose from gallery",
+    "cancel": "Cancel",
+    "error": "Error",
+    "describeDishError": "Can you describe your dish more specifically?",
+    "permissionRequired": "Permission Required",
+    "cameraPermission": "Camera access is needed to take a photo of your dish.",
+    "galleryPermission": "Gallery access is needed to choose a photo of your dish.",
+    "imageProcessError": "Unable to process the image. Please try again.",
+    "recommendationError": "Unable to generate recommendations",
+    "usageUpdateError": "Unable to update usage count",
+    "dishLabel": "Dish photo"
   },
   "profile": {
     "title": "SOMMIA",
@@ -110,6 +125,27 @@
     "errorStartingTrial": "Unable to start trial. Please try again later.",
     "productNotFound": "Product not found",
     "errorCreatingSession": "Unable to create payment session. Please try again later."
+  },
+  "quotaExceeded": {
+    "trialExpiredTitle": "1 day trial ended!",
+    "dailyLimitTitle": "Daily limit reached",
+    "subscriptionRequiredTitle": "Subscription required",
+    "trialExpiredMessage": "Your 1 day trial has ended. Continue with Premium for unlimited recommendations!",
+    "dailyLimitMessage": "Come back tomorrow for a new recommendation ({{days}} trial day remaining) or upgrade to Premium",
+    "trialExpiredLimitMessage": "Come back tomorrow for a new recommendation (trial ended) or upgrade to Premium",
+    "subscriptionRequiredMessage": "Start your 1 day free trial or upgrade directly to Premium",
+    "withPremium": "With Premium",
+    "benefits": {
+      "personalized": "🍷 Personalized pairings",
+      "detailed": "📱 Detailed explanations",
+      "history": "🔄 Complete history"
+    },
+    "priceText": "Only €4.99/month",
+    "startFreeTrial": "Start free trial",
+    "upgradeToPremium": "Upgrade to Premium",
+    "okUnderstood": "Ok, understood",
+    "okSeeTomorrow": "Ok, see you tomorrow!",
+    "later": "Later"
   },
   "recommendations": {
     "loading": "Loading recommendations...",
