@@ -17,9 +17,13 @@ export default function QuotaExceededScreen() {
   const daysRemaining = getTrialDaysRemaining();
 
   useEffect(() => {
-    console.log('🚫 QuotaExceeded: Component mounted');
+    if (__DEV__) {
+      console.log('🚫 QuotaExceeded: Component mounted');
+    }
     return () => {
-      console.log('🚫 QuotaExceeded: Component unmounted');
+      if (__DEV__) {
+        console.log('🚫 QuotaExceeded: Component unmounted');
+      }
     };
   }, []);
 
@@ -68,7 +72,9 @@ export default function QuotaExceededScreen() {
             <Button
               title={profile?.subscription_plan === 'free' && !profile?.trial_start_date ? "Commencer l'essai gratuit" : "Passer à Premium"}
               onPress={() => {
-                console.log('🚫 QuotaExceeded: Premium button pressed, dismissing modal');
+                if (__DEV__) {
+                  console.log('🚫 QuotaExceeded: Premium button pressed, dismissing modal');
+                }
                 router.dismiss();
                 
                 // Determine the reason for showing paywall
@@ -102,7 +108,9 @@ export default function QuotaExceededScreen() {
                   : "Plus tard"
               }
               onPress={() => {
-                console.log('🚫 QuotaExceeded: Dismiss button pressed, closing modal');
+                if (__DEV__) {
+                  console.log('🚫 QuotaExceeded: Dismiss button pressed, closing modal');
+                }
                 router.dismiss();
               }}
               variant="outline"

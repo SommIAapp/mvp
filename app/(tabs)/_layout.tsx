@@ -8,9 +8,13 @@ export default function TabLayout() {
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
-    console.log('📊 Tabs Layout: Component mounted');
+    if (__DEV__) {
+      console.log('📊 Tabs Layout: Component mounted');
+    }
     return () => {
-      console.log('📊 Tabs Layout: Component unmounted');
+      if (__DEV__) {
+        console.log('📊 Tabs Layout: Component unmounted');
+      }
     };
   }, []);
 

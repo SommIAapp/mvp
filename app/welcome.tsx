@@ -26,8 +26,6 @@ export default function WelcomeScreen() {
     try {
       setLoading(true);
       
-      console.log('1. Starting Apple Sign In...');
-      
       const credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
           AppleAuthentication.AppleAuthenticationScope.EMAIL,
@@ -35,26 +33,24 @@ export default function WelcomeScreen() {
         ],
       });
 
-      console.log('2. Got credential:', JSON.stringify(credential, null, 2));
 
       if (credential.identityToken) {
-        console.log('3. Calling Supabase with token...');
-        
         const { data, error } = await supabase.auth.signInWithIdToken({
           provider: 'apple',
           token: credential.identityToken,
         });
 
         if (error) {
-          console.error('4. Supabase error:', error);
+          console.error('❌ Supabase Apple Sign In error:', error);
           throw error;
         }
         
-        console.log('5. Success! User:', data.user?.id);
-        
         if (data.user) {
           // Étape 1: Chercher d'abord par apple_user_id pour éviter les doublons
-          console.log('6. Checking for existing profile with apple_user_id:', credential.user);
+          if (__DEV__) {
+            console.log('🔍 Checking for existing profile with apple_user_id:', credential.user);
+          }
+          
           const { data: existingProfile } = await supabase
             .from('user_profiles')
             .select('*')
@@ -62,7 +58,9 @@ export default function WelcomeScreen() {
             .single();
 
           if (existingProfile) {
-            console.log('7. Found existing profile with apple_user_id, using existing profile');
+            if (__DEV__) {
+              console.log('✅ Found existing profile with apple_user_id, using existing profile');
+            }
             // Profil existant trouvé par apple_user_id - naviguer selon le statut
             if (existingProfile.subscription_plan === 'free' && !existingProfile.trial_start_date) {
               // Utilisateur existant qui n'a pas encore fait son onboarding
@@ -75,7 +73,10 @@ export default function WelcomeScreen() {
           }
 
           // Étape 2: Si pas trouvé par apple_user_id, chercher par Supabase user ID (logique existante)
-          console.log('8. No profile found with apple_user_id, checking by Supabase user ID');
+          if (__DEV__) {
+            console.log('🔍 No profile found with apple_user_id, checking by Supabase user ID');
+          }
+          
           const { data: profile } = await supabase
             .from('user_profiles')
             .select('*')
@@ -84,7 +85,10 @@ export default function WelcomeScreen() {
 
           if (!profile) {
             // Nouvel utilisateur - créer profil avec apple_user_id
-            console.log('9. Creating new profile with apple_user_id:', credential.user);
+            if (__DEV__) {
+              console.log('📝 Creating new profile with apple_user_id:', credential.user);
+            }
+            
             const fullName = credential.fullName ? 
               `${credential.fullName.givenName || ''} ${credential.fullName.familyName || ''}`.trim() : null;
             
@@ -98,11 +102,15 @@ export default function WelcomeScreen() {
               monthly_count: 0,
             });
             
-            console.log('10. New profile created, going to onboarding');
+            if (__DEV__) {
+              console.log('✅ New profile created, going to onboarding');
+            }
             router.replace('/auth/onboarding');
           } else {
             // Profil existant trouvé par Supabase ID - mettre à jour avec apple_user_id si manquant
-            console.log('11. Found existing profile by Supabase ID, updating apple_user_id if missing');
+            if (__DEV__) {
+              console.log('🔄 Found existing profile by Supabase ID, updating apple_user_id if missing');
+            }
             if (!profile.apple_user_id) {
               await supabase.from('user_profiles')
                 .update({ apple_user_id: credential.user })
@@ -113,12 +121,14 @@ export default function WelcomeScreen() {
         }
       }
     } catch (error: any) {
-      console.error('Apple Sign In detailed error:', {
-        message: error.message,
-        code: error.code,
-        details: error.details,
-        fullError: JSON.stringify(error, null, 2)
-      });
+      if (__DEV__) {
+        console.error('Apple Sign In detailed error:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          fullError: JSON.stringify(error, null, 2)
+        });
+      }
       
       if (error.code !== 'ERR_CANCELED') {
         // Afficher l'erreur détaillée pour debug

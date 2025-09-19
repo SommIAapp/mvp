@@ -48,26 +48,33 @@ export default function HistoryScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    console.log('📚 History: Component mounted');
+    if (__DEV__) {
+      console.log('📚 History: Component mounted');
+    }
     return () => {
-      console.log('📚 History: Component unmounted');
+      if (__DEV__) {
+        console.log('📚 History: Component unmounted');
+      }
     };
   }, []);
 
   // Use useFocusEffect to refresh data every time screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
-      console.log('🔄 useFocusEffect - History screen focused, loading data');
+      if (__DEV__) {
+        console.log('🔄 useFocusEffect - History screen focused, loading data');
+      }
       loadHistory();
     }, [user])
   );
 
   const loadHistory = async () => {
-    console.log('📚 loadHistory - Starting to load history');
-    console.log('👤 loadHistory - User:', user?.id);
+    if (__DEV__) {
+      console.log('📚 loadHistory - Starting to load history');
+      console.log('👤 loadHistory - User:', user?.id);
+    }
     
     if (!user?.id) {
-      console.log('❌ loadHistory - No user ID available');
       setHistory([]);
       setLoading(false);
       return;
@@ -76,11 +83,8 @@ export default function HistoryScreen() {
     setLoading(true);
     
     try {
-      console.log('📚 loadHistory - Calling getRecommendationHistory for user:', user.id);
-      
       // Récupérer les recommandations normales
       const normalRecommendations = await getRecommendationHistory(user.id);
-      console.log('📚 loadHistory - Received normal recommendations:', normalRecommendations?.length || 0);
       
       // On utilise seulement normalRecommendations qui contient TOUT
       const combinedHistory: Recommendation[] = normalRecommendations || [];
@@ -91,16 +95,18 @@ export default function HistoryScreen() {
       );
       
       if (sortedHistory && sortedHistory.length > 0) {
-        secureLog('📚 loadHistory - Sample combined recommendation structure:', sanitizeForLogging({
-          id: sortedHistory[0].id,
-          dish_description: sortedHistory[0].dish_description,
-          type: sortedHistory[0].type,
-          restaurant_name: sortedHistory[0].restaurant_name,
-          recommended_wines_type: typeof sortedHistory[0].recommended_wines,
-          recommended_wines_isArray: Array.isArray(sortedHistory[0].recommended_wines),
-          recommended_wines_length: Array.isArray(sortedHistory[0].recommended_wines) ? sortedHistory[0].recommended_wines.length : 'N/A',
-          created_at: sortedHistory[0].created_at
-        }));
+        if (__DEV__) {
+          secureLog('📚 loadHistory - Sample combined recommendation structure:', sanitizeForLogging({
+            id: sortedHistory[0].id,
+            dish_description: sortedHistory[0].dish_description,
+            type: sortedHistory[0].type,
+            restaurant_name: sortedHistory[0].restaurant_name,
+            recommended_wines_type: typeof sortedHistory[0].recommended_wines,
+            recommended_wines_isArray: Array.isArray(sortedHistory[0].recommended_wines),
+            recommended_wines_length: Array.isArray(sortedHistory[0].recommended_wines) ? sortedHistory[0].recommended_wines.length : 'N/A',
+            created_at: sortedHistory[0].created_at
+          }));
+        }
       }
       
       setHistory(sortedHistory);
@@ -113,7 +119,9 @@ export default function HistoryScreen() {
   };
 
   const onRefresh = async () => {
-    console.log('🔄 onRefresh - Refreshing history data');
+    if (__DEV__) {
+      console.log('🔄 onRefresh - Refreshing history data');
+    }
     setRefreshing(true);
     await loadHistory();
     setRefreshing(false);
@@ -135,11 +143,13 @@ export default function HistoryScreen() {
   };
 
   const handleHistoryItemPress = (item: Recommendation) => {
-    console.log('🔍 handleHistoryItemPress - Opening recommendation:', {
-      id: item.id,
-      dish: item.dish_description,
-      wines: item.recommended_wines
-    });
+    if (__DEV__) {
+      console.log('🔍 handleHistoryItemPress - Opening recommendation:', {
+        id: item.id,
+        dish: item.dish_description,
+        wines: item.recommended_wines
+      });
+    }
     
     // Toutes les recommandations utilisent la même route
     router.push(`/wine-recommendation/${item.id}`);

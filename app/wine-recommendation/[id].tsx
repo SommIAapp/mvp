@@ -45,7 +45,9 @@ export default function WineRecommendationDetailScreen() {
 
   const loadRecommendation = async () => {
     try {
-      console.log('📚 Loading recommendation with ID:', id);
+      if (__DEV__) {
+        console.log('📚 Loading recommendation with ID:', id);
+      }
       
       const { data, error } = await supabase
         .from('recommendations')
@@ -55,7 +57,9 @@ export default function WineRecommendationDetailScreen() {
 
       if (error) throw error;
 
-      console.log('📊 Loaded recommendation:', data);
+      if (__DEV__) {
+        console.log('📊 Loaded recommendation:', data);
+      }
       setRecommendation(data);
     } catch (error) {
       console.error('❌ Error loading recommendation:', error);

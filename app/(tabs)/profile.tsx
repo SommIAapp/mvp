@@ -37,9 +37,13 @@ export default function ProfileScreen() {
   };
 
   useEffect(() => {
-    console.log('👤 Profile: Component mounted');
+    if (__DEV__) {
+      console.log('👤 Profile: Component mounted');
+    }
     return () => {
-      console.log('👤 Profile: Component unmounted');
+      if (__DEV__) {
+        console.log('👤 Profile: Component unmounted');
+      }
     };
   }, []);
 
@@ -51,7 +55,9 @@ export default function ProfileScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
-      console.log('📱 Profile: Screen focused, refreshing profile...');
+      if (__DEV__) {
+        console.log('📱 Profile: Screen focused, refreshing profile...');
+      }
       if (user?.id) {
         fetchProfile(user.id);
       }
@@ -63,7 +69,6 @@ export default function ProfileScreen() {
     
     try {
       setLoadingStats(true);
-      console.log('📊 fetchTotalRecommendations - Fetching total count for user:', user.id);
       
       const { count, error } = await supabase
         .from('recommendations')
@@ -75,7 +80,6 @@ export default function ProfileScreen() {
         throw error;
       }
 
-      console.log('✅ fetchTotalRecommendations - Total recommendations:', count);
       setTotalRecommendationsCount(count || 0);
     } catch (error) {
       console.error('💥 fetchTotalRecommendations - Unexpected error:', error);
@@ -104,11 +108,13 @@ export default function ProfileScreen() {
   };
 
   const getSubscriptionStatus = () => {
-    console.log('🔍 Profile Status Debug:');
-    console.log('- Loading:', subscriptionLoading);
-    console.log('- isPremium:', isPremium());
-    console.log('- Profile plan:', profile?.subscription_plan);
-    console.log('- Profile daily_count:', profile?.daily_count);
+    if (__DEV__) {
+      console.log('🔍 Profile Status Debug:');
+      console.log('- Loading:', subscriptionLoading);
+      console.log('- isPremium:', isPremium());
+      console.log('- Profile plan:', profile?.subscription_plan);
+      console.log('- Profile daily_count:', profile?.daily_count);
+    }
     
     if (subscriptionLoading) return { text: t('common.loading'), color: Colors.textSecondary };
     

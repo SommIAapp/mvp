@@ -12,7 +12,9 @@ class TempStore {
   private readonly TTL = 5 * 60 * 1000; // 5 minutes TTL
 
   set(sessionId: string, data: { recommendations?: any[]; extractedWines?: any[] }) {
-    console.log('📦 TempStore: Storing data for session:', sessionId);
+    if (__DEV__) {
+      console.log('📦 TempStore: Storing data for session:', sessionId);
+    }
     this.store.set(sessionId, {
       ...data,
       timestamp: Date.now(),
@@ -26,18 +28,24 @@ class TempStore {
     const data = this.store.get(sessionId);
     
     if (!data) {
-      console.log('📦 TempStore: No data found for session:', sessionId);
+      if (__DEV__) {
+        console.log('📦 TempStore: No data found for session:', sessionId);
+      }
       return null;
     }
 
     // Check if data has expired
     if (Date.now() - data.timestamp > this.TTL) {
-      console.log('📦 TempStore: Data expired for session:', sessionId);
+      if (__DEV__) {
+        console.log('📦 TempStore: Data expired for session:', sessionId);
+      }
       this.store.delete(sessionId);
       return null;
     }
 
-    console.log('📦 TempStore: Retrieved data for session:', sessionId);
+    if (__DEV__) {
+      console.log('📦 TempStore: Retrieved data for session:', sessionId);
+    }
     return {
       recommendations: data.recommendations,
       extractedWines: data.extractedWines,
@@ -45,7 +53,9 @@ class TempStore {
   }
 
   clear(sessionId: string) {
-    console.log('📦 TempStore: Clearing data for session:', sessionId);
+    if (__DEV__) {
+      console.log('📦 TempStore: Clearing data for session:', sessionId);
+    }
     this.store.delete(sessionId);
   }
 
@@ -53,7 +63,9 @@ class TempStore {
     const now = Date.now();
     for (const [sessionId, data] of this.store.entries()) {
       if (now - data.timestamp > this.TTL) {
-        console.log('📦 TempStore: Cleaning up expired data for session:', sessionId);
+        if (__DEV__) {
+          console.log('📦 TempStore: Cleaning up expired data for session:', sessionId);
+        }
         this.store.delete(sessionId);
       }
     }

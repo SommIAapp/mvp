@@ -64,7 +64,9 @@ export default function OnboardingScreen() {
   const handleStartTrial = async () => {
     setLoading(true);
     try {
-      console.log('🎯 Onboarding: Starting free trial...');
+      if (__DEV__) {
+        console.log('🎯 Onboarding: Starting free trial...');
+      }
       const { error } = await startFreeTrial();
       
       if (error) {
@@ -72,8 +74,9 @@ export default function OnboardingScreen() {
         throw error;
       }
       
-      console.log('✅ Onboarding: Trial started successfully');
-      await startFreeTrial();
+      if (__DEV__) {
+        console.log('✅ Onboarding: Trial started successfully');
+      }
       router.replace('/(tabs)');
     } catch (error) {
       console.error('Erreur démarrage essai:', error);

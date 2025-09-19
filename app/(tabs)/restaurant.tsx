@@ -88,9 +88,13 @@ export default function RestaurantScreen() {
   const BUDGET_OPTIONS = ['€10', '€20', '€30', '€50+'];
 
   useEffect(() => {
-    console.log('🍽️ Restaurant: Component mounted');
+    if (__DEV__) {
+      console.log('🍽️ Restaurant: Component mounted');
+    }
     return () => {
-      console.log('🍽️ Restaurant: Component unmounted');
+      if (__DEV__) {
+        console.log('🍽️ Restaurant: Component unmounted');
+      }
     };
   }, []);
 
@@ -112,11 +116,15 @@ export default function RestaurantScreen() {
   const checkAndRefreshSession = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      console.log('Tentative de récupération de session...');
+      if (__DEV__) {
+        console.log('Tentative de récupération de session...');
+      }
       try {
         const { data, error } = await supabase.auth.refreshSession();
         if (error) throw error;
-        console.log('Session récupérée avec succès');
+        if (__DEV__) {
+          console.log('Session récupérée avec succès');
+        }
       } catch (error) {
         console.error('Impossible de récupérer la session:', error);
         router.replace('/');
@@ -127,7 +135,9 @@ export default function RestaurantScreen() {
   const checkSessionOnFocus = async () => {
     const { data: { session: authSession } } = await supabase.auth.getSession();
     if (!authSession) {
-      console.log('Session perdue, tentative de récupération...');
+      if (__DEV__) {
+        console.log('Session perdue, tentative de récupération...');
+      }
       try {
         await supabase.auth.refreshSession();
       } catch (error) {
@@ -179,7 +189,9 @@ export default function RestaurantScreen() {
         setRecommendations(parsedRecommendations);
         setStep('results');
         
-        console.log('✅ Loaded restaurant session from history:', params.sessionId);
+        if (__DEV__) {
+          console.log('✅ Loaded restaurant session from history:', params.sessionId);
+        }
       } catch (error) {
         console.error('❌ Error loading from history:', error);
         // Clear potentially corrupted data
@@ -196,10 +208,8 @@ export default function RestaurantScreen() {
     try {
       setIsScanning(true);
       setError(null);
-      console.log('📸 handleScanCard - Début de la prise de photo');
 
       // Vérifier les permissions
-      console.log('🔐 handleScanCard - Vérification des permissions caméra...');
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       
       if (status !== 'granted') {
@@ -207,8 +217,6 @@ export default function RestaurantScreen() {
         return;
       }
 
-      console.log('✅ handleScanCard - Permissions caméra accordées');
-      console.log('📱 handleScanCard - Lancement de la caméra...');
 
       // Prendre la photo
       const result = await ImagePicker.launchCameraAsync({
@@ -218,11 +226,9 @@ export default function RestaurantScreen() {
       });
 
       if (!result.canceled && result.assets && result.assets[0]) {
-        console.log('✅ handleScanCard - Photo prise avec succès');
         const uri = result.assets[0].uri;
         
         // NOUVELLE COMPRESSION OPTIMISÉE
-        console.log('🔄 handleScanCard - Compression optimisée de l\'image...');
         
         // Première compression à 800px
         let compressedResult = await ImageManipulator.manipulateAsync(
@@ -239,11 +245,12 @@ export default function RestaurantScreen() {
           encoding: FileSystem.EncodingType.Base64,
         });
         
-        console.log('📏 Taille après première compression:', (base64.length / 1024).toFixed(2), 'KB');
+        if (__DEV__) {
+          console.log('📏 Taille après première compression:', (base64.length / 1024).toFixed(2), 'KB');
+        }
         
         // Si toujours trop gros, recompresser
         if (base64.length > 40000) { // 40KB max
-          console.log('🔄 Recompression nécessaire...');
           compressedResult = await ImageManipulator.manipulateAsync(
             uri,
             [{ resize: { width: 600 } }], // Plus petit
@@ -257,12 +264,13 @@ export default function RestaurantScreen() {
             encoding: FileSystem.EncodingType.Base64,
           });
           
-          console.log('📏 Taille finale après recompression:', (base64.length / 1024).toFixed(2), 'KB');
+          if (__DEV__) {
+            console.log('📏 Taille finale après recompression:', (base64.length / 1024).toFixed(2), 'KB');
+          }
         }
         
         // Si ENCORE trop gros, dernière tentative
         if (base64.length > 40000) {
-          console.log('⚠️ Dernière compression agressive...');
           compressedResult = await ImageManipulator.manipulateAsync(
             uri,
             [{ resize: { width: 480 } }],
@@ -276,13 +284,16 @@ export default function RestaurantScreen() {
             encoding: FileSystem.EncodingType.Base64,
           });
           
-          console.log('📏 Taille minimale atteinte:', (base64.length / 1024).toFixed(2), 'KB');
+          if (__DEV__) {
+            console.log('📏 Taille minimale atteinte:', (base64.length / 1024).toFixed(2), 'KB');
+          }
         }
         
-        console.log('🚀 handleScanCard - Envoi vers scanWineCard...');
         await onScanComplete(base64);
       } else {
-        console.log('❌ handleScanCard - Photo annulée');
+        if (__DEV__) {
+          console.log('❌ handleScanCard - Photo annulée');
+        }
       }
     } catch (error) {
       console.error('❌ handleScanCard error:', error);
@@ -400,7 +411,6 @@ export default function RestaurantScreen() {
     try {
       setIsScanning(true);
       setError(null);
-      console.log('🖼️ handlePickFromGallery - Début de la sélection galerie');
 
       // Vérifier les permissions
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -418,11 +428,9 @@ export default function RestaurantScreen() {
       });
 
       if (!result.canceled && result.assets && result.assets[0]) {
-        console.log('✅ handlePickFromGallery - Photo sélectionnée avec succès');
         const uri = result.assets[0].uri;
         
         // Compression optimisée (même logique que caméra)
-        console.log('🔄 handlePickFromGallery - Compression optimisée de l\'image...');
         
         let compressedResult = await ImageManipulator.manipulateAsync(
           uri,
@@ -437,10 +445,11 @@ export default function RestaurantScreen() {
           encoding: FileSystem.EncodingType.Base64,
         });
         
-        console.log('📏 Taille après première compression:', (base64.length / 1024).toFixed(2), 'KB');
+        if (__DEV__) {
+          console.log('📏 Taille après première compression:', (base64.length / 1024).toFixed(2), 'KB');
+        }
         
         if (base64.length > 40000) {
-          console.log('🔄 Recompression nécessaire...');
           compressedResult = await ImageManipulator.manipulateAsync(
             uri,
             [{ resize: { width: 600 } }],
@@ -454,11 +463,12 @@ export default function RestaurantScreen() {
             encoding: FileSystem.EncodingType.Base64,
           });
           
-          console.log('📏 Taille finale après recompression:', (base64.length / 1024).toFixed(2), 'KB');
+          if (__DEV__) {
+            console.log('📏 Taille finale après recompression:', (base64.length / 1024).toFixed(2), 'KB');
+          }
         }
         
         if (base64.length > 40000) {
-          console.log('⚠️ Dernière compression agressive...');
           compressedResult = await ImageManipulator.manipulateAsync(
             uri,
             [{ resize: { width: 480 } }],
@@ -472,13 +482,16 @@ export default function RestaurantScreen() {
             encoding: FileSystem.EncodingType.Base64,
           });
           
-          console.log('📏 Taille minimale atteinte:', (base64.length / 1024).toFixed(2), 'KB');
+          if (__DEV__) {
+            console.log('📏 Taille minimale atteinte:', (base64.length / 1024).toFixed(2), 'KB');
+          }
         }
         
-        console.log('🚀 handlePickFromGallery - Envoi vers scanWineCard...');
         await onScanComplete(base64);
       } else {
-        console.log('❌ handlePickFromGallery - Sélection annulée');
+        if (__DEV__) {
+          console.log('❌ handlePickFromGallery - Sélection annulée');
+        }
       }
     } catch (error) {
       console.error('❌ handlePickFromGallery error:', error);

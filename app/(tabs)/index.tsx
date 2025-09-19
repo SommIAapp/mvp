@@ -44,9 +44,13 @@ export default function HomeScreen() {
   const [showWineTypeOptions, setShowWineTypeOptions] = useState(false);
 
   useEffect(() => {
-    console.log('🏡 Home: Component mounted');
+    if (__DEV__) {
+      console.log('🏡 Home: Component mounted');
+    }
     return () => {
-      console.log('🏡 Home: Component unmounted');
+      if (__DEV__) {
+        console.log('🏡 Home: Component unmounted');
+      }
     };
   }, []);
 
@@ -62,48 +66,25 @@ export default function HomeScreen() {
   const firstName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'ami';
 
   const handleGetRecommendations = async () => {
-    console.log('🎯 handleGetRecommendations - Starting TEXT_ONLY recommendation request');
-    console.log('👤 handleGetRecommendations - Current user:', user ? sanitizeForLogging(user.id) : 'null');
-    console.log('📋 handleGetRecommendations - Current profile:', {
-      subscription_plan: profile?.subscription_plan,
-      daily_count: profile?.daily_count,
-      trial_start_date: profile?.trial_start_date ? 'set' : 'null'
-    });
-    
     if (!dishDescription.trim()) {
       Alert.alert('Erreur', 'Peux-tu décrire ton plat plus précisément ?');
       return;
     }
 
-    console.log('📊 handleGetRecommendations - Checking quota eligibility');
-    console.log('👤 handleGetRecommendations - User:', user ? sanitizeForLogging(user.id) : 'null');
-    console.log('📋 handleGetRecommendations - Profile quota check:', {
-      can_make_recommendation: canMakeRecommendation(),
-      subscription_plan: profile?.subscription_plan,
-      daily_count: profile?.daily_count
-    });
-    
     if (!canMakeRecommendation()) {
-      console.log('🚫 handleGetRecommendations - Quota exceeded, showing paywall');
-      
       // Determine the reason for showing paywall
       let reason: 'daily_limit' | 'trial_expired' | 'trial_signup' = 'daily_limit';
       
       if (!profile) {
-        console.log('📝 handleGetRecommendations - No profile, trial signup needed');
         reason = 'trial_signup';
       } else if (profile.subscription_plan === 'free' && !profile.trial_start_date) {
-        console.log('🆓 handleGetRecommendations - Free user, trial signup needed');
         reason = 'trial_signup';
       } else if (profile.subscription_plan === 'trial' && (profile.daily_count || 0) >= 1) {
-        console.log('📅 handleGetRecommendations - Trial daily limit reached');
         reason = 'daily_limit';
       } else if (profile.subscription_plan === 'trial' || profile.subscription_plan === 'free') {
-        console.log('⏰ handleGetRecommendations - Trial expired');
         reason = 'trial_expired';
       }
       
-      console.log('🎯 handleGetRecommendations - Navigating to subscription with reason:', reason);
       router.push({
         pathname: '/subscription',
         params: { reason }
@@ -111,17 +92,9 @@ export default function HomeScreen() {
       return;
     }
 
-    console.log('✅ handleGetRecommendations - Quota check passed, proceeding with recommendation');
     setRecommendationLoading(true);
 
     try {
-      console.log('🤖 handleGetRecommendations - Calling AI recommendation service');
-      console.log('📝 handleGetRecommendations - Request params:', {
-        dishDescription,
-        budget: selectedBudget,
-        userId: user?.id
-      });
-      
       const budgetValue = selectedBudget ? parseInt(selectedBudget.replace('€', '').replace('+', '')) : undefined;
       const recommendations = await getRecommendations(
         dishDescription,
@@ -130,20 +103,16 @@ export default function HomeScreen() {
         selectedWineType
       );
 
-      console.log('✅ handleGetRecommendations - Recommendations received:', recommendations);
 
       // Vérifier qu'on a bien des recommendations
       if (!recommendations || recommendations.length === 0) {
-        console.log('❌ No recommendations received, not navigating');
         setRecommendationLoading(false); // IMPORTANT : Remettre le bouton à l'état normal
         return; // Ne pas continuer
       }
       // Update usage count for free users
       if (profile?.subscription_plan !== 'premium') {
-        console.log('📈 handleGetRecommendations - Updating usage count');
         try {
           await updateUsageCount();
-          console.log('✅ handleGetRecommendations - Usage count updated successfully');
         } catch (usageError) {
           console.error('❌ handleGetRecommendations - Usage count update failed:', usageError);
           Alert.alert('Erreur', `Impossible de mettre à jour le compteur d'utilisation: ${usageError.message}`);
@@ -153,7 +122,6 @@ export default function HomeScreen() {
       }
 
       setRecommendationLoading(false);
-      console.log('🎉 handleGetRecommendations - Success! Navigating to results');
       router.push({
         pathname: '/recommendations',
         params: {
@@ -165,11 +133,6 @@ export default function HomeScreen() {
       });
     } catch (error) {
       console.error('💥 handleGetRecommendations - Error:', error);
-      console.error('🔍 handleGetRecommendations - Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
       setRecommendationLoading(false);
       // L'erreur a déjà été gérée dans useRecommendations
     } finally {
@@ -191,11 +154,7 @@ export default function HomeScreen() {
   };
 
   const handlePhotoRecommendations = async () => {
-    console.log('📸 handlePhotoRecommendations - Starting DISH_PHOTO recommendation request');
-    
     if (!canMakeRecommendation()) {
-      console.log('🚫 handlePhotoRecommendations - Quota exceeded, showing paywall');
-      
       let reason: 'daily_limit' | 'trial_expired' | 'trial_signup' = 'daily_limit';
       
       if (!profile) {
@@ -234,7 +193,6 @@ export default function HomeScreen() {
       });
 
       if (result.canceled) {
-        console.log('📸 handlePhotoRecommendations - User cancelled photo');
         return;
       }
 
@@ -245,8 +203,6 @@ export default function HomeScreen() {
 
       setRecommendationLoading(true);
 
-      console.log('🤖 handlePhotoRecommendations - Calling photo recommendation service');
-      
       const budgetValue = selectedBudget ? parseInt(selectedBudget.replace('€', '').replace('+', '')) : undefined;
       const recommendations = await getRecommendationsFromPhoto(
         result.assets[0].base64,
@@ -254,14 +210,11 @@ export default function HomeScreen() {
         selectedWineType
       );
 
-      console.log('✅ handlePhotoRecommendations - Photo recommendations received:', recommendations);
 
       // Update usage count for non-premium users
       if (profile?.subscription_plan !== 'premium') {
-        console.log('📈 handlePhotoRecommendations - Updating usage count');
         try {
           await updateUsageCount();
-          console.log('✅ handlePhotoRecommendations - Usage count updated successfully');
         } catch (usageError) {
           console.error('❌ handlePhotoRecommendations - Usage count update failed:', usageError);
           Alert.alert('Erreur', `Impossible de mettre à jour le compteur d'utilisation: ${usageError.message}`);
@@ -271,7 +224,6 @@ export default function HomeScreen() {
       }
 
       setRecommendationLoading(false);
-      console.log('🎉 handlePhotoRecommendations - Success! Navigating to results');
       router.push({
         pathname: '/recommendations',
         params: {
@@ -290,11 +242,7 @@ export default function HomeScreen() {
   };
 
   const handleGalleryRecommendations = async () => {
-    console.log('🖼️ handleGalleryRecommendations - Starting DISH_PHOTO (gallery) recommendation request');
-    
     if (!canMakeRecommendation()) {
-      console.log('🚫 handleGalleryRecommendations - Quota exceeded, showing paywall');
-      
       let reason: 'daily_limit' | 'trial_expired' | 'trial_signup' = 'daily_limit';
       
       if (!profile) {
@@ -333,7 +281,6 @@ export default function HomeScreen() {
       });
 
       if (result.canceled) {
-        console.log('🖼️ handleGalleryRecommendations - User cancelled selection');
         return;
       }
 
@@ -344,8 +291,6 @@ export default function HomeScreen() {
 
       setRecommendationLoading(true);
 
-      console.log('🤖 handleGalleryRecommendations - Calling photo recommendation service');
-      
       const budgetValue = selectedBudget ? parseInt(selectedBudget.replace('€', '').replace('+', '')) : undefined;
       const recommendations = await getRecommendationsFromPhoto(
         result.assets[0].base64,
@@ -353,14 +298,11 @@ export default function HomeScreen() {
         selectedWineType
       );
 
-      console.log('✅ handleGalleryRecommendations - Photo recommendations received:', recommendations);
 
       // Update usage count for non-premium users
       if (profile?.subscription_plan !== 'premium') {
-        console.log('📈 handleGalleryRecommendations - Updating usage count');
         try {
           await updateUsageCount();
-          console.log('✅ handleGalleryRecommendations - Usage count updated successfully');
         } catch (usageError) {
           console.error('❌ handleGalleryRecommendations - Usage count update failed:', usageError);
           Alert.alert('Erreur', `Impossible de mettre à jour le compteur d'utilisation: ${usageError.message}`);
@@ -370,7 +312,6 @@ export default function HomeScreen() {
       }
 
       setRecommendationLoading(false);
-      console.log('🎉 handleGalleryRecommendations - Success! Navigating to results');
       router.push({
         pathname: '/recommendations',
         params: {
