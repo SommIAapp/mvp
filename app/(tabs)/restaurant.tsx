@@ -177,7 +177,6 @@ export default function RestaurantScreen() {
     }
   };
 
-RestaurantScreen()
 
   // Nouvelle fonction pour traiter le scan (avec ou sans cache)
   const onScanComplete = async (imageBase64: string) => {
