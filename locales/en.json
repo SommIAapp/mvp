@@ -124,7 +124,11 @@
     "cancelAnytime": "Cancel anytime • Restore Purchases",
     "errorStartingTrial": "Unable to start trial. Please try again later.",
     "productNotFound": "Product not found",
-    "errorCreatingSession": "Unable to create payment session. Please try again later."
+    "errorCreatingSession": "Unable to create payment session. Please try again later.",
+    "userNotConnected": "User not connected",
+    "oneDay": "1 day",
+    "startOneDayTrial": "Start 1 day trial",
+    "freeTrialOneDay": "1 day free trial"
   },
   "quotaExceeded": {
     "trialExpiredTitle": "1 day trial ended!",
@@ -146,6 +150,20 @@
     "okUnderstood": "Ok, understood",
     "okSeeTomorrow": "Ok, see you tomorrow!",
     "later": "Later"
+  },
+  "wineDetail": {
+    "title": "Wine details",
+    "for": "For",
+    "budget": "Budget",
+    "price": "Price",
+    "rating": "Rating",
+    "vintage": "Vintage",
+    "grapes": "Grape varieties",
+    "whyThisChoice": "Why this choice?",
+    "otherPairings": "Other pairings",
+    "economic": "Economic",
+    "valueMoney": "Value for money",
+    "premium": "Premium"
   },
   "recommendations": {
     "loading": "Loading recommendations...",

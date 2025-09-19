@@ -124,7 +124,11 @@
     "cancelAnytime": "Annule quand tu veux • Restore Purchases",
     "errorStartingTrial": "Impossible de démarrer l'essai. Réessaie plus tard.",
     "productNotFound": "Produit non trouvé",
-    "errorCreatingSession": "Impossible de créer la session de paiement. Réessaie plus tard."
+    "errorCreatingSession": "Impossible de créer la session de paiement. Réessaie plus tard.",
+    "userNotConnected": "Utilisateur non connecté",
+    "oneDay": "1 jour",
+    "startOneDayTrial": "Commencer l'essai d'1 jour",
+    "freeTrialOneDay": "Essai gratuit 1 jour"
   },
   "quotaExceeded": {
     "trialExpiredTitle": "Essai d'1 jour terminé !",
@@ -146,6 +150,20 @@
     "okUnderstood": "Ok, compris",
     "okSeeTomorrow": "Ok, à demain !",
     "later": "Plus tard"
+  },
+  "wineDetail": {
+    "title": "Détails du vin",
+    "for": "Pour",
+    "budget": "Budget",
+    "price": "Prix",
+    "rating": "Note",
+    "vintage": "Millésime",
+    "grapes": "Cépages",
+    "whyThisChoice": "Pourquoi ce choix ?",
+    "otherPairings": "Autres accords",
+    "economic": "Économique",
+    "valueMoney": "Qualité-Prix",
+    "premium": "Premium"
   },
   "recommendations": {
     "loading": "Recommandations en cours...",
