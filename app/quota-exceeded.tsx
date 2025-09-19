@@ -5,11 +5,13 @@ import { useRouter } from 'expo-router';
 import { Clock, Crown } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/Button';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function QuotaExceededScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { profile, isTrialExpired, getTrialDaysRemaining } = useAuth();
 
   const trialExpired = isTrialExpired();
@@ -37,40 +39,42 @@ export default function QuotaExceededScreen() {
 
           <Text style={styles.title}>
             {trialExpired 
-              ? 'Essai d\'1 jour terminé !' 
+              ? t('quotaExceeded.trialExpiredTitle')
               : profile?.subscription_plan === 'trial' 
-                ? 'Limite quotidienne atteinte'
-                : 'Abonnement requis'
+                ? t('quotaExceeded.dailyLimitTitle')
+                : t('quotaExceeded.subscriptionRequiredTitle')
             }
           </Text>
 
           <Text style={styles.message}>
             {trialExpired 
-              ? 'Ton essai d\'1 jour est terminé. Continue avec Premium pour des recommandations illimitées !'
+              ? t('quotaExceeded.trialExpiredMessage')
               : profile?.subscription_plan === 'trial'
-                ? `Reviens demain pour une nouvelle recommandation (${daysRemaining > 0 ? '1 jour d\'essai restant' : 'essai terminé'}) ou passe à Premium`
-                : 'Commence ton essai gratuit d\'1 jour ou passe directement à Premium'
+                ? daysRemaining > 0 
+                  ? t('quotaExceeded.dailyLimitMessage', { days: daysRemaining })
+                  : t('quotaExceeded.trialExpiredLimitMessage')
+                : t('quotaExceeded.subscriptionRequiredMessage')
             }
           </Text>
 
           <View style={styles.premiumSection}>
             <View style={styles.premiumHeader}>
               <Crown size={24} color={Colors.secondary} />
-              <Text style={styles.premiumTitle}>Avec Premium</Text>
+              <Text style={styles.premiumTitle}>{t('quotaExceeded.withPremium')}</Text>
             </View>
             
             <View style={styles.benefitsList}>
-              <Text style={styles.benefit}>🍷 Accords personnalisés</Text>
-              <Text style={styles.benefit}>📱 Explications détaillées</Text>
-              <Text style={styles.benefit}>🔄 Historique complet</Text>
+              <Text style={styles.benefit}>{t('quotaExceeded.benefits.personalized')}</Text>
+              <Text style={styles.benefit}>{t('quotaExceeded.benefits.detailed')}</Text>
+              <Text style={styles.benefit}>{t('quotaExceeded.benefits.history')}</Text>
             </View>
             
-            <Text style={styles.priceText}>Seulement €4,99/mois</Text>
+            <Text style={styles.priceText}>{t('quotaExceeded.priceText')}</Text>
           </View>
 
           <View style={styles.buttonSection}>
             <Button
-              title={profile?.subscription_plan === 'free' && !profile?.trial_start_date ? "Commencer l'essai gratuit" : "Passer à Premium"}
+              title={profile?.subscription_plan === 'free' && !profile?.trial_start_date ? t('quotaExceeded.startFreeTrial') : t('quotaExceeded.upgradeToPremium')}
               onPress={() => {
                 if (__DEV__) {
                   console.log('🚫 QuotaExceeded: Premium button pressed, dismissing modal');
@@ -102,10 +106,10 @@ export default function QuotaExceededScreen() {
             
             <Button
               title={trialExpired 
-                ? "Ok, compris" 
+                ? t('quotaExceeded.okUnderstood')
                 : profile?.subscription_plan === 'trial' 
-                  ? "Ok, à demain !" 
-                  : "Plus tard"
+                  ? t('quotaExceeded.okSeeTomorrow')
+                  : t('quotaExceeded.later')
               }
               onPress={() => {
                 if (__DEV__) {

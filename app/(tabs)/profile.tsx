@@ -167,7 +167,7 @@ export default function ProfileScreen() {
   if (authLoading || subscriptionLoading || loadingStats) {
     return (
       <View style={styles.loadingContainer}>
-        <LoadingSpinner text="Chargement du profil..." />
+        <LoadingSpinner text={t('common.loading')} />
       </View>
     );
   }

@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
+import { useTranslation } from '@/hooks/useTranslation';
 import { sanitizeForLogging } from '@/utils/secureLogging';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
@@ -34,6 +35,7 @@ const WINE_TYPES = [
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { user, profile, loading, canMakeRecommendation, updateUsageCount } = useAuth();
   const { getRecommendations, getRecommendationsFromPhoto } = useRecommendations();
   const [dishDescription, setDishDescription] = useState('');
@@ -58,7 +60,7 @@ export default function HomeScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <LoadingSpinner text="Chargement..." />
+        <LoadingSpinner text={t('home.loading')} />
       </View>
     );
   }
@@ -67,7 +69,7 @@ export default function HomeScreen() {
 
   const handleGetRecommendations = async () => {
     if (!dishDescription.trim()) {
-      Alert.alert('Erreur', 'Peux-tu décrire ton plat plus précisément ?');
+      Alert.alert(t('home.error'), t('home.describeDishError'));
       return;
     }
 
@@ -115,7 +117,7 @@ export default function HomeScreen() {
           await updateUsageCount();
         } catch (usageError) {
           console.error('❌ handleGetRecommendations - Usage count update failed:', usageError);
-          Alert.alert('Erreur', `Impossible de mettre à jour le compteur d'utilisation: ${usageError.message}`);
+          Alert.alert(t('home.error'), `${t('home.usageUpdateError')}: ${usageError.message}`);
           setRecommendationLoading(false);
           return;
         }
@@ -143,12 +145,12 @@ export default function HomeScreen() {
 
   const handleCameraPress = () => {
     Alert.alert(
-      'Mode Photo',
-      'Comment souhaitez-vous ajouter votre photo ?',
+      t('home.photoMode'),
+      t('home.photoModeDescription'),
       [
-        { text: 'Annuler', style: 'cancel' },
-        { text: '📸 Prendre une photo', onPress: handlePhotoRecommendations },
-        { text: '🖼️ Choisir depuis galerie', onPress: handleGalleryRecommendations },
+        { text: t('home.cancel'), style: 'cancel' },
+        { text: t('home.takePhoto'), onPress: handlePhotoRecommendations },
+        { text: t('home.chooseFromGallery'), onPress: handleGalleryRecommendations },
       ]
     );
   };
@@ -179,7 +181,7 @@ export default function HomeScreen() {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       
       if (status !== 'granted') {
-        Alert.alert('Permission requise', 'L\'accès à la caméra est nécessaire pour prendre une photo de votre plat.');
+        Alert.alert(t('home.permissionRequired'), t('home.cameraPermission'));
         return;
       }
 
@@ -197,7 +199,7 @@ export default function HomeScreen() {
       }
 
       if (!result.assets[0].base64) {
-        Alert.alert('Erreur', 'Impossible de traiter l\'image. Veuillez réessayer.');
+        Alert.alert(t('home.error'), t('home.imageProcessError'));
         return;
       }
 
@@ -217,7 +219,7 @@ export default function HomeScreen() {
           await updateUsageCount();
         } catch (usageError) {
           console.error('❌ handlePhotoRecommendations - Usage count update failed:', usageError);
-          Alert.alert('Erreur', `Impossible de mettre à jour le compteur d'utilisation: ${usageError.message}`);
+          Alert.alert(t('home.error'), `${t('home.usageUpdateError')}: ${usageError.message}`);
           setRecommendationLoading(false);
           return;
         }
@@ -227,7 +229,7 @@ export default function HomeScreen() {
       router.push({
         pathname: '/recommendations',
         params: {
-          dish: 'Photo de plat',
+          dish: t('home.dishLabel'),
           budget: selectedBudget?.toString() || '',
           wineType: selectedWineType || '',
           recommendations: JSON.stringify(recommendations),
@@ -237,7 +239,7 @@ export default function HomeScreen() {
     } catch (error) {
       console.error('💥 handlePhotoRecommendations - Error:', error);
       setRecommendationLoading(false);
-      Alert.alert('Erreur', `Impossible de générer les recommandations: ${error.message}`);
+      Alert.alert(t('home.error'), `${t('home.recommendationError')}: ${error.message}`);
     }
   };
 
@@ -267,7 +269,7 @@ export default function HomeScreen() {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       
       if (status !== 'granted') {
-        Alert.alert('Permission requise', 'L\'accès à la galerie est nécessaire pour choisir une photo de votre plat.');
+        Alert.alert(t('home.permissionRequired'), t('home.galleryPermission'));
         return;
       }
 
@@ -285,7 +287,7 @@ export default function HomeScreen() {
       }
 
       if (!result.assets[0].base64) {
-        Alert.alert('Erreur', 'Impossible de traiter l\'image. Veuillez réessayer.');
+        Alert.alert(t('home.error'), t('home.imageProcessError'));
         return;
       }
 
@@ -305,7 +307,7 @@ export default function HomeScreen() {
           await updateUsageCount();
         } catch (usageError) {
           console.error('❌ handleGalleryRecommendations - Usage count update failed:', usageError);
-          Alert.alert('Erreur', `Impossible de mettre à jour le compteur d'utilisation: ${usageError.message}`);
+          Alert.alert(t('home.error'), `${t('home.usageUpdateError')}: ${usageError.message}`);
           setRecommendationLoading(false);
           return;
         }
@@ -315,7 +317,7 @@ export default function HomeScreen() {
       router.push({
         pathname: '/recommendations',
         params: {
-          dish: 'Photo de plat',
+          dish: t('home.dishLabel'),
           budget: selectedBudget?.toString() || '',
           wineType: selectedWineType || '',
           recommendations: JSON.stringify(recommendations),
@@ -325,7 +327,7 @@ export default function HomeScreen() {
     } catch (error) {
       console.error('💥 handleGalleryRecommendations - Error:', error);
       setRecommendationLoading(false);
-      Alert.alert('Erreur', `Impossible de générer les recommandations: ${error.message}`);
+      Alert.alert(t('home.error'), `${t('home.recommendationError')}: ${error.message}`);
     }
   };
 
@@ -369,7 +371,7 @@ export default function HomeScreen() {
         <View style={styles.inputCard}>
           <TextInput
             style={styles.input}
-            placeholder="Décris ton plat ou prends-le en photo"
+            placeholder={t('home.dishPlaceholder')}
             placeholderTextColor="#999"
             value={dishDescription}
             onChangeText={setDishDescription}
@@ -392,9 +394,9 @@ export default function HomeScreen() {
             onPress={() => setShowBudgetOptions(!showBudgetOptions)}
           >
             <View>
-              <Text style={styles.sectionTitle}>Budget par bouteille</Text>
+              <Text style={styles.sectionTitle}>{t('home.budgetSection')}</Text>
               <Text style={styles.sectionSubtitle}>
-                {selectedBudget || 'Optionnel'}
+                {selectedBudget || t('home.budgetOptional')}
               </Text>
             </View>
             <View style={styles.chevronContainer}>
@@ -437,9 +439,9 @@ export default function HomeScreen() {
             onPress={() => setShowWineTypeOptions(!showWineTypeOptions)}
           >
             <View>
-              <Text style={styles.sectionTitle}>Type de vin préféré</Text>
+              <Text style={styles.sectionTitle}>{t('home.wineTypeSection')}</Text>
               <Text style={styles.sectionSubtitle}>
-                {selectedWineType ? WINE_TYPES.find(t => t.id === selectedWineType)?.label : 'Optionnel'}
+                {selectedWineType ? WINE_TYPES.find(type => type.id === selectedWineType)?.label : t('home.wineTypeOptional')}
               </Text>
             </View>
             <View style={styles.chevronContainer}>
@@ -483,7 +485,7 @@ export default function HomeScreen() {
           disabled={recommendationLoading}
         >
           <Text style={styles.ctaText}>
-            {recommendationLoading ? "Recommandation en cours..." : "Obtenir des recommandations"}
+            {recommendationLoading ? t('home.gettingRecommendations') : t('home.getRecommendations')}
           </Text>
         </TouchableOpacity>
       </ScrollView>
