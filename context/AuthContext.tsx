@@ -386,6 +386,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const startFreeTrial = async () => {
     if (!user) {
+    }
 
     try {
       const now = new Date().toISOString();
