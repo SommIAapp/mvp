@@ -10,10 +10,12 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
+import { useTranslation } from '@/hooks/useTranslation';
 import { type WineRecommendation } from '@/hooks/useRecommendations';
 
 export default function WineDetailScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { wine: wineParam, dish, budget } = useLocalSearchParams<{ 
     wine: string; 
     dish: string;
@@ -49,9 +51,9 @@ export default function WineDetailScreen() {
 
   const getCategoryLabel = (category: string) => {
     switch (category) {
-      case 'economique': return 'Économique';
-      case 'qualite-prix': return 'Qualité-Prix';
-      case 'premium': return 'Premium';
+      case 'economique': return t('wineDetail.economic');
+      case 'qualite-prix': return t('wineDetail.valueMoney');
+      case 'premium': return t('wineDetail.premium');
       default: return category;
     }
   };
@@ -66,9 +68,9 @@ export default function WineDetailScreen() {
           <ArrowLeft size={24} color={Colors.primary} />
         </TouchableOpacity>
         <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Détails du vin</Text>
+          <Text style={styles.headerTitle}>{t('wineDetail.title')}</Text>
           <Text style={styles.headerSubtitle}>
-            Pour {dish}{budget && ` • Budget: €${budget}`}
+            {t('wineDetail.for')} {dish}{budget && ` • ${t('wineDetail.budget')}: €${budget}`}
           </Text>
         </View>
       </View>
@@ -106,7 +108,7 @@ export default function WineDetailScreen() {
             
             {wine.vintage && (
               <Text style={styles.wineVintage}>
-                Millésime: {wine.vintage}
+                {t('wineDetail.vintage')}: {wine.vintage}
               </Text>
             )}
           </View>
@@ -114,7 +116,7 @@ export default function WineDetailScreen() {
           {/* Price and Rating */}
           <View style={styles.priceRatingSection}>
             <View style={styles.priceContainer}>
-              <Text style={styles.priceLabel}>Prix</Text>
+              <Text style={styles.priceLabel}>{t('wineDetail.price')}</Text>
               <Text style={styles.winePrice}>
                 €{wine.price_estimate ? 
                   (Number.isInteger(wine.price_estimate) ? 
@@ -125,14 +127,14 @@ export default function WineDetailScreen() {
               </Text>
             </View>
             <View style={styles.ratingContainer}>
-              <Text style={styles.ratingLabel}>Note</Text>
+              <Text style={styles.ratingLabel}>{t('wineDetail.rating')}</Text>
             </View>
           </View>
 
           {/* Grape Varieties */}
           {wine.grapeVarieties && wine.grapeVarieties.length > 0 && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Cépages</Text>
+              <Text style={styles.sectionTitle}>{t('wineDetail.grapes')}</Text>
               <View style={styles.grapeContainer}>
                 {wine.grapeVarieties.map((grape, index) => (
                   <View key={index} style={styles.grapeBadge}>
@@ -145,14 +147,14 @@ export default function WineDetailScreen() {
 
           {/* Reasoning */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Pourquoi ce choix ?</Text>
+            <Text style={styles.sectionTitle}>{t('wineDetail.whyThisChoice')}</Text>
             <Text style={styles.reasoningText}>{wine.reasoning}</Text>
           </View>
 
           {/* Food Pairings */}
           {wine.foodPairings && wine.foodPairings.length > 0 && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Autres accords</Text>
+              <Text style={styles.sectionTitle}>{t('wineDetail.otherPairings')}</Text>
               <View style={styles.pairingsContainer}>
                 {wine.foodPairings.map((pairing, index) => (
                   <View key={index} style={styles.pairingBadge}>

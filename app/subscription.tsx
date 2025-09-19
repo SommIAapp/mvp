@@ -31,7 +31,7 @@ export default function SubscriptionScreen() {
     console.log('🎯 handleStartTrialFlow - Starting free trial process');
     
     if (!user) {
-      Alert.alert('Erreur', 'Utilisateur non connecté');
+      Alert.alert(t('common.error'), t('subscription.userNotConnected'));
       return;
     }
 
@@ -74,7 +74,7 @@ export default function SubscriptionScreen() {
     if (authLoading || subscriptionLoading) {
       return {
         title: t('subscription.discoverPerfectMatch'),
-        subtitle: t('subscription.trialThenPrice'),
+          <LoadingSpinner text={t('common.loading')} />
         badge: t('subscription.sevenDaysFree'),
         buttonTitle: t('common.loading'),
         onPress: () => {},
@@ -325,7 +325,7 @@ export default function SubscriptionScreen() {
               title={t('subscription.upgradeToPremium')}
               onPress={() => {
                 const planType = selectedPlan === 'weekly' ? 'weekly' : 'annual';
-                handleBuyPremium(planType);
+              title={(loading || contentConfig.loading) ? t('common.loading') : t('subscription.startOneDayTrial')}
               }}
               variant="primary"
               size="large"
@@ -353,7 +353,7 @@ export default function SubscriptionScreen() {
             />
 
             <Text style={styles.trialText}>
-              Essai gratuit 1 jour
+              {t('subscription.freeTrialOneDay')}
             </Text>
 
             <View style={styles.buttonSection}>
