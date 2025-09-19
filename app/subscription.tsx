@@ -41,7 +41,7 @@ export default function SubscriptionScreen() {
       const { error } = await startFreeTrial();
 
       if (error) {
-        console.error('❌ handleStartTrialFlow - Error starting trial:', error);
+        Alert.alert(t('common.error'), t('subscription.userNotConnected'));
         throw error;
       }
 

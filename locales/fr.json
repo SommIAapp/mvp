@@ -23,6 +23,12 @@
     "passwordPlaceholder": "Ton mot de passe",
     "alreadyHaveAccount": "Tu as déjà un compte ?",
     "noAccount": "Pas encore de compte ?",
+    "signIn": {
+      "title": "Connexion",
+      "subtitle": "Connectez-vous avec votre compte Apple pour accéder à SOMMIA",
+      "securityText": "Votre confidentialité est garantie. SOMMIA ne partage jamais vos données.",
+      "error": "Connexion Apple échouée"
+    },
     "onboarding": {
       "ageVerification": {
         "title": "Vérification d'âge",
@@ -151,6 +157,17 @@
     "okSeeTomorrow": "Ok, à demain !",
     "later": "Plus tard"
   },
+  "subscriptionSuccess": {
+    "title": "SOMMIA",
+    "welcomePremium": "Bienvenue dans Premium !",
+    "message": "Ton abonnement SOMMIA Premium est maintenant actif. Profite de recommandations illimitées et d'explications détaillées !",
+    "benefits": {
+      "unlimited": "🍷 Recommandations illimitées",
+      "detailed": "📱 Explications sommelier détaillées",
+      "history": "🔄 Historique complet de tes découvertes"
+    },
+    "startExploring": "Commencer à explorer"
+  },
   "wineDetail": {
     "title": "Détails du vin",
     "for": "Pour",
@@ -186,6 +203,17 @@
       "sparkling": "Pétillant",
       "champagne": "Champagne"
     }
+  },
+  "history": {
+    "title": "SOMMIA",
+    "loading": "Chargement de l'historique...",
+    "noRecommendations": "Aucune recommandation",
+    "noRecommendationsSubtitle": "Tes recommandations apparaîtront ici après ta première recherche",
+    "restaurantBadge": "Restaurant",
+    "atRestaurant": "Chez",
+    "budget": "Budget",
+    "yesterday": "Hier",
+    "daysAgo": "Il y a {{days}} jours"
   },
   "legal": {
     "termsOfService": "Conditions d'Utilisation",
