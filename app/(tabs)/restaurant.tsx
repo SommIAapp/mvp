@@ -1,10 +1,189 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  ScrollView, 
+  TouchableOpacity,
+  Alert,
+  TextInput,
+  Dimensions,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { Camera, Upload, Check, RotateCcw } from 'lucide-react-native';
+import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
+import * as FileSystem from 'expo-file-system';
+import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Path } from 'react-native-svg';
+import { Colors } from '@/constants/Colors';
+import { Typography } from '@/constants/Typography';
+import { useTranslation } from '@/hooks/useTranslation';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { ProgressBar } from '@/components/ProgressBar';
+import { useAuth } from '@/hooks/useAuth';
+import { useRestaurantMode, UserCancellationError } from '@/hooks/useRestaurantMode';
+import { getCachedWineCard, setCachedWineCard, cleanOldCache } from '@/utils/wineCardCache';
+import { tempStore } from '@/utils/tempStore';
+
+const { width, height } = Dimensions.get('window');
+
+const BUDGET_OPTIONS = ['€10', '€20', '€30', '€50+'];
+
+const WINE_TYPES = [
+  { id: 'rouge', label: 'Rouge', color: '#6B2B3A' }, // Labels will be translated in render
+  { id: 'blanc', label: 'Blanc', color: '#D4C5A0' },
+  { id: 'rose', label: 'Rosé', color: '#F5B5A3' },
+  { id: 'champagne', label: 'Champagne', color: '#D4AF37' },
+];
+
+type ScanStep = 'scan' | 'dish' | 'results';
+
+export default function RestaurantScreen() {
+  const router = useRouter();
+  const { t } = useTranslation();
+  const { user, profile, canMakeRecommendation } = useAuth();
+  const { 
+    currentSession, 
+    setCurrentSession,
+    clearSession,
+    scanWineCard,
+    getRestaurantRecommendations,
+  } = useRestaurantMode();
+
+  const [step, setStep] = useState<ScanStep>('scan');
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanProgress, setScanProgress] = useState(0);
+  const [scanMessage, setScanMessage] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  
+  // État pour la saisie du plat
+  const [dishDescription, setDishDescription] = useState('');
+  const [selectedBudget, setSelectedBudget] = useState<string | null>(null);
+  const [selectedWineType, setSelectedWineType] = useState<string | null>(null);
+  const [showBudgetOptions, setShowBudgetOptions] = useState(false);
+  const [showWineTypeOptions, setShowWineTypeOptions] = useState(false);
+  
+  // État pour les recommandations
+  const [isGettingRecommendations, setIsGettingRecommendations] = useState(false);
+  const [recoProgress, setRecoProgress] = useState(0);
+  const [recoMessage, setRecoMessage] = useState('');
+  const [recommendations, setRecommendations] = useState<any[]>([]);
+
+  // Vérifier s'il y a une session active au démarrage
+  useEffect(() => {
+    if (currentSession && currentSession.extracted_wines && currentSession.extracted_wines.length > 0) {
+      setStep('dish');
+    }
+  }, [currentSession]);
+
+  const handleScanCard = async () => {
+    try {
+      setIsScanning(true);
+      setError(null);
+
+      // Vérifier les permissions
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert(t('restaurant.permissionDenied'), t('restaurant.cameraPermissionNeeded'));
+        return;
+      }
+
+      // Prendre la photo
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: false,
+        quality: 0.7,
+      });
+
+      if (!result.canceled && result.assets && result.assets[0]) {
+        const uri = result.assets[0].uri;
+        
+        // Compression optimisée pour réduire la taille
+        let compressedResult = await ImageManipulator.manipulateAsync(
+          uri,
+          [{ resize: { width: 1000 } }],
+          { 
+            compress: 0.6,
+            format: ImageManipulator.SaveFormat.JPEG 
+          }
+        );
+        
+        let base64 = await FileSystem.readAsStringAsync(compressedResult.uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        
+        if (__DEV__) {
+          console.log('📏 Taille après première compression:', (base64.length / 1024).toFixed(2), 'KB');
+        }
+        
+        // Si encore trop gros, recompresser
+        if (base64.length > 40000) {
+          compressedResult = await ImageManipulator.manipulateAsync(
+            uri,
+            [{ resize: { width: 600 } }],
+            { 
+              compress: 0.4,
+              format: ImageManipulator.SaveFormat.JPEG 
+            }
+          );
+          
+          base64 = await FileSystem.readAsStringAsync(compressedResult.uri, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+          
+          if (__DEV__) {
+            console.log('📏 Taille finale après recompression:', (base64.length / 1024).toFixed(2), 'KB');
+          }
+        }
+        
+        // Dernière compression si nécessaire
+        if (base64.length > 40000) {
+          compressedResult = await ImageManipulator.manipulateAsync(
+            uri,
+            [{ resize: { width: 480 } }],
+            { 
+              compress: 0.3,
+              format: ImageManipulator.SaveFormat.JPEG 
+            }
+          );
+          
+          base64 = await FileSystem.readAsStringAsync(compressedResult.uri, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+          
+          if (__DEV__) {
+            console.log('📏 Taille minimale atteinte:', (base64.length / 1024).toFixed(2), 'KB');
+          }
+        }
+        
+        await onScanComplete(base64);
+      } else {
+        if (__DEV__) {
+          console.log('❌ handleScanCard - Photo annulée');
+        }
+      }
+    } catch (error) {
+      console.error('❌ handleScanCard error:', error);
+      setError('Erreur lors de la prise de photo. Veuillez réessayer.');
+      Alert.alert(t('restaurant.error'), t('restaurant.takingPhotoError'));
+    } finally {
+      setTimeout(() => {
+        setIsScanning(false);
+        setScanProgress(0);
+        setScanMessage('');
+      }, 1000);
+    }
+  };
+
 RestaurantScreen()
 
   // Nouvelle fonction pour traiter le scan (avec ou sans cache)
   const onScanComplete = async (imageBase64: string) => {
     try {
       setScanProgress(0);
-      setScanMessage('Initialisation...');
+      setScanMessage(t('restaurant.initialization'));
       
       // Nettoyer le vieux cache périodiquement (10% de chance)
       if (Math.random() < 0.1) {
@@ -13,18 +192,18 @@ RestaurantScreen()
       
       // Étape 1: Vérifier le cache (0-20%)
       setScanProgress(10);
-      setScanMessage('Vérification du cache...');
+      setScanMessage(t('restaurant.cacheCheck'));
       
       const cached = await getCachedWineCard(imageBase64);
       
       if (cached) {
         // Animation rapide jusqu'à 100%
         setScanProgress(50);
-        setScanMessage('Carte trouvée dans le cache!');
+        setScanMessage(t('restaurant.foundInCache'));
         await new Promise(resolve => setTimeout(resolve, 300));
         
         setScanProgress(100);
-        setScanMessage('Chargement des données...');
+        setScanMessage(t('restaurant.loadingData'));
         
         // Créer une session restaurant à partir du cache
         const cachedSession = {
@@ -40,9 +219,9 @@ RestaurantScreen()
         await new Promise(resolve => setTimeout(resolve, 500));
         
         Alert.alert(
-          '✨ Carte reconnue!',
-          `${cached.restaurantName}\n${cached.wines.length} vins disponibles\n(Chargé depuis le cache)`,
-          [{ text: 'Parfait!', onPress: () => setStep('dish') }]
+          t('restaurant.cardRecognized'),
+          `${cached.restaurantName}\n${t('restaurant.winesAvailable', { count: cached.wines.length })}\n${t('restaurant.loadedFromCache')}`,
+          [{ text: t('restaurant.perfect'), onPress: () => setStep('dish') }]
         );
         
         return;
@@ -50,15 +229,15 @@ RestaurantScreen()
       
       // Pas en cache, continuer avec l'OCR
       setScanProgress(20);
-      setScanMessage('Préparation de l\'analyse...');
+      setScanMessage(t('restaurant.prepareAnalysis'));
       await new Promise(resolve => setTimeout(resolve, 300));
 
       if (!user) {
-        throw new Error('Utilisateur non connecté');
+        throw new Error(t('restaurant.userNotConnected'));
       }
       
       setScanProgress(30);
-      setScanMessage('Envoi vers l\'analyse OCR...');
+      setScanMessage(t('restaurant.sendingOCR'));
       
       // Simuler une progression pendant l'attente
       const scanProgressInterval = setInterval(() => {
@@ -68,7 +247,7 @@ RestaurantScreen()
         });
       }, 1000);
       
-      setScanMessage('Analyse de la carte en cours, cela peut prendre quelques instants...');
+      setScanMessage(t('restaurant.analyzingCard'));
 
       console.log('🚀 onScanComplete - Envoi vers scanWineCard...');
       const restaurantSession = await scanWineCard(imageBase64);
@@ -76,7 +255,7 @@ RestaurantScreen()
       clearInterval(scanProgressInterval);
       
       setScanProgress(100);
-      setScanMessage('Analyse terminée!');
+      setScanMessage(t('restaurant.analysisComplete'));
       
       // Attendre un peu pour montrer 100% puis continuer
       setTimeout(() => {
@@ -90,7 +269,7 @@ RestaurantScreen()
       
       // Don't show alert for user cancellations
       if (!(error instanceof UserCancellationError)) {
-        Alert.alert('Erreur', `Impossible de traiter la photo: ${error.message}`);
+        Alert.alert(t('restaurant.error'), t('restaurant.processPhotoError', { message: error.message }));
       }
     } finally {
       setIsScanning(false);
@@ -108,7 +287,7 @@ RestaurantScreen()
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       
       if (status !== 'granted') {
-        Alert.alert('Permission refusée', 'L\'accès à la galerie est nécessaire pour choisir une photo de la carte des vins.');
+        Alert.alert(t('restaurant.permissionDenied'), t('restaurant.galleryPermissionNeeded'));
         return;
       }
 
@@ -188,7 +367,7 @@ RestaurantScreen()
     } catch (error) {
       console.error('❌ handlePickFromGallery error:', error);
       setError('Erreur lors de la sélection de photo. Veuillez réessayer.');
-      Alert.alert('Erreur', 'Impossible de sélectionner la photo. Veuillez réessayer.');
+      Alert.alert(t('restaurant.error'), t('restaurant.selectingPhotoError'));
     } finally {
       setTimeout(() => {
         setIsScanning(false);
@@ -202,15 +381,15 @@ RestaurantScreen()
     // Vérifier que la session a des vins extraits
     if (!currentSession?.extracted_wines || currentSession.extracted_wines.length === 0) {
       Alert.alert(
-        'Carte en cours d\'analyse',
-        'La carte des vins est encore en cours d\'analyse. Veuillez patienter quelques instants.',
-        [{ text: 'OK' }]
+        t('restaurant.cardAnalyzing'),
+        t('restaurant.cardAnalyzingMessage'),
+        [{ text: t('common.confirm') }]
       );
       return;
     }
 
     if (!dishDescription.trim()) {
-      Alert.alert('Erreur', 'Veuillez décrire votre plat');
+      Alert.alert(t('restaurant.error'), t('restaurant.describeDishError'));
       return;
     }
 
@@ -238,7 +417,7 @@ RestaurantScreen()
 
     setIsGettingRecommendations(true);
     setRecoProgress(0);
-    setRecoMessage('Analyse de votre plat...');
+    setRecoMessage(t('restaurant.analyzingDish'));
 
     try {
       // Simuler progression
@@ -261,7 +440,7 @@ RestaurantScreen()
 
       clearInterval(progressInterval);
       setRecoProgress(100);
-      setRecoMessage('Recommandations prêtes!');
+      setRecoMessage(t('restaurant.recommendationsReady'));
 
       console.log('✅ handleGetRecommendations - Recommendations received:', restaurantRecommendations.length);
 
@@ -274,7 +453,7 @@ RestaurantScreen()
 
     } catch (error) {
       console.error('❌ handleGetRecommendations error:', error);
-      Alert.alert('Erreur', `Impossible de générer les recommandations: ${error.message}`);
+      Alert.alert(t('restaurant.error'), t('restaurant.recommendationError', { message: error.message }));
     } finally {
       setIsGettingRecommendations(false);
       setRecoProgress(0);
@@ -284,7 +463,7 @@ RestaurantScreen()
 
   const handleViewResults = () => {
     if (!currentSession || !recommendations.length) {
-      Alert.alert('Erreur', 'Aucune recommandation disponible');
+      Alert.alert(t('restaurant.error'), t('restaurant.noRecommendationError'));
       return;
     }
 
@@ -357,10 +536,10 @@ RestaurantScreen()
             <>
               <View style={styles.instructionCard}>
                 <Text style={styles.instructionTitle}>
-                  Scanner la carte des vins
+                  {t('restaurant.scanWineCard')}
                 </Text>
                 <Text style={styles.instructionText}>
-                  Prends une photo de la carte des vins du restaurant pour obtenir des recommandations personnalisées
+                  {t('restaurant.scanInstructions')}
                 </Text>
               </View>
 
@@ -370,7 +549,7 @@ RestaurantScreen()
                   onPress={handleScanCard}
                 >
                   <Camera size={32} color="white" />
-                  <Text style={styles.scanButtonText}>Prendre une photo</Text>
+                  <Text style={styles.scanButtonText}>{t('restaurant.takePhoto')}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity 
@@ -378,7 +557,7 @@ RestaurantScreen()
                   onPress={handlePickFromGallery}
                 >
                   <Upload size={24} color="#6B2B3A" />
-                  <Text style={styles.galleryButtonText}>Choisir depuis galerie</Text>
+                  <Text style={styles.galleryButtonText}>{t('restaurant.chooseFromGallery')}</Text>
                 </TouchableOpacity>
               </View>
             </>
@@ -415,9 +594,9 @@ RestaurantScreen()
         </View>
         
         <View style={styles.loadingContainer}>
-          <LoadingSpinner text="Finalisation de l'analyse de la carte..." />
+          <LoadingSpinner text={t('restaurant.finalizingAnalysis')} />
           <Text style={[styles.sectionSubtitle, { marginTop: 20 }]}>
-            Cela peut prendre jusqu'à 30 secondes
+            {t('restaurant.mayTake30s')}
           </Text>
         </View>
       </View>
@@ -473,15 +652,15 @@ RestaurantScreen()
                   {currentSession.restaurant_name}
                 </Text>
                 <Text style={styles.wineCount}>
-                  {currentSession.extracted_wines.length} vins détectés
+                  {t('restaurant.winesDetected', { count: currentSession.extracted_wines.length })}
                 </Text>
               </View>
 
               <View style={styles.dishInputCard}>
-                <Text style={styles.dishInputTitle}>Que manges-tu ?</Text>
+                <Text style={styles.dishInputTitle}>{t('restaurant.whatAreYouEating')}</Text>
                 <TextInput
                   style={styles.dishInput}
-                  placeholder="Décris ton plat..."
+                  placeholder={t('restaurant.describeDish')}
                   placeholderTextColor="#999"
                   value={dishDescription}
                   onChangeText={setDishDescription}
@@ -498,9 +677,9 @@ RestaurantScreen()
                   onPress={() => setShowBudgetOptions(!showBudgetOptions)}
                 >
                   <View>
-                    <Text style={styles.sectionTitle}>Budget par bouteille</Text>
+                    <Text style={styles.sectionTitle}>{t('restaurant.budgetPerBottle')}</Text>
                     <Text style={styles.sectionSubtitle}>
-                      {selectedBudget || 'Optionnel'}
+                      {selectedBudget || t('restaurant.optional')}
                     </Text>
                   </View>
                   <View style={styles.chevronContainer}>
@@ -543,9 +722,9 @@ RestaurantScreen()
                   onPress={() => setShowWineTypeOptions(!showWineTypeOptions)}
                 >
                   <View>
-                    <Text style={styles.sectionTitle}>Type de vin préféré</Text>
+                    <Text style={styles.sectionTitle}>{t('restaurant.preferredWineType')}</Text>
                     <Text style={styles.sectionSubtitle}>
-                      {selectedWineType ? WINE_TYPES.find(t => t.id === selectedWineType)?.label : 'Optionnel'}
+                      {selectedWineType ? WINE_TYPES.find(type => type.id === selectedWineType)?.label : t('restaurant.optional')}
                     </Text>
                   </View>
                   <View style={styles.chevronContainer}>
@@ -587,7 +766,7 @@ RestaurantScreen()
                 onPress={handleGetRecommendations}
               >
                 <Text style={styles.getRecommendationsText}>
-                  Obtenir mes recommandations
+                  {t('restaurant.getRecommendations')}
                 </Text>
               </TouchableOpacity>
             </>
@@ -631,9 +810,9 @@ RestaurantScreen()
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.resultsHeader}>
-            <Text style={styles.resultsTitle}>Recommandations</Text>
+            <Text style={styles.resultsTitle}>{t('restaurant.recommendations')}</Text>
             <Text style={styles.resultsSubtitle}>
-              Pour {dishDescription} chez {currentSession.restaurant_name}
+              {t('restaurant.forDishAt', { dish: dishDescription, restaurant: currentSession.restaurant_name })}
             </Text>
           </View>
 
@@ -642,7 +821,7 @@ RestaurantScreen()
             onPress={handleViewResults}
           >
             <Text style={styles.viewResultsText}>
-              Voir les {recommendations.length} recommandations
+              {t('restaurant.viewRecommendations', { count: recommendations.length })}
             </Text>
           </TouchableOpacity>
         </ScrollView>
