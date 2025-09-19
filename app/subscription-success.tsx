@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { CircleCheck as CheckCircle } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Button } from '@/components/Button';
@@ -11,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 export default function SubscriptionSuccessScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { fetchProfile, user } = useAuth();
 
   useEffect(() => {
@@ -36,7 +38,7 @@ export default function SubscriptionSuccessScreen() {
           colors={['#6B2B3A', '#8B4B5A']}
           style={styles.headerGradient}
         >
-          <Text style={styles.headerTitle}>SOMMIA</Text>
+          <Text style={styles.headerTitle}>{t('subscriptionSuccess.title')}</Text>
         </LinearGradient>
         
         <Svg
@@ -58,21 +60,20 @@ export default function SubscriptionSuccessScreen() {
           <CheckCircle size={80} color={Colors.primary} />
         </View>
 
-        <Text style={styles.title}>Bienvenue dans Premium !</Text>
+        <Text style={styles.title}>{t('subscriptionSuccess.welcomePremium')}</Text>
         
         <Text style={styles.message}>
-          Ton abonnement SommIA Premium est maintenant actif. 
-          Profite de recommandations illimitées et d'explications détaillées !
+          {t('subscriptionSuccess.message')}
         </Text>
 
         <View style={styles.benefitsList}>
-          <Text style={styles.benefit}>🍷 Recommandations illimitées</Text>
-          <Text style={styles.benefit}>📱 Explications sommelier détaillées</Text>
-          <Text style={styles.benefit}>🔄 Historique complet de tes découvertes</Text>
+          <Text style={styles.benefit}>{t('subscriptionSuccess.benefits.unlimited')}</Text>
+          <Text style={styles.benefit}>{t('subscriptionSuccess.benefits.detailed')}</Text>
+          <Text style={styles.benefit}>{t('subscriptionSuccess.benefits.history')}</Text>
         </View>
 
         <Button
-          title="Commencer à explorer"
+          title={t('subscriptionSuccess.startExploring')}
           onPress={handleContinue}
           variant="primary"
           size="large"

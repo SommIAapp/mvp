@@ -11,6 +11,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { Wine, Calendar, Utensils } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
@@ -40,6 +41,7 @@ type RestaurantRecommendation = {
 
 export default function HistoryScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { getRecommendationHistory } = useRecommendations();
   const { getRestaurantRecommendationHistory } = useRestaurantMode();
@@ -133,8 +135,8 @@ export default function HistoryScreen() {
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 1) return 'Hier';
-    if (diffDays < 7) return `Il y a ${diffDays} jours`;
+    if (diffDays === 1) return t('history.yesterday');
+    if (diffDays < 7) return t('history.daysAgo', { days: diffDays });
     
     return date.toLocaleDateString('fr-FR', {
       day: 'numeric',
@@ -181,7 +183,7 @@ export default function HistoryScreen() {
         </View>
         
         <View style={styles.loadingContent}>
-          <LoadingSpinner text="Chargement de l'historique..." />
+          <LoadingSpinner text={t('history.loading')} />
         </View>
       </View>
     );
@@ -214,9 +216,9 @@ export default function HistoryScreen() {
         
         <View style={styles.emptyContent}>
           <Wine size={64} color="#6B2B3A" strokeWidth={1} />
-          <Text style={styles.emptyTitle}>Aucune recommandation</Text>
+          <Text style={styles.emptyTitle}>{t('history.noRecommendations')}</Text>
           <Text style={styles.emptySubtitle}>
-            Tes recommandations apparaîtront ici après ta première recherche
+            {t('history.noRecommendationsSubtitle')}
           </Text>
         </View>
       </View>
@@ -267,7 +269,7 @@ export default function HistoryScreen() {
                   {item.type === 'restaurant' && (
                     <View style={styles.restaurantBadge}>
                       <Utensils size={12} color={Colors.accent} />
-                      <Text style={styles.restaurantBadgeText}>Restaurant</Text>
+                      <Text style={styles.restaurantBadgeText}>{t('history.restaurantBadge')}</Text>
                     </View>
                   )}
                 </View>
@@ -276,12 +278,12 @@ export default function HistoryScreen() {
                 </Text>
                 {item.type === 'restaurant' && item.restaurant_name && (
                   <Text style={styles.restaurantName}>
-                    Chez {item.restaurant_name}
+                    {t('history.atRestaurant')} {item.restaurant_name}
                   </Text>
                 )}
                 {item.user_budget && (
                   <Text style={styles.budgetText}>
-                    Budget: €{item.user_budget}
+                    {t('history.budget')}: €{item.user_budget}
                   </Text>
                 )}
               </View>

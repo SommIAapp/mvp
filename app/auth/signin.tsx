@@ -89,7 +89,7 @@ export default function SignInScreen() {
       if (error.code === 'ERR_CANCELED') {
         // L'utilisateur a annulé
       } else {
-        Alert.alert('Erreur', 'Connexion Apple échouée');
+        Alert.alert(t('common.error'), t('auth.signIn.error'));
       }
     } finally {
       setLoading(false);
@@ -105,12 +105,12 @@ export default function SignInScreen() {
           variant="outline"
           size="small"
         />
-        <Text style={styles.title}>Connexion</Text>
+        <Text style={styles.title}>{t('auth.signIn.title')}</Text>
       </View>
 
       <View style={styles.content}>
         <Text style={styles.subtitle}>
-          Connectez-vous avec votre compte Apple pour accéder à SOMMIA
+          {t('auth.signIn.subtitle')}
         </Text>
 
         <AppleAuthentication.AppleAuthenticationButton
@@ -122,7 +122,7 @@ export default function SignInScreen() {
         />
 
         <Text style={styles.securityText}>
-          Votre confidentialité est garantie. SOMMIA ne partage jamais vos données.
+          {t('auth.signIn.securityText')}
         </Text>
       </View>
     </View>
