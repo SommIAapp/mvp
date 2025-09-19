@@ -175,7 +175,7 @@ export default function SubscriptionScreen() {
   if (authLoading || subscriptionLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <LoadingSpinner text='common.loading' />
+        <LoadingSpinner text={t('common.loading')} />
       </View>
     );
   }
