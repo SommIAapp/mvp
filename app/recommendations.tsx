@@ -14,6 +14,7 @@ import { ArrowLeft, Camera } from 'lucide-react-native';
 import Svg, { Path } from 'react-native-svg';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useRecommendations, type WineRecommendation } from '@/hooks/useRecommendations';
 
 // Helper pour obtenir la couleur du vin
@@ -26,6 +27,7 @@ const { width, height } = Dimensions.get('window');
 
 export default function RecommendationsScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { 
     dish = '', 
     budget = '0', 
@@ -160,11 +162,11 @@ export default function RecommendationsScreen() {
     if (prices.length !== 3) return null;
     
     if (winePrice === prices[0]) {
-      return { text: 'Économique', color: '#4CAF50' };
+      return { text: t('recommendations.badges.economic'), color: '#4CAF50' };
     } else if (winePrice === prices[2]) {
-      return { text: 'Premium', color: '#D4AF37' };
+      return { text: t('recommendations.badges.premium'), color: '#D4AF37' };
     } else {
-      return { text: 'Supérieur', color: '#6B2B3A' };
+      return { text: t('recommendations.badges.superior'), color: '#6B2B3A' };
     }
   };
 
@@ -228,7 +230,7 @@ export default function RecommendationsScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={Colors.primary} />
-        <Text style={styles.loadingText}>Recommandations en cours...</Text>
+        <Text style={styles.loadingText}>{t('recommendations.loading')}</Text>
       </View>
     );
   }
@@ -236,9 +238,9 @@ export default function RecommendationsScreen() {
   if (recommendations.length === 0) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Aucune recommandation trouvée</Text>
+        <Text style={styles.errorText}>{t('recommendations.notFound')}</Text>
         <TouchableOpacity style={styles.retryButton} onPress={handleNewScan}>
-          <Text style={styles.retryButtonText}>Réessayer</Text>
+          <Text style={styles.retryButtonText}>{t('recommendations.retry')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -372,7 +374,7 @@ export default function RecommendationsScreen() {
         {recommendations.length > 1 && currentWine === 0 && showSwipeHint && (
           <View style={styles.swipeHint}>
             <Text style={styles.swipeHintText}>
-              ← Swipe pour voir plus →
+              {t('recommendations.swipeHint')}
             </Text>
           </View>
         )}
@@ -406,7 +408,7 @@ export default function RecommendationsScreen() {
             <View style={styles.infoGrid}>
               {/* Région */}
               <View style={styles.infoItem}>
-                <Text style={styles.infoLabel}>RÉGION</Text>
+                <Text style={styles.infoLabel}>{t('recommendations.region')}</Text>
                 <Text style={styles.infoValue}>
                   {wine.region || 'France'}
                 </Text>
@@ -414,7 +416,7 @@ export default function RecommendationsScreen() {
 
               {/* Prix */}
               <View style={[styles.infoItem, styles.infoItemCenter]}>
-                <Text style={styles.infoLabel}>PRIX</Text>
+                <Text style={styles.infoLabel}>{t('recommendations.price')}</Text>
                 <Text style={styles.infoPriceValue}>
                   {(() => {
                     // Mode restaurant : utiliser les vrais prix de la carte
@@ -431,16 +433,16 @@ export default function RecommendationsScreen() {
 
               {/* Type */}
               <View style={styles.infoItem}>
-                <Text style={styles.infoLabel}>TYPE</Text>
+                <Text style={styles.infoLabel}>{t('recommendations.type')}</Text>
                 <Text style={styles.infoValue}>
-                  {wine.type === 'rouge' ? 'Rouge' :
-                   wine.type === 'blanc' ? 'Blanc' :
-                   wine.type === 'rosé' ? 'Rosé' :
-                   wine.type === 'champagne' ? 'Champagne' :
-                   wine.type === 'pétillant' ? 'Pétillant' :
-                   getWineColor(wine) === 'rouge' ? 'Rouge' :
-                   getWineColor(wine) === 'blanc' ? 'Blanc' :
-                   getWineColor(wine) === 'rosé' ? 'Rosé' : 'Rouge'}
+                  {wine.type === 'rouge' ? t('recommendations.wineTypes.red') :
+                   wine.type === 'blanc' ? t('recommendations.wineTypes.white') :
+                   wine.type === 'rosé' ? t('recommendations.wineTypes.rose') :
+                   wine.type === 'champagne' ? t('recommendations.wineTypes.champagne') :
+                   wine.type === 'pétillant' ? t('recommendations.wineTypes.sparkling') :
+                   getWineColor(wine) === 'rouge' ? t('recommendations.wineTypes.red') :
+                   getWineColor(wine) === 'blanc' ? t('recommendations.wineTypes.white') :
+                   getWineColor(wine) === 'rosé' ? t('recommendations.wineTypes.rose') : t('recommendations.wineTypes.red')}
                 </Text>
               </View>
             </View>
@@ -462,7 +464,7 @@ export default function RecommendationsScreen() {
           onPress={handleNewScan}
         >
           <Camera size={20} color="white" />
-          <Text style={styles.scanButtonText}>Nouveau Scan</Text>
+          <Text style={styles.scanButtonText}>{t('recommendations.newScan')}</Text>
         </TouchableOpacity>
       </View>
     </View>
