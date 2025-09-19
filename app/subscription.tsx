@@ -74,7 +74,7 @@ export default function SubscriptionScreen() {
     if (authLoading || subscriptionLoading) {
       return {
         title: t('subscription.discoverPerfectMatch'),
-          <LoadingSpinner text={t('common.loading')} />
+        subtitle: t('subscription.trialThenPrice'),
         badge: t('subscription.sevenDaysFree'),
         buttonTitle: t('common.loading'),
         onPress: () => {},
@@ -325,7 +325,7 @@ export default function SubscriptionScreen() {
               title={t('subscription.upgradeToPremium')}
               onPress={() => {
                 const planType = selectedPlan === 'weekly' ? 'weekly' : 'annual';
-              title={(loading || contentConfig.loading) ? t('common.loading') : t('subscription.startOneDayTrial')}
+                handleBuyPremium(planType);
               }}
               variant="primary"
               size="large"
@@ -358,7 +358,7 @@ export default function SubscriptionScreen() {
 
             <View style={styles.buttonSection}>
               <Button
-                title={(loading || contentConfig.loading) ? t('common.loading') : 'Commencer l\'essai d\'1 jour'}
+                title={(loading || contentConfig.loading) ? t('common.loading') : t('subscription.startOneDayTrial')}
                 onPress={contentConfig.onPress}
                 variant="primary"
                 size="large"
