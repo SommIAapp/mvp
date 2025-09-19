@@ -116,7 +116,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         .eq('id', userId)
         .maybeSingle();
 
-
       if (error) {
         secureError('🔐 AuthProvider: Error fetching profile from DB:', error);
         throw error;
@@ -386,6 +385,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const startFreeTrial = async () => {
     if (!user) {
+      return { error: new Error('Utilisateur non connecté') };
     }
 
     try {
@@ -443,7 +443,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     
     return now.getTime() > trialEnd.getTime();
   };
-
 
   const value: AuthContextType = {
     user,
