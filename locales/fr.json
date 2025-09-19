@@ -111,6 +111,28 @@
     "productNotFound": "Produit non trouvé",
     "errorCreatingSession": "Impossible de créer la session de paiement. Réessaie plus tard."
   },
+  "recommendations": {
+    "loading": "Recommandations en cours...",
+    "notFound": "Aucune recommandation trouvée",
+    "retry": "Réessayer",
+    "swipeHint": "← Swipe pour voir plus →",
+    "region": "RÉGION",
+    "price": "PRIX",
+    "type": "TYPE",
+    "newScan": "Nouveau Scan",
+    "badges": {
+      "economic": "Économique",
+      "superior": "Supérieur",
+      "premium": "Premium"
+    },
+    "wineTypes": {
+      "red": "Rouge",
+      "white": "Blanc",
+      "rose": "Rosé",
+      "sparkling": "Pétillant",
+      "champagne": "Champagne"
+    }
+  },
   "legal": {
     "termsOfService": "Conditions d'Utilisation",
     "privacyPolicy": "Politique de Confidentialité",
