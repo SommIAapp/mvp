@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		24E291350F0DFC56AF7430C8 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 97EC7C67541CF1B43D9576E3 /* PrivacyInfo.xcprivacy */; };
+		2D8D189F2E7F1316009D0265 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D8D189E2E7F1316009D0265 /* Images.xcassets */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
 		598AA3781A5D3D721FD8CA57 /* libPods-SOMMIA.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 520C1FCE3068576B4DA987DF /* libPods-SOMMIA.a */; };
 		92103595BDC411D084EC1737 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93A07D15A029F6BD4D713ABF /* ExpoModulesProvider.swift */; };
@@ -18,6 +19,7 @@
 /* Begin PBXFileReference section */
 		13B07F961A680F5B00A75B9A /* SOMMIA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SOMMIA.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = SOMMIA/Info.plist; sourceTree = "<group>"; };
+		2D8D189E2E7F1316009D0265 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		520C1FCE3068576B4DA987DF /* libPods-SOMMIA.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-SOMMIA.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C9C52E4ED636380B81635D7 /* Pods-SOMMIA.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SOMMIA.debug.xcconfig"; path = "Target Support Files/Pods-SOMMIA/Pods-SOMMIA.debug.xcconfig"; sourceTree = "<group>"; };
 		8F63A9FF22F220D73684F4B7 /* Pods-SOMMIA.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SOMMIA.release.xcconfig"; path = "Target Support Files/Pods-SOMMIA/Pods-SOMMIA.release.xcconfig"; sourceTree = "<group>"; };
@@ -45,6 +47,7 @@
 		13B07FAE1A68108700A75B9A /* SOMMIA */ = {
 			isa = PBXGroup;
 			children = (
+				2D8D189E2E7F1316009D0265 /* Images.xcassets */,
 				F11748412D0307B40044C1D9 /* AppDelegate.swift */,
 				F11748442D0722820044C1D9 /* SOMMIA-Bridging-Header.h */,
 				BB2F792B24A3F905000567C9 /* Supporting */,
@@ -191,6 +194,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
+				2D8D189F2E7F1316009D0265 /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
 				24E291350F0DFC56AF7430C8 /* PrivacyInfo.xcprivacy in Resources */,
 			);
@@ -350,6 +354,7 @@
 					"FB_SONARKIT_ENABLED=1",
 				);
 				INFOPLIST_FILE = SOMMIA/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -381,6 +386,7 @@
 				CODE_SIGN_ENTITLEMENTS = SOMMIA/SOMMIA.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = SOMMIA/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -460,10 +466,7 @@
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -522,10 +525,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = NO;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
