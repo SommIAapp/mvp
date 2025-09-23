@@ -25,6 +25,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRestaurantMode, UserCancellationError } from '@/hooks/useRestaurantMode';
 import { getCachedWineCard, setCachedWineCard, cleanOldCache } from '@/utils/wineCardCache';
 import { tempStore } from '@/utils/tempStore';
+import { Analytics } from '@/utils/analytics';
 
 const { width, height } = Dimensions.get('window');
 
@@ -80,6 +81,8 @@ export default function RestaurantScreen() {
   const handleScanCard = async () => {
     try {
       setIsScanning(true);
+      // Track restaurant scan start
+      Analytics.track('Restaurant Scan Started');
       setError(null);
 
       // Vérifier les permissions
@@ -428,6 +431,15 @@ export default function RestaurantScreen() {
       }, 500);
 
       const budgetValue = selectedBudget ? parseInt(selectedBudget.replace('€', '').replace('+', '')) : undefined;
+      
+      // Track restaurant recommendation
+      Analytics.track('Recommendation Made', { 
+        mode: 'restaurant',
+        restaurantName: currentSession?.restaurant_name,
+        winesAvailable: currentSession?.extracted_wines?.length || 0,
+        budget: selectedBudget,
+        wineType: selectedWineType
+      });
       
       console.log('🤖 handleGetRecommendations - Calling restaurant recommendations');
       const restaurantRecommendations = await getRestaurantRecommendations(
