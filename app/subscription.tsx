@@ -13,6 +13,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/lib/supabase';
+import { Analytics } from '@/utils/analytics';
 
 const { width, height } = Dimensions.get('window');
 
@@ -26,6 +27,14 @@ export default function SubscriptionScreen() {
   const { packages, createCheckoutSession, loading: subscriptionLoading, checkoutLoading, cancelCheckout } = useSubscription();
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState('annual'); // Pre-select annual plan
+
+  // Track paywall view
+  useEffect(() => {
+    Analytics.track('Paywall Shown', { 
+      reason: reason,
+      hasTrial: profile?.trial_start_date ? true : false
+    });
+  }, [reason]);
 
   const handleStartTrialFlow = async () => {
     console.log('🎯 handleStartTrialFlow - Starting free trial process');
@@ -46,6 +55,8 @@ export default function SubscriptionScreen() {
       }
 
       console.log('✅ handleStartTrialFlow - Trial started successfully, navigating to app');
+      // Track trial started
+      Analytics.track('Trial Started');
       // Navigate to main app
       router.replace('/(tabs)');
     } catch (error) {
@@ -57,6 +68,11 @@ export default function SubscriptionScreen() {
   };
 
   const handleBuyPremium = async (planType: string) => {
+    // Track subscription attempt
+    Analytics.track('Subscription Started', { 
+      plan: planType 
+    });
+    
     setLoading(true);
     
     try {
