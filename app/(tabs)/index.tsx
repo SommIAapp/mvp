@@ -21,6 +21,7 @@ import { sanitizeForLogging } from '@/utils/secureLogging';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useRecommendations } from '@/hooks/useRecommendations';
+import { Analytics } from '@/utils/analytics';
 
 const { width } = Dimensions.get('window');
 
@@ -98,6 +99,12 @@ export default function HomeScreen() {
 
     try {
       const budgetValue = selectedBudget ? parseInt(selectedBudget.replace('€', '').replace('+', '')) : undefined;
+      // Track recommendation event
+      Analytics.track('Recommendation Made', { 
+        mode: 'text',
+        budget: selectedBudget,
+        wineType: selectedWineType 
+      });
       const recommendations = await getRecommendations(
         dishDescription,
         budgetValue,
@@ -206,6 +213,12 @@ export default function HomeScreen() {
       setRecommendationLoading(true);
 
       const budgetValue = selectedBudget ? parseInt(selectedBudget.replace('€', '').replace('+', '')) : undefined;
+      // Track photo recommendation event
+      Analytics.track('Recommendation Made', { 
+        mode: 'photo_camera',
+        budget: selectedBudget,
+        wineType: selectedWineType 
+      });
       const recommendations = await getRecommendationsFromPhoto(
         result.assets[0].base64,
         budgetValue,
@@ -294,6 +307,12 @@ export default function HomeScreen() {
       setRecommendationLoading(true);
 
       const budgetValue = selectedBudget ? parseInt(selectedBudget.replace('€', '').replace('+', '')) : undefined;
+      // Track gallery recommendation event
+      Analytics.track('Recommendation Made', { 
+        mode: 'photo_gallery',
+        budget: selectedBudget,
+        wineType: selectedWineType 
+      });
       const recommendations = await getRecommendationsFromPhoto(
         result.assets[0].base64,
         budgetValue,
