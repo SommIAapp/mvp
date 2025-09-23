@@ -7,12 +7,21 @@ import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { AuthProvider } from '@/context/AuthContext';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
+import { useEffect } from 'react'; // AJOUTER
+import { Analytics } from '@/utils/analytics'; // AJOUTER
 
 export default function RootLayout() {
   console.log('🔱 Layout: RootLayout rendering');
   
   useFrameworkReady();
   const { isConnected } = useNetworkStatus();
+  useEffect(() => {
+    const initAnalytics = async () => {
+      await Analytics.init();
+      Analytics.track('App Opened');
+    };
+    initAnalytics();
+  }, []);
 
   return (
     <AuthProvider>
