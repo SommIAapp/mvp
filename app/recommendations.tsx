@@ -148,13 +148,12 @@ export default function RecommendationsScreen() {
     
     if (isFirstReco && !alreadyRated) {
       await AsyncStorage.setItem('first_reco_completed', 'true');
-      // Montrer le modal après un délai
-      setTimeout(() => {
-        setShowRatingModal(true);
-      }, 500);
+      // Montrer le modal SANS naviguer
+      setShowRatingModal(true);
+    } else {
+      // Si pas de modal à montrer, naviguer directement
+      router.replace('/(tabs)');
     }
-    
-    router.replace('/(tabs)');
   };
 
   // Ajoute cette fonction après loadRecommendations :
@@ -486,7 +485,11 @@ export default function RecommendationsScreen() {
 
       <RatingModal 
         visible={showRatingModal}
-        onClose={() => setShowRatingModal(false)}
+        onClose={() => {
+          setShowRatingModal(false);
+          // Naviguer APRÈS la fermeture du modal
+          router.replace('/(tabs)');
+        }}
       />
     </View>
   );
