@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
   
   // Header - 27%
   headerSection: {
-    height: height * 0.27,
+    height: height * 0.25,
     position: 'relative',
   },
   headerGradient: {
@@ -566,7 +566,7 @@ const styles = StyleSheet.create({
 
   // Bouteilles - 38%
   bottlesSection: {
-    height: height * 0.38,
+    height: height * 0.36,
     position: 'relative',
     justifyContent: 'center',
   },
@@ -646,7 +646,7 @@ const styles = StyleSheet.create({
 
   // Info - 20%
   infoSection: {
-    height: height * 0.2,
+    height: height * 0.19,
     paddingHorizontal: 20,
     justifyContent: 'center',
   },
@@ -699,6 +699,7 @@ const styles = StyleSheet.create({
     height: height * 0.1,
     paddingHorizontal: 20,
     justifyContent: 'center',
+    paddingBottom: 20,
   },
   scanButton: {
     backgroundColor: '#6B2B3A',
