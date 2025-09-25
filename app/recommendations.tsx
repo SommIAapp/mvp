@@ -140,40 +140,25 @@ export default function RecommendationsScreen() {
   };
 
   // Nouveau scan
+  // Note: The iOS rating popup always uses the device's system language,
+  // not the app's selected language. This is an iOS limitation.
   const handleNewScan = async () => {
-    console.log('🔍 handleNewScan called');
-    
     // Vérifier si c'est la première recommandation
     const isFirstReco = await AsyncStorage.getItem('first_reco_completed') !== 'true';
-    console.log('📊 isFirstReco:', isFirstReco);
     
     if (isFirstReco) {
       await AsyncStorage.setItem('first_reco_completed', 'true');
-      console.log('✅ Marked as first reco completed');
       
-      // IMPORTANT: Naviguer d'abord
+      // Naviguer d'abord
       router.replace('/(tabs)');
       
-      // PUIS demander le rating après un délai plus long
+      // Puis demander le rating après un délai
       setTimeout(async () => {
-        console.log('⏰ Timer fired for rating request');
-        try {
-          const hasAction = await StoreReview.hasAction();
-          console.log('📱 StoreReview.hasAction():', hasAction);
-          
-          if (hasAction) {
-            console.log('🎯 Requesting store review...');
-            await StoreReview.requestReview();
-            console.log('✅ Store review requested');
-          } else {
-            console.log('❌ StoreReview.hasAction() returned false');
-          }
-        } catch (error) {
-          console.error('❌ Error requesting store review:', error);
+        if (await StoreReview.hasAction()) {
+          await StoreReview.requestReview();
         }
-      }, 2000); // 2 secondes pour être sûr que la navigation est complète
+      }, 2000);
     } else {
-      console.log('❌ Not first reco, navigating directly');
       router.replace('/(tabs)');
     }
   };
