@@ -199,8 +199,8 @@ const styles = StyleSheet.create({
   progressContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    paddingTop: 40,
-    paddingBottom: 20,
+    paddingTop: 30,
+    paddingBottom: 10,
     gap: 8,
   },
   progressDot: {
@@ -215,23 +215,23 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 40,
+    paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '700',
     color: 'white',
     textAlign: 'center',
-    marginBottom: 40,
+    marginBottom: 20,
   },
   subtitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '500',
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
   },
   description: {
     fontSize: 16,
@@ -291,12 +291,12 @@ const styles = StyleSheet.create({
   },
   healthWarning: {
     position: 'absolute',
-    bottom: 40,
-    fontSize: 12,
+    bottom: 20,
+    fontSize: 11,
     color: 'rgba(255, 255, 255, 0.6)',
     textAlign: 'center',
     fontStyle: 'italic',
-    paddingHorizontal: 40,
+    paddingHorizontal: 20,
   },
   ageIconContainer: {
     marginBottom: 24,
@@ -319,10 +319,10 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   trialGif: {
-    width: width * 0.85, // 85% de la largeur de l'écran
-    height: (width * 0.85) * 0.8, // Maintient le ratio
+    width: width - 40, // Utilise presque toute la largeur
+    height: height * 0.4, // 40% de la hauteur totale
     borderRadius: 20,
-    marginBottom: 30, // Ajoute de l'espace en bas
+    marginBottom: 20,
     alignSelf: 'center',
   },
 });
