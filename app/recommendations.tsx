@@ -11,18 +11,26 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ArrowLeft, Camera } from 'lucide-react-native';
-import Svg, { Path } from 'react-native-svg';
-import { Colors } from '@/constants/Colors';
-import { Typography } from '@/constants/Typography';
+  // Vérifier si rating déjà demandé dans onboarding
+  const ratingRequested = await AsyncStorage.getItem('rating_requested_onboarding') === 'true';
 import { useTranslation } from '@/hooks/useTranslation';
-import { useRecommendations, type WineRecommendation } from '@/hooks/useRecommendations';
-import { RatingModal, hasUserRated } from '@/components/RatingModal';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// Helper pour obtenir la couleur du vin
-const getWineColor = (wine: any) => {
-  // Mode restaurant utilise 'type', mode normal utilise 'color'
+  // Si pas encore demandé, le faire après la première reco
+  if (!ratingRequested) {
+    const isFirstReco = await AsyncStorage.getItem('first_reco_completed') !== 'true';
+    
+    if (isFirstReco) {
+      await AsyncStorage.setItem('first_reco_completed', 'true');
+      
+      setTimeout(async () => {
+        if (await StoreReview.hasAction()) {
+          await StoreReview.requestReview();
+          await AsyncStorage.setItem('rating_requested_onboarding', 'true');
+        }
+      }, 1000);
+    }
   return wine.type || wine.color || 'rouge';
+  
+  router.replace('/(tabs)');
 };
 
 const { width, height } = Dimensions.get('window');
