@@ -12,7 +12,6 @@ import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { ChevronRight } from 'lucide-react-native';
-import { ShieldCheck } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { useAuth } from '@/hooks/useAuth';
@@ -116,8 +115,9 @@ export default function OnboardingScreen() {
           {/* Age verification icon */}
           {currentStep === 0 && (
             <View style={styles.ageIconContainer}>
-              <ShieldCheck size={100} color="white" strokeWidth={1.5} />
-              <Text style={styles.ageIconText}>18+</Text>
+              <View style={styles.ageCircle}>
+                <Text style={styles.ageIconText}>18+</Text>
+              </View>
             </View>
           )}
 
@@ -295,20 +295,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   ageIconContainer: {
-    position: 'relative',
     marginBottom: 24,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  ageCircle: {
     width: 100,
     height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderWidth: 3,
+    borderColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   ageIconText: {
-    position: 'absolute',
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: '900',
     color: 'white',
-    top: '50%',
-    transform: [{ translateY: -16 }],
   },
   trialGif: {
     width: width - 80,
