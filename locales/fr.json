@@ -10,7 +10,6 @@
   "welcome": {
     "title": "Bienvenue sur",
     "subtitle": "SOMMIA",
-    "description": "Découvre le vin parfait pour chaque plat",
     "privacy": "Connexion sécurisée. Vos données restent privées.",
     "error": "Erreur de connexion",
     "signinError": "Une erreur est survenue lors de la connexion. Veuillez réessayer."

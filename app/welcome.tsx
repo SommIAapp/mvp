@@ -194,12 +194,6 @@ export default function WelcomeScreen() {
       </View>
 
       <View style={styles.bottomSection}>
-        <View style={styles.contentSection}>
-          <Text style={styles.description}>
-            {t('welcome.description')}
-          </Text>
-        </View>
-
         <View style={styles.buttonSection}>
           <AppleAuthentication.AppleAuthenticationButton
             buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
@@ -213,11 +207,11 @@ export default function WelcomeScreen() {
             {t('welcome.privacy')}
           </Text>
         </View>
+        
+        <Text style={styles.healthWarning}>
+          {t('common.healthWarning')}
+        </Text>
       </View>
-
-      <Text style={styles.healthWarning}>
-        {t('common.healthWarning')}
-      </Text>
     </View>
   );
 }
@@ -254,7 +248,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.accent,
     paddingHorizontal: 24,
-    paddingBottom: 40,
+    paddingTop: 60,
+    paddingBottom: 30,
     justifyContent: 'space-between',
   },
   heroContent: {
@@ -273,17 +268,8 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     textAlign: 'center',
   },
-  contentSection: {
-    marginTop: 40,
-  },
-  description: {
-    fontSize: Typography.sizes.lg,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: Typography.sizes.lg * Typography.lineHeights.relaxed,
-  },
   buttonSection: {
-    gap: 16,
+    gap: 12,
     alignItems: 'center',
   },
   appleButton: {
@@ -300,9 +286,7 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.xs,
     color: Colors.textSecondary,
     textAlign: 'center',
-    marginTop: 24,
-    marginBottom: 20,
-    paddingHorizontal: 40,
+    paddingHorizontal: 20,
     fontStyle: 'italic',
   },
   languageSelector: {
