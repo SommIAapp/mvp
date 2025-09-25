@@ -482,12 +482,13 @@ export default function RecommendationsScreen() {
           <Text style={styles.scanButtonText}>{t('recommendations.newScan')}</Text>
         </TouchableOpacity>
       </View>
-    </View>
 
-    <RatingModal 
-      visible={showRatingModal}
-      onClose={() => setShowRatingModal(false)}
-    />
+
+      <RatingModal 
+        visible={showRatingModal}
+        onClose={() => setShowRatingModal(false)}
+      />
+    </View>
   );
 }
 
