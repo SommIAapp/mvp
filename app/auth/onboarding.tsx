@@ -116,7 +116,7 @@ export default function OnboardingScreen() {
           {/* Age verification icon */}
           {currentStep === 0 && (
             <View style={styles.ageIconContainer}>
-              <ShieldCheck size={80} color="white" strokeWidth={1.5} />
+              <ShieldCheck size={100} color="white" strokeWidth={1.5} />
               <Text style={styles.ageIconText}>18+</Text>
             </View>
           )}
@@ -195,8 +195,8 @@ const styles = StyleSheet.create({
   progressContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    paddingTop: 60,
-    paddingBottom: 40,
+    paddingTop: 40,
+    paddingBottom: 20,
     gap: 8,
   },
   progressDot: {
@@ -296,17 +296,19 @@ const styles = StyleSheet.create({
   },
   ageIconContainer: {
     position: 'relative',
-    marginBottom: 32,
+    marginBottom: 24,
     alignItems: 'center',
     justifyContent: 'center',
+    width: 100,
+    height: 100,
   },
   ageIconText: {
     position: 'absolute',
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: '900',
     color: 'white',
     top: '50%',
-    transform: [{ translateY: -12 }],
+    transform: [{ translateY: -16 }],
   },
   trialGif: {
     width: width - 80,
