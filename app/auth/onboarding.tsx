@@ -129,7 +129,7 @@ export default function OnboardingScreen() {
           {/* GIF pour l'écran trial */}
           {currentStep === 1 && (
             <Image
-              source={require('@/assets/images/triaonboarding.gif')}
+              source={require('@/assets/images/trialonboard.gif')}
               style={styles.trialGif}
               resizeMode="contain"
             />
