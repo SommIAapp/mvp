@@ -112,6 +112,15 @@ export default function OnboardingScreen() {
           exiting={FadeOut}
           style={styles.content}
         >
+          {/* GIF pour l'écran trial - AVANT les textes */}
+          {currentStep === 1 && (
+            <Image
+              source={require('@/assets/images/trialonboard.gif')}
+              style={styles.trialGif}
+              resizeMode="contain"
+            />
+          )}
+
           {/* Age verification icon */}
           {currentStep === 0 && (
             <View style={styles.ageIconContainer}>
@@ -124,15 +133,10 @@ export default function OnboardingScreen() {
           {/* Title */}
           <Text style={styles.title}>{currentStepData.title}</Text>
           <Text style={styles.subtitle}>{currentStepData.subtitle}</Text>
-          <Text style={styles.description}>{currentStepData.description}</Text>
-
-          {/* GIF pour l'écran trial */}
-          {currentStep === 1 && (
-            <Image
-              source={require('@/assets/images/trialonboard.gif')}
-              style={styles.trialGif}
-              resizeMode="contain"
-            />
+          
+          {/* Description seulement pour age screen */}
+          {currentStep === 0 && (
+            <Text style={styles.description}>{currentStepData.description}</Text>
           )}
 
           {/* Actions selon l'étape */}
@@ -315,10 +319,10 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   trialGif: {
-    width: width - 60, // Réduit de 80 à 60
-    height: (width - 60) * 0.7, // Augmente le ratio de 0.6 à 0.7
+    width: width - 40, // Réduit encore de 60 à 40
+    height: (width - 40) * 0.8, // Augmente le ratio de 0.7 à 0.8
     borderRadius: 20,
-    marginVertical: 20, // Réduit de 24
+    marginBottom: 30, // Ajoute de l'espace en bas
     alignSelf: 'center',
   },
 });
