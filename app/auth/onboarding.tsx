@@ -319,8 +319,8 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   trialGif: {
-    width: width - 40, // Réduit encore de 60 à 40
-    height: (width - 40) * 0.8, // Augmente le ratio de 0.7 à 0.8
+    width: width * 0.85, // 85% de la largeur de l'écran
+    height: (width * 0.85) * 0.8, // Maintient le ratio
     borderRadius: 20,
     marginBottom: 30, // Ajoute de l'espace en bas
     alignSelf: 'center',
