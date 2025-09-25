@@ -11,7 +11,9 @@
     "title": "Welcome to",
     "subtitle": "SOMMIA",
     "description": "Find the perfect wine for every dish",
-    "privacy": "Secure sign-in. Your data stays private."
+    "privacy": "Secure sign-in. Your data stays private.",
+    "error": "Connection Error",
+    "signinError": "An error occurred during sign in. Please try again."
   },
   "auth": {
     "email": "Email",

@@ -131,10 +131,9 @@ export default function WelcomeScreen() {
       }
       
       if (error.code !== 'ERR_CANCELED') {
-        // Afficher l'erreur détaillée pour debug
         Alert.alert(
-          'Erreur Debug',
-          `Code: ${error.code || 'N/A'}\n\nMessage: ${error.message || 'Erreur inconnue'}\n\nDétails: ${JSON.stringify(error, null, 2)}`
+          t('welcome.error'),
+          t('welcome.signinError')
         );
       }
     } finally {
