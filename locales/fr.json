@@ -49,6 +49,13 @@
         "subtitle": "Essayez sans engagement",
         "description": "Profitez de toutes les fonctionnalités premium pendant 1 jour"
       },
+      "rating": {
+        "title": "Votre avis compte",
+        "subtitle": "Aidez-nous à améliorer SOMMIA",
+        "description": "Si vous appréciez l'application, prenez un moment pour nous noter. Cela nous aide énormément !",
+        "rateNow": "Noter maintenant",
+        "later": "Plus tard"
+      },
       "continue": "Continuer",
       "startTrial": "Commencer l'essai gratuit"
     }

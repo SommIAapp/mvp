@@ -49,6 +49,13 @@
         "subtitle": "Try without commitment",
         "description": "Enjoy all premium features for 1 day"
       },
+      "rating": {
+        "title": "Your opinion matters",
+        "subtitle": "Help us improve SOMMIA",
+        "description": "If you enjoy the app, take a moment to rate us. It helps us a lot!",
+        "rateNow": "Rate now",
+        "later": "Later"
+      },
       "continue": "Continue",
       "startTrial": "Start free trial"
     }
