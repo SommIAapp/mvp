@@ -104,6 +104,10 @@
     "termsOfService": "Conditions d'Utilisation",
     "privacyPolicy": "Politique de Confidentialité",
     "contactSupport": "Contacter le Support",
+    "deleteAccount": "Supprimer mon compte",
+    "deleteAccountConfirm": "Êtes-vous sûr de vouloir supprimer définitivement votre compte ? Cette action est irréversible et toutes vos données seront perdues.",
+    "deleteAccountFinal": "Supprimer définitivement",
+    "deleteAccountError": "Impossible de supprimer le compte. Veuillez réessayer.",
     "signOut": "Déconnexion",
     "signOutConfirm": "Es-tu sûr de vouloir te déconnecter ?"
   },

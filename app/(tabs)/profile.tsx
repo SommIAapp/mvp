@@ -10,7 +10,7 @@ import {
   Linking
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { User, Crown, Calendar, ChartBar as BarChart3, LogOut, Wine, FileText, Shield, Mail } from 'lucide-react-native';
+import { User, Crown, Calendar, ChartBar as BarChart3, LogOut, Wine, FileText, Shield, Mail, ChevronRight } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from '@/hooks/useTranslation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -107,6 +107,46 @@ export default function ProfileScreen() {
     );
   };
 
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      t('profile.deleteAccount'),
+      t('profile.deleteAccountConfirm'),
+      [
+        {
+          text: t('common.cancel'),
+          style: 'cancel',
+        },
+        {
+          text: t('profile.deleteAccountFinal'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              // Supprimer le profil utilisateur
+              const { error: profileError } = await supabase
+                .from('user_profiles')
+                .delete()
+                .eq('id', user?.id);
+
+              if (profileError) throw profileError;
+
+              // Supprimer le compte auth
+              const { error: authError } = await supabase.auth.admin.deleteUser(user?.id);
+              
+              if (authError) throw authError;
+
+              // Déconnexion et retour au welcome
+              await supabase.auth.signOut();
+              router.replace('/welcome');
+            } catch (error) {
+              console.error('Delete account error:', error);
+              Alert.alert(t('common.error'), t('profile.deleteAccountError'));
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
   const getSubscriptionStatus = () => {
     if (__DEV__) {
       console.log('🔍 Profile Status Debug:');
@@ -324,6 +364,16 @@ export default function ProfileScreen() {
             <Text style={styles.menuText}>{t('profile.contactSupport')}</Text>
           </TouchableOpacity>
           
+          <TouchableOpacity
+            style={[styles.menuItem, styles.menuItemDanger]}
+            onPress={handleDeleteAccount}
+          >
+            <Text style={[styles.menuText, styles.menuItemTextDanger]}>
+              {t('profile.deleteAccount')}
+            </Text>
+            <ChevronRight size={20} color="#FF3B30" />
+          </TouchableOpacity>
+          
           <TouchableOpacity style={styles.menuItem} onPress={handleSignOut}>
             <LogOut size={24} color={Colors.error} />
             <Text style={[styles.menuText, { color: Colors.error }]}>
@@ -498,6 +548,14 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.base,
     color: Colors.textPrimary,
     marginLeft: 16,
+  },
+  menuItemDanger: {
+    borderTopWidth: 1,
+    borderTopColor: Colors.softGray,
+    marginTop: 20,
+  },
+  menuItemTextDanger: {
+    color: '#FF3B30',
   },
   languageSelector: {
     flexDirection: 'row',

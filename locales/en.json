@@ -104,6 +104,10 @@
     "termsOfService": "Terms of Service",
     "privacyPolicy": "Privacy Policy",
     "contactSupport": "Contact Support",
+    "deleteAccount": "Delete my account",
+    "deleteAccountConfirm": "Are you sure you want to permanently delete your account? This action cannot be undone and all your data will be lost.",
+    "deleteAccountFinal": "Delete permanently",
+    "deleteAccountError": "Unable to delete account. Please try again.",
     "signOut": "Sign Out",
     "signOutConfirm": "Are you sure you want to sign out?"
   },
