@@ -11,26 +11,18 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ArrowLeft, Camera } from 'lucide-react-native';
-  // Vérifier si rating déjà demandé dans onboarding
-  const ratingRequested = await AsyncStorage.getItem('rating_requested_onboarding') === 'true';
+import Svg, { Path } from 'react-native-svg';
+import { Colors } from '@/constants/Colors';
+import { Typography } from '@/constants/Typography';
 import { useTranslation } from '@/hooks/useTranslation';
-  // Si pas encore demandé, le faire après la première reco
-  if (!ratingRequested) {
-    const isFirstReco = await AsyncStorage.getItem('first_reco_completed') !== 'true';
-    
-    if (isFirstReco) {
-      await AsyncStorage.setItem('first_reco_completed', 'true');
-      
-      setTimeout(async () => {
-        if (await StoreReview.hasAction()) {
-          await StoreReview.requestReview();
-          await AsyncStorage.setItem('rating_requested_onboarding', 'true');
-        }
-      }, 1000);
-    }
+import { useRecommendations, type WineRecommendation } from '@/hooks/useRecommendations';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as StoreReview from 'expo-store-review';
+
+// Helper pour obtenir la couleur du vin
+const getWineColor = (wine: any) => {
+  // Mode restaurant utilise 'type', mode normal utilise 'color'
   return wine.type || wine.color || 'rouge';
-  
-  router.replace('/(tabs)');
 };
 
 const { width, height } = Dimensions.get('window');
@@ -66,7 +58,6 @@ export default function RecommendationsScreen() {
   const [currentWine, setCurrentWine] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [showSwipeHint, setShowSwipeHint] = useState(true);
-  const [showRatingModal, setShowRatingModal] = useState(false);
 
   useEffect(() => {
     loadRecommendations();
@@ -150,18 +141,21 @@ export default function RecommendationsScreen() {
 
   // Nouveau scan
   const handleNewScan = async () => {
-    // Vérifier si c'est la première recommandation complétée
+    // Vérifier si c'est la première recommandation
     const isFirstReco = await AsyncStorage.getItem('first_reco_completed') !== 'true';
-    const alreadyRated = await hasUserRated();
     
-    if (isFirstReco && !alreadyRated) {
+    if (isFirstReco) {
       await AsyncStorage.setItem('first_reco_completed', 'true');
-      // Montrer le modal SANS naviguer
-      setShowRatingModal(true);
-    } else {
-      // Si pas de modal à montrer, naviguer directement
-      router.replace('/(tabs)');
+      
+      // Demander le rating après 1 seconde (iOS gère si déjà noté)
+      setTimeout(async () => {
+        if (await StoreReview.hasAction()) {
+          await StoreReview.requestReview();
+        }
+      }, 1000);
     }
+    
+    router.replace('/(tabs)');
   };
 
   // Ajoute cette fonction après loadRecommendations :
@@ -248,6 +242,7 @@ export default function RecommendationsScreen() {
     
     return cleanName.trim();
   };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -489,16 +484,6 @@ export default function RecommendationsScreen() {
           <Text style={styles.scanButtonText}>{t('recommendations.newScan')}</Text>
         </TouchableOpacity>
       </View>
-
-
-      <RatingModal 
-        visible={showRatingModal}
-        onClose={() => {
-          setShowRatingModal(false);
-          // Naviguer APRÈS la fermeture du modal
-          router.replace('/(tabs)');
-        }}
-      />
     </View>
   );
 }

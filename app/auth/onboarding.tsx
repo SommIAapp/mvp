@@ -12,6 +12,7 @@ import {
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronRight } from 'lucide-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as StoreReview from 'expo-store-review';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { Colors } from '@/constants/Colors';
@@ -84,8 +85,6 @@ export default function OnboardingScreen() {
       setTimeout(async () => {
         if (await StoreReview.hasAction()) {
           await StoreReview.requestReview();
-          // Marquer comme demandé
-          await AsyncStorage.setItem('rating_requested_onboarding', 'true');
         }
       }, 1000);
       
