@@ -312,5 +312,77 @@
       "section11Title": "11. Contact",
       "section11Text": "For any questions regarding these terms of use, contact us at:"
     }
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "lastUpdate": "Last updated: January 2025",
+    "sections": {
+      "introduction": {
+        "title": "1. Introduction",
+        "content": "SOMMIA is committed to protecting your privacy. This policy explains what information we collect, how we use it, and your rights regarding your personal data."
+      },
+      "dataCollected": {
+        "title": "2. Data Collected",
+        "intro": "We collect the following types of data:",
+        "account": "• Account information: Email, name (optional)",
+        "usage": "• Usage data: Recommendation history, wine preferences, dish photos (temporary)",
+        "technical": "• Technical data: Device type, app version, anonymous identifiers",
+        "payment": "• Payment data: Managed exclusively by Apple, we do not store any banking information"
+      },
+      "dataUsage": {
+        "title": "3. Use of Data",
+        "intro": "Your data is used to:",
+        "recommendations": "• Provide personalized wine recommendations",
+        "account": "• Manage your account and subscription",
+        "improve": "• Improve our recommendation algorithms",
+        "communication": "• Send you service-related communications (with your consent)",
+        "analytics": "• Analyze app usage anonymously"
+      },
+      "storage": {
+        "title": "4. Storage and Security",
+        "content1": "Your data is stored on secure servers in Europe. We use industry-standard security measures including encryption to protect your information.",
+        "content2": "Dish photos are processed temporarily for analysis and are not retained after processing."
+      },
+      "sharing": {
+        "title": "5. Data Sharing",
+        "intro": "We never sell your personal data. We share your data only with:",
+        "providers": "• Our essential technical service providers (hosting, analytics)",
+        "legal": "• Legal authorities if required by law"
+      },
+      "rights": {
+        "title": "6. Your Rights (GDPR)",
+        "intro": "In accordance with GDPR, you have the right to:",
+        "access": "• Access your personal data",
+        "rectify": "• Rectify your data",
+        "delete": "• Delete your account and all your data",
+        "export": "• Export your data (portability)",
+        "object": "• Object to the processing of your data",
+        "withdraw": "• Withdraw your consent at any time"
+      },
+      "retention": {
+        "title": "7. Data Retention",
+        "intro": "We retain your data as long as your account is active. After account deletion:",
+        "personal": "• Personal data is deleted within 30 days",
+        "anonymous": "• Anonymized data may be retained for service improvement"
+      },
+      "cookies": {
+        "title": "8. Cookies and Tracking",
+        "content": "The application uses anonymous identifiers to improve your experience. No third-party advertising cookies are used."
+      },
+      "minors": {
+        "title": "9. Minors",
+        "content": "SOMMIA is reserved for people 18 years and older. We do not knowingly collect data on minors."
+      },
+      "changes": {
+        "title": "10. Changes",
+        "content": "We may update this policy. Important changes will be notified in the application."
+      },
+      "contact": {
+        "title": "11. Contact",
+        "intro": "To exercise your rights or any questions about your data:",
+        "email": "Email: privacy@sommia.app",
+        "dpo": "Data Protection Officer: dpo@sommia.app"
+      }
+    }
   }
 }

@@ -312,5 +312,77 @@
       "section11Title": "11. Contact",
       "section11Text": "Pour toute question concernant ces conditions d'utilisation, contactez-nous à :"
     }
+  },
+  "privacy": {
+    "title": "Politique de Confidentialité",
+    "lastUpdate": "Dernière mise à jour : Janvier 2025",
+    "sections": {
+      "introduction": {
+        "title": "1. Introduction",
+        "content": "SOMMIA s'engage à protéger votre vie privée. Cette politique explique quelles informations nous collectons, comment nous les utilisons et vos droits concernant vos données personnelles."
+      },
+      "dataCollected": {
+        "title": "2. Données Collectées",
+        "intro": "Nous collectons les types de données suivants :",
+        "account": "• Informations de compte : Email, nom (optionnel)",
+        "usage": "• Données d'usage : Historique des recommandations, préférences de vin, photos de plats (temporaires)",
+        "technical": "• Données techniques : Type d'appareil, version de l'app, identifiants anonymes",
+        "payment": "• Données de paiement : Gérées exclusivement par Apple, nous ne stockons aucune information bancaire"
+      },
+      "dataUsage": {
+        "title": "3. Utilisation des Données",
+        "intro": "Vos données sont utilisées pour :",
+        "recommendations": "• Fournir des recommandations de vin personnalisées",
+        "account": "• Gérer votre compte et abonnement",
+        "improve": "• Améliorer nos algorithmes de recommandation",
+        "communication": "• Vous envoyer des communications liées au service (avec votre consentement)",
+        "analytics": "• Analyser l'utilisation de l'app de manière anonyme"
+      },
+      "storage": {
+        "title": "4. Stockage et Sécurité",
+        "content1": "Vos données sont stockées sur des serveurs sécurisés en Europe. Nous utilisons des mesures de sécurité standard de l'industrie incluant le cryptage pour protéger vos informations.",
+        "content2": "Les photos de plats sont traitées temporairement pour l'analyse et ne sont pas conservées après le traitement."
+      },
+      "sharing": {
+        "title": "5. Partage des Données",
+        "intro": "Nous ne vendons jamais vos données personnelles. Nous partageons vos données uniquement avec :",
+        "providers": "• Nos prestataires techniques essentiels (hébergement, analyse)",
+        "legal": "• Les autorités légales si requis par la loi"
+      },
+      "rights": {
+        "title": "6. Vos Droits (RGPD)",
+        "intro": "Conformément au RGPD, vous avez le droit de :",
+        "access": "• Accéder à vos données personnelles",
+        "rectify": "• Rectifier vos données",
+        "delete": "• Supprimer votre compte et toutes vos données",
+        "export": "• Exporter vos données (portabilité)",
+        "object": "• Vous opposer au traitement de vos données",
+        "withdraw": "• Retirer votre consentement à tout moment"
+      },
+      "retention": {
+        "title": "7. Conservation des Données",
+        "intro": "Nous conservons vos données tant que votre compte est actif. Après suppression de votre compte :",
+        "personal": "• Les données personnelles sont supprimées sous 30 jours",
+        "anonymous": "• Les données anonymisées peuvent être conservées pour l'amélioration du service"
+      },
+      "cookies": {
+        "title": "8. Cookies et Tracking",
+        "content": "L'application utilise des identifiants anonymes pour améliorer votre expérience. Aucun cookie tiers de publicité n'est utilisé."
+      },
+      "minors": {
+        "title": "9. Mineurs",
+        "content": "SOMMIA est réservé aux personnes de 18 ans et plus. Nous ne collectons pas sciemment de données sur les mineurs."
+      },
+      "changes": {
+        "title": "10. Modifications",
+        "content": "Nous pouvons mettre à jour cette politique. Les changements importants seront notifiés dans l'application."
+      },
+      "contact": {
+        "title": "11. Contact",
+        "intro": "Pour exercer vos droits ou toute question sur vos données :",
+        "email": "Email : privacy@sommia.app",
+        "dpo": "Délégué à la Protection des Données : dpo@sommia.app"
+      }
+    }
   }
 }
