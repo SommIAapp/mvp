@@ -129,7 +129,7 @@ export default function OnboardingScreen() {
           {/* GIF pour l'écran trial */}
           {currentStep === 1 && (
             <Image
-              source={require('@/assets/images/giftrial.gif')}
+              source={require('@/assets/images/triaonboarding.gif')}
               style={styles.trialGif}
               resizeMode="contain"
             />
@@ -315,10 +315,10 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   trialGif: {
-    width: width - 80,
-    height: (width - 80) * 0.6, // Ratio proportionnel
+    width: width - 60, // Réduit de 80 à 60
+    height: (width - 60) * 0.7, // Augmente le ratio de 0.6 à 0.7
     borderRadius: 20,
-    marginVertical: 24,
+    marginVertical: 20, // Réduit de 24
     alignSelf: 'center',
   },
 });
