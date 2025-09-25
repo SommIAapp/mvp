@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   buttonSection: {
-    gap: 12,
+    gap: 24,
     alignItems: 'center',
   },
   appleButton: {
