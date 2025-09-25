@@ -16,6 +16,8 @@ import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useRecommendations, type WineRecommendation } from '@/hooks/useRecommendations';
+import { RatingModal, hasUserRated } from '@/components/RatingModal';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Helper pour obtenir la couleur du vin
 const getWineColor = (wine: any) => {
@@ -56,6 +58,7 @@ export default function RecommendationsScreen() {
   const [currentWine, setCurrentWine] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [showSwipeHint, setShowSwipeHint] = useState(true);
+  const [showRatingModal, setShowRatingModal] = useState(false);
 
   useEffect(() => {
     loadRecommendations();
@@ -138,7 +141,19 @@ export default function RecommendationsScreen() {
   };
 
   // Nouveau scan
-  const handleNewScan = () => {
+  const handleNewScan = async () => {
+    // Vérifier si c'est la première recommandation complétée
+    const isFirstReco = await AsyncStorage.getItem('first_reco_completed') !== 'true';
+    const alreadyRated = await hasUserRated();
+    
+    if (isFirstReco && !alreadyRated) {
+      await AsyncStorage.setItem('first_reco_completed', 'true');
+      // Montrer le modal après un délai
+      setTimeout(() => {
+        setShowRatingModal(true);
+      }, 500);
+    }
+    
     router.replace('/(tabs)');
   };
 
@@ -468,6 +483,11 @@ export default function RecommendationsScreen() {
         </TouchableOpacity>
       </View>
     </View>
+
+    <RatingModal 
+      visible={showRatingModal}
+      onClose={() => setShowRatingModal(false)}
+    />
   );
 }
 

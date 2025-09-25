@@ -60,6 +60,15 @@
       "startTrial": "Commencer l'essai gratuit"
     }
   },
+  "rating": {
+    "modal": {
+      "title": "Vous aimez SOMMIA ?",
+      "subtitle": "Votre avis nous aide à grandir",
+      "description": "Si vous appréciez l'application, prenez un moment pour nous noter sur l'App Store.",
+      "rateNow": "Noter maintenant",
+      "later": "Plus tard"
+    }
+  },
   "subscriptionSuccess": {
     "title": "SOMMIA",
     "welcomePremium": "Bienvenue dans Premium !",

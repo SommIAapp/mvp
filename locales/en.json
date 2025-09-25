@@ -60,6 +60,15 @@
       "startTrial": "Start free trial"
     }
   },
+  "rating": {
+    "modal": {
+      "title": "Enjoying SOMMIA?",
+      "subtitle": "Your feedback helps us grow",
+      "description": "If you enjoy the app, take a moment to rate us on the App Store.",
+      "rateNow": "Rate now",
+      "later": "Later"
+    }
+  },
   "subscriptionSuccess": {
     "title": "SOMMIA",
     "welcomePremium": "Welcome to Premium!",

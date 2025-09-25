@@ -14,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { ChevronRight } from 'lucide-react-native';
 import * as StoreReview from 'expo-store-review';
+import * as StoreReview from 'expo-store-review';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { useAuth } from '@/hooks/useAuth';
@@ -41,6 +42,12 @@ export default function OnboardingScreen() {
       title: t('auth.onboarding.trial.title'),
       subtitle: t('auth.onboarding.trial.subtitle'),
       description: t('auth.onboarding.trial.description'),
+    },
+    {
+      id: 'rating',
+      title: t('auth.onboarding.rating.title'),
+      subtitle: t('auth.onboarding.rating.subtitle'),
+      description: t('auth.onboarding.rating.description'),
     },
     {
       id: 'rating',
@@ -149,6 +156,17 @@ export default function OnboardingScreen() {
             </View>
           )}
 
+          {/* Rating stars icon */}
+          {currentStep === 2 && (
+            <View style={styles.ratingIconContainer}>
+              <View style={styles.starsContainer}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Text key={star} style={styles.starIcon}>⭐</Text>
+                ))}
+              </View>
+            </View>
+          )}
+
           {/* Title */}
           <Text style={styles.title}>{currentStepData.title}</Text>
           <Text style={styles.subtitle}>{currentStepData.subtitle}</Text>
@@ -177,6 +195,35 @@ export default function OnboardingScreen() {
               >
                 <Text style={styles.ageButtonTextSecondary}>
                   {t('auth.onboarding.ageVerification.confirmMinor')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : currentStep === 2 ? (
+            // Rating buttons
+            <View style={styles.ratingButtons}>
+              <TouchableOpacity
+                style={[styles.ratingButton, styles.ratingButtonPrimary]}
+                onPress={async () => {
+                  // Demander le rating
+                  if (await StoreReview.hasAction()) {
+                    await StoreReview.requestReview();
+                  }
+                  handleStartTrial();
+                }}
+                disabled={loading}
+              >
+                <Text style={styles.ratingButtonTextPrimary}>
+                  {t('auth.onboarding.rating.rateNow')}
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={styles.skipButton}
+                onPress={handleStartTrial}
+                disabled={loading}
+              >
+                <Text style={styles.skipButtonText}>
+                  {t('auth.onboarding.rating.later')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -372,6 +419,46 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginBottom: 20,
     alignSelf: 'center',
+  },
+  ratingIconContainer: {
+    marginBottom: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  starsContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  starIcon: {
+    fontSize: 40,
+  },
+  ratingButtons: {
+    width: '100%',
+    gap: 16,
+    alignItems: 'center',
+  },
+  ratingButton: {
+    paddingVertical: 18,
+    paddingHorizontal: 32,
+    borderRadius: 28,
+    alignItems: 'center',
+    width: '100%',
+  },
+  ratingButtonPrimary: {
+    backgroundColor: 'white',
+  },
+  ratingButtonTextPrimary: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#6B2B3A',
+  },
+  skipButton: {
+    paddingVertical: 12,
+  },
+  skipButtonText: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.8)',
+    textDecorationLine: 'underline',
   },
   ratingIconContainer: {
     marginBottom: 30,
