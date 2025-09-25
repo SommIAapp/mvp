@@ -287,10 +287,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   healthWarning: {
+    position: 'absolute',
+    bottom: 30,
+    left: 20,
+    right: 20,
     fontSize: Typography.sizes.xs,
     color: Colors.textSecondary,
     textAlign: 'center',
-    paddingHorizontal: 20,
     fontStyle: 'italic',
   },
   languageSelector: {
