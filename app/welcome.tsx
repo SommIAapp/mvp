@@ -248,9 +248,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.accent,
     paddingHorizontal: 24,
-    paddingTop: 60,
     paddingBottom: 30,
-    justifyContent: 'space-between',
+    position: 'relative',
   },
   heroContent: {
     alignItems: 'center',
@@ -271,6 +270,11 @@ const styles = StyleSheet.create({
   buttonSection: {
     gap: 24,
     alignItems: 'center',
+    position: 'absolute',
+    left: 24,
+    right: 24,
+    top: '50%',
+    transform: [{ translateY: -60 }],
   },
   appleButton: {
     width: '100%',
